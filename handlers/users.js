@@ -127,10 +127,9 @@ async function profile(interaction) {
   const user = getUser(userId);
   const level = user.level || 1;
   const xp = user.xp || 0;
-  const nextLevel = level * 500;
   const bar = xpBar(xp, level);
   const levelTitle = getLevelTitle(level);
-
+  const threshold = Math.pow(level, 2) * 50;
   const venueIncome = getVenueIncome(userId);
   const equipmentIncome = getEquipmentIncome(userId);
 
@@ -142,9 +141,6 @@ async function profile(interaction) {
     .all(userId);
   const objective = nextObjective(user, venues, equipment);
 
-  
-
-  
   const passiveTotal =
     venues.reduce((sum, venue) => sum + venuePendingIncome(venue), 0) +
     equipment.reduce((sum, item) => sum + equipmentPendingIncome(item), 0);
@@ -184,7 +180,7 @@ async function profile(interaction) {
           "```ansi\n" +
           `Cash:       $${money(user.cash)}\n` +
           `Reputation: ${user.reputation}\n\n` +
-          `LVL ${level} ${bar} ${nextLevel.toLocaleString()} XP\n` +
+          `LVL ${level} ${bar} ${xp.toLocaleString()} / ${threshold.toLocaleString()} XP\n` +
           `${levelTitle}` +
           "```",
       },
@@ -194,7 +190,7 @@ async function profile(interaction) {
           "```ansi\n" +
           `Venues: ${venues.length} ($${venueIncome.hourly}/hr) ${venueIncome.staffBoostHourly > 0 ? "👥" : ""} +$${venueIncome.total}\n` +
           `Equipment: ${equipment.length} ($${equipmentIncome.hourly}/hr) +$${equipmentIncome.total}\n` +
-          `Pending Total: $${money(passiveTotal)}\n` + 
+          `Pending Total: $${money(passiveTotal)}\n` +
           "```",
       },
       {
