@@ -3,16 +3,9 @@ const db = require("../db");
 const { EmbedBuilder } = require("discord.js");
 
 function getLevelFromXp(xp) {
-  if (xp >= 5000) return 10;
-  if (xp >= 3500) return 9;
-  if (xp >= 2500) return 8;
-  if (xp >= 1750) return 7;
-  if (xp >= 1100) return 6;
-  if (xp >= 700) return 5;
-  if (xp >= 400) return 4;
-  if (xp >= 200) return 3;
-  if (xp >= 75) return 2;
-  return 1;
+  if (xp <= 0) return 1;
+
+  return Math.floor(Math.sqrt(xp / 50)) + 1;
 }
 
 function getLevelTitle(level) {
@@ -27,9 +20,14 @@ function getLevelTitle(level) {
     8: "Local Legend",
     9: "City Icon",
     10: "EDMELEVATED Elite",
+    11: "Rave Tycoon",
+    12: "Underground King",
+    13: "Festival Mogul",
+    14: "Global Icon",
+    15: "Music Deity",
   };
 
-  return titles[level] || "Raver";
+  return titles[level] || `Legend Lvl ${level}`;
 }
 
 async function announceLevelUp(interaction, xpUpdate) {
@@ -71,20 +69,16 @@ function addXp(userId, amount) {
   const user = db
     .prepare("SELECT * FROM users WHERE discord_id = ?")
     .get(userId);
-
   if (!user) return null;
 
   const oldLevel = user.level || getLevelFromXp(user.xp || 0);
   const newXp = (user.xp || 0) + amount;
   const newLevel = getLevelFromXp(newXp);
 
-  db.prepare(
-    `
-    UPDATE users
-    SET xp = ?, level = ?
-    WHERE discord_id = ?
-  `,
-  ).run(newXp, newLevel, userId);
+  const stmt = db.prepare(
+    `UPDATE users SET xp = ?, level = ? WHERE discord_id = ?`,
+  );
+  const info = stmt.run(newXp, newLevel, userId);
 
   return {
     oldLevel,
@@ -97,13 +91,15 @@ function addXp(userId, amount) {
 }
 
 function xpBar(currentXp, level) {
-  const required = level * 500;
+  const nextLevelXp = Math.pow(level, 2) * 50;
+  const prevLevelXp = Math.pow(level - 1, 2) * 50;
 
-  const progress = Math.min(currentXp / required, 1);
+  const range = nextLevelXp - prevLevelXp;
+  const progress = currentXp - prevLevelXp;
 
+  const percent = Math.min(progress / range, 1);
   const totalBars = 16;
-
-  const filled = Math.round(progress * totalBars);
+  const filled = Math.round(percent * totalBars);
 
   return "🟪".repeat(filled) + "⬛".repeat(totalBars - filled);
 }
