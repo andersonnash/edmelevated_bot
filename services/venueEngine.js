@@ -102,48 +102,38 @@ function getVenueIncome(userId) {
     .all(userId);
 
   let totalBaseIncome = 0;
-  let totalStaffBoost = 0; 
+  let totalStaffBoost = 0;
+  let totalPendingIncome = 0;
 
   venues.forEach((venue) => {
-    
     const baseRate = VENUE_TYPES[venue.type]?.passiveIncome || 0;
     totalBaseIncome += baseRate;
 
-    
     const staff = db
       .prepare(
-        `
-      SELECT role FROM venue_staff WHERE venue_id = ? AND status = 'active'
-    `,
+        `SELECT role FROM venue_staff WHERE venue_id = ? AND status = 'active'`,
       )
       .all(venue.id);
-
     let multiplier = 0;
     staff.forEach((member) => {
       const roleData = VENUE_STAFF_ROLES[member.role];
-      if (roleData) {
-        multiplier += roleData.incomeBoost; 
-      }
+      if (roleData) multiplier += roleData.incomeBoost;
     });
-
-    const total = venues.reduce((sum, venue) => {
-      const income = venuePendingIncome(venue);
-      return sum + (income || 0);
-    }, 0);
-
-    
-    
     totalStaffBoost += baseRate * multiplier;
+
+    const effectiveRate = baseRate * (1 + multiplier);
+    const hours = hoursSince(venue.last_collected_at);
+    totalPendingIncome += Math.floor(hours * effectiveRate);
   });
 
   const totalHourly = totalBaseIncome + totalStaffBoost;
 
   return {
     venues,
-    total: totalHourly, 
+    total: totalPendingIncome,
     hourly: totalHourly,
-    baseHourly: totalBaseIncome, 
-    staffBoostHourly: totalStaffBoost, 
+    baseHourly: totalBaseIncome,
+    staffBoostHourly: totalStaffBoost,
   };
 }   
 

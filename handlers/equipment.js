@@ -129,16 +129,22 @@ async function myEquipment(interaction) {
     0
   );
 
-  const list = equipment
-    .map(item => {
-      return (
-        `🎛 **${item.name}** x${item.quantity}\n` +
-        `Rental Income: ${money(equipmentHourlyIncome(item))}/hr\n` +
-        `Uncollected: ${money(equipmentPendingIncome(item))}\n` +
-        `Rented For: ${hoursSince(item.last_collected_at)}h`
-      );
-    })
-    .join("\n\n");
+    const list = equipment
+      .map((item) => {
+        const itemHours = hoursSince(item.last_collected_at);
+        const itemDisplayTime =
+          itemHours < 1
+            ? `${Math.round(itemHours * 60)}m`
+            : `${itemHours.toFixed(2)}h`;
+
+        return (
+          `🎛 **${item.name}** x${item.quantity}\n` +
+          `Rental Income: ${money(equipmentHourlyIncome(item))}/hr\n` +
+          `Uncollected: ${money(equipmentPendingIncome(item))}\n` +
+          `Rented For: ${itemDisplayTime}`
+        );
+      })
+      .join("\n\n");
 
   const embed = new EmbedBuilder()
     .setColor(0x8b5cf6)
