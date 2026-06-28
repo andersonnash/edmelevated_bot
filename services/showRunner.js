@@ -87,7 +87,7 @@ async function runShowById(showId) {
   const lineupCost = lineup.reduce((sum, dj) => sum + (dj.pay || 0), 0);
 
   const operatingCost =
-    Math.floor(finalCapacity * 2) + Math.floor(totalAttendance * 1);
+    Math.floor(finalCapacity * 0.5) + Math.floor(totalAttendance * 1);
 
   
   const upgradeBonus =
