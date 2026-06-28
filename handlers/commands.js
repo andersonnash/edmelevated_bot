@@ -29,6 +29,7 @@ const commandMap = {
 
   buy_venue: venues.buyVenue,
   my_venues: venues.myVenues,
+  upgrade_venue: venues.upgradeVenue,
 
   buy_equipment: equipment.buyEquipment,
   my_equipment: equipment.myEquipment,
