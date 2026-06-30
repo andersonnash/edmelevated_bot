@@ -728,53 +728,43 @@ async function runShow(interaction, buttonShowId = null) {
 } 
 
 async function collect(interaction) {
-  const userId = interaction.user.id;
-
-  
-  const venueData = getVenueIncome(userId);
-  const equipmentData = getEquipmentIncome(userId);
-  const passiveTotal = (venueData.total || 0) + (equipmentData.total || 0);
-
-  
-  const payouts = db
-    .prepare("SELECT * FROM rave_payouts WHERE user_id = ? AND collected = 0")
-    .all(userId);
-  const showTotal = payouts.reduce((sum, p) => sum + p.profit, 0);
-
-  const grandTotal = passiveTotal + showTotal;
-
-  if (grandTotal <= 0) {
-    return interaction.reply({
-      content: "Nothing to collect yet.",
-      ephemeral: true,
-    });
+  if (!interaction.deferred && !interaction.replied) {
+    await interaction.deferReply({ ephemeral: true });
   }
 
-  
-  const transaction = db.transaction(() => {
-    
-    addCash(userId, grandTotal);
+  const userId = interaction.user.id;
 
-    
-    db.prepare(
-      `UPDATE venues SET last_collected_at = datetime('now') WHERE owner_id = ?`,
-    ).run(userId);
-    db.prepare(
-      `UPDATE user_equipment SET last_collected_at = datetime('now') WHERE user_id = ?`,
-    ).run(userId);
+  try {
+    const venueData = getVenueIncome(userId);
+    const equipmentData = getEquipmentIncome(userId);
+    const passiveTotal = (venueData.total || 0) + (equipmentData.total || 0);
 
-    
-    if (payouts.length > 0) {
-      db.prepare(`UPDATE rave_payouts SET collected = 1 WHERE user_id = ?`).run(
-        userId,
-      );
+    if (passiveTotal <= 0) {
+      return interaction.editReply({
+        content: "Nothing to collect yet.",
+      });
     }
-  });
 
-  transaction(); 
+    const transaction = db.transaction(() => {
+      addCash(userId, passiveTotal);
 
-  return interaction.reply(`💸 Collected **$${grandTotal}**`);
-}    
+      db.prepare(
+        `UPDATE venues SET last_collected_at = datetime('now') WHERE owner_id = ?`,
+      ).run(userId);
+
+      db.prepare(
+        `UPDATE user_equipment SET last_collected_at = datetime('now') WHERE user_id = ?`,
+      ).run(userId);
+    });
+
+    transaction();
+
+    return interaction.editReply(`💸 Collected **$${money(passiveTotal)}**`);
+  } catch (error) {
+    console.error("Collection error:", error);
+    return interaction.editReply("An error occurred while collecting.");
+  }
+}
 
 async function promoteShow(interaction) {
   const userId = interaction.user.id;

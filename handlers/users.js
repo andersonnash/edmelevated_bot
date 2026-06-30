@@ -190,7 +190,7 @@ async function profile(interaction) {
           "```ansi\n" +
           `Venues: ${venues.length} ($${venueIncome.hourly}/hr) ${venueIncome.staffBoostHourly > 0 ? "👥" : ""} +$${venueIncome.total}\n` +
           `Equipment: ${equipment.length} ($${equipmentIncome.hourly}/hr) +$${equipmentIncome.total}\n` +
-          `Pending Total: $${money(passiveTotal)}\n` +
+          `Pending Total: ${money(passiveTotal)}\n` +
           "```",
       },
       {
