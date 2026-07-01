@@ -56,7 +56,7 @@ async function register(interaction) {
   addRole(userId, "Raver");
 
   return interaction.reply(
-    `Welcome to the EDMELEVATED city game, ${username}. You start with $${startingCash}.`,
+    `Welcome to the EDMELEVATED city game, ${username}. You start with $${money(startingCash)}.`,
   );
 }
 
