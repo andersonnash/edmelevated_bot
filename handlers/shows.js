@@ -10,6 +10,8 @@ const { postSceneFeed } = require("../services/sceneFeed");
 
 const { runShowById } = require("../services/showRunner");
 
+const { settleShowPayouts, getOwnedShow } = require("../services/showPayouts");
+
 const { addCash } = require("../services/economy");
 const { money } = require("../services/formatters");
 
@@ -588,6 +590,97 @@ async function buyTicket(interaction) {
   );
 }
 
+function buildRunShowEmbed(result) {
+  const {
+    show,
+    event,
+    tickets,
+    staff,
+    lineup,
+    adjustedWalkins,
+    paidRevenue,
+    simulatedRevenue,
+    totalAttendance,
+    staffCost,
+    lineupCost,
+    operatingCost,
+    bonusRevenue,
+    netProfit,
+    reputationGain,
+  } = result;
+
+  const staffSummary = staff.length
+    ? staff
+        .map(
+          (person) =>
+            `👷 ${person.hired_username} — ${person.role} — ${money(person.pay)}`,
+        )
+        .join("\n")
+    : "None";
+
+  const lineupSummary = lineup.length
+    ? lineup.map((dj) => `🎧 ${dj.dj_username} — ${money(dj.pay)}`).join("\n")
+    : "No lineup";
+
+  return new EmbedBuilder()
+    .setColor(netProfit >= 0 ? 0x00ff88 : 0xff3355)
+    .setTitle("🎧 EDMELEVATED SHOW REPORT")
+    .setDescription(`**${show.name}**`)
+    .addFields(
+      {
+        name: "📍 Event",
+        value:
+          `**Venue:** ${show.venue_name}\n` +
+          `**Dynamic Event:** ${event.title}`,
+      },
+      {
+        name: "👥 Attendance",
+        value:
+          `**Real Tickets:** ${tickets.length}\n` +
+          `**Walk-ins:** ${adjustedWalkins}\n` +
+          `**Total:** ${totalAttendance}`,
+      },
+      {
+        name: "💸 Money",
+        value:
+          `**Ticket Revenue:** ${money(paidRevenue)}\n` +
+          `**Walk-in Revenue:** ${money(simulatedRevenue)}\n` +
+          `**Upgrade Bonus:** ${money(bonusRevenue)}\n` +
+          `**Staff Cost:** -${money(staffCost)}\n` +
+          `**Lineup Cost:** -${money(lineupCost)}\n` +
+          `**Operating Cost:** -${money(operatingCost)}\n` +
+          `**Net Profit:** ${money(netProfit)}`,
+      },
+      {
+        name: "👷 Staff Earnings",
+        value: staffSummary,
+      },
+      {
+        name: "🎧 DJ Earnings",
+        value: lineupSummary,
+      },
+      {
+        name: "⭐ Rewards",
+        value: `**Reputation:** +${reputationGain}\n`,
+      },
+    )
+    .setFooter({
+      text:
+        netProfit >= 0
+          ? "Use /collect_show to settle this show"
+          : "You took a loss on this one",
+    });
+}
+
+function buildCollectShowRow(showId) {
+  return new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
+      .setCustomId(`collect_show_${showId}`)
+      .setLabel("💰 Collect Show Profit")
+      .setStyle(ButtonStyle.Success),
+  );
+}
+
 async function runShow(interaction, buttonShowId = null) {
   const userId = interaction.user.id;
 
@@ -601,9 +694,9 @@ async function runShow(interaction, buttonShowId = null) {
       SELECT *
       FROM shows
       WHERE id = ?
-      AND owner_id = ?
-      AND status = 'upcoming'
-    `,
+        AND owner_id = ?
+        AND status = 'upcoming'
+      `,
     )
     .get(showId, userId);
 
@@ -630,98 +723,13 @@ async function runShow(interaction, buttonShowId = null) {
     });
   }
 
-  const {
-    show,
-    event,
-    tickets,
-    staff,
-    lineup,
-    adjustedWalkins,
-    paidRevenue,
-    simulatedRevenue,
-    totalAttendance,
-    staffCost,
-    lineupCost,
-    operatingCost,
-    bonusRevenue,
-    netProfit,
-    reputationGain,
-  } = result;
-
-  const staffSummary = staff.length
-    ? staff
-        .map(
-          (person) =>
-            `👷 ${person.hired_username} — ${person.role} — $${person.pay}`,
-        )
-        .join("\n")
-    : "None";
-
-  const lineupSummary = lineup.length
-    ? lineup.map((dj) => `🎧 ${dj.dj_username} — $${dj.pay}`).join("\n")
-    : "No lineup";
-
-  const embed = new EmbedBuilder()
-    .setColor(netProfit >= 0 ? 0x00ff88 : 0xff3355)
-    .setTitle("🎧 EDMELEVATED SHOW REPORT")
-    .setDescription(`**${show.name}**`)
-    .addFields(
-      {
-        name: "📍 Event",
-        value:
-          `**Venue:** ${show.venue_name}\n` +
-          `**Dynamic Event:** ${event.title}`,
-      },
-      {
-        name: "👥 Attendance",
-        value:
-          `**Real Tickets:** ${tickets.length}\n` +
-          `**Walk-ins:** ${adjustedWalkins}\n` +
-          `**Total:** ${totalAttendance}`,
-      },
-      {
-        name: "💸 Money",
-        value:
-          `**Ticket Revenue:** $${paidRevenue}\n` +
-          `**Walk-in Revenue:** $${simulatedRevenue}\n` +
-          `**Upgrade Bonus:** $${bonusRevenue}\n` +
-          `**Staff Cost:** -$${staffCost}\n` +
-          `**Lineup Cost:** -$${lineupCost}\n` +
-          `**Operating Cost:** -$${operatingCost}\n` +
-          `**Net Profit:** $${netProfit}`,
-      },
-      {
-        name: "👷 Staff Earnings",
-        value: staffSummary,
-      },
-      {
-        name: "🎧 DJs Earnings",
-        value: lineupSummary,
-      },
-      {
-        name: "⭐ Rewards",
-        value: `**Reputation:** +${reputationGain}\n`,
-      },
-    )
-    .setFooter({
-      text:
-        netProfit >= 0
-          ? "Use /collect to claim your profit"
-          : "You took a loss on this one",
-    });
-
-  const row = new ActionRowBuilder().addComponents(
-    new ButtonBuilder()
-      .setCustomId(`collect_show_${show.show_id}`)
-      .setLabel("💰 Collect Show Profit")
-      .setStyle(ButtonStyle.Success),
-  );
+  const embed = buildRunShowEmbed(result);
+  const row = buildCollectShowRow(result.show.show_id);
 
   const response = {
     embeds: [embed],
-    components: netProfit >= 0 ? [row] : [],
+    components: result.netProfit >= 0 ? [row] : [],
   };
-
   if (interaction.deferred || interaction.replied) {
     return interaction.editReply(response);
   }
@@ -777,16 +785,7 @@ async function collectShow(interaction, buttonShowId = null) {
   const showId = buttonShowId || Number(interaction.options.getString("show"));
 
   try {
-    const show = db
-      .prepare(
-        `
-        SELECT *
-        FROM shows
-        WHERE id = ?
-          AND owner_id = ?
-        `,
-      )
-      .get(showId, userId);
+    const show = getOwnedShow(showId, userId);
 
     if (!show) {
       return interaction.editReply(
@@ -800,74 +799,35 @@ async function collectShow(interaction, buttonShowId = null) {
       );
     }
 
-    const payouts = db
-      .prepare(
-        `
-        SELECT *
-        FROM show_payouts
-        WHERE show_id = ?
-          AND paid = 0
-        ORDER BY
-          CASE role
-            WHEN 'owner' THEN 1
-            WHEN 'dj' THEN 2
-            WHEN 'staff' THEN 3
-            ELSE 4
-          END,
-          id ASC
-        `,
-      )
-      .all(showId);
+    const settlement = settleShowPayouts(showId);
 
-    if (!payouts.length) {
+    if (!settlement) {
       return interaction.editReply(
         "There are no unpaid payouts for this show. It may have already been collected.",
       );
     }
 
-    const ownerPayouts = payouts.filter((p) => p.role === "owner");
-    const djPayouts = payouts.filter((p) => p.role === "dj");
-    const staffPayouts = payouts.filter((p) => p.role === "staff");
-
-    const ownerTake = ownerPayouts.reduce((sum, p) => sum + p.amount, 0);
-    const totalPaid = payouts.reduce((sum, p) => sum + p.amount, 0);
-
-    const transaction = db.transaction(() => {
-      for (const payout of payouts) {
-        addCash(payout.user_id, payout.amount);
-      }
-
-      db.prepare(
-        `
-        UPDATE show_payouts
-        SET paid = 1
-        WHERE show_id = ?
-          AND paid = 0
-        `,
-      ).run(showId);
-    });
-
-    transaction();
+    const { djs, staff, ownerTake, totalPaid } = settlement;
 
     const balance =
       db.prepare("SELECT cash FROM users WHERE discord_id = ?").get(userId)
         ?.cash ?? 0;
 
-    const formatPayoutLine = (payout) => {
-      const mention = `<@${payout.user_id}>`;
-      return `• ${mention}: ${money(payout.amount)}`;
+    const formatPayoutLine = (settlement) => {
+      const mention = `<@${settlement.user_id}>`;
+      return `• ${mention}: ${money(settlement.amount)}`;
     };
 
-    const djLines = djPayouts.length
-      ? djPayouts.map(formatPayoutLine).join("\n")
+    const djLines = djs.length
+      ? djs.map(formatPayoutLine).join("\n")
       : "• None";
 
-    const staffLines = staffPayouts.length
-      ? staffPayouts.map(formatPayoutLine).join("\n")
+    const staffLines = staff.length
+      ? staff.map(formatPayoutLine).join("\n")
       : "• None";
 
     const embed = new EmbedBuilder()
-      .setColor(show.status === "completed" ? 0x22c55e : 0xfacc15)
+      .setColor(0x22c55e)
       .setTitle("💰 SHOW PAYDAY!")
       .setDescription(`**${show.name}**\nEveryone has been paid for this show.`)
       .addFields(

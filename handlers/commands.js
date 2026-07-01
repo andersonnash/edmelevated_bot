@@ -40,7 +40,7 @@ const commandMap = {
   run_show: shows.runShow,
   force_run_show: shows.runShow,
   collect: shows.collect,
-  collect_show: shows.collect_show,
+  collect_show: shows.collectShow,
   promote_show: shows.promoteShow,
   show_lineup: shows.showLineup,
 
