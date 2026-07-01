@@ -40,6 +40,7 @@ const commandMap = {
   run_show: shows.runShow,
   force_run_show: shows.runShow,
   collect: shows.collect,
+  collect_show: shows.collect_show,
   promote_show: shows.promoteShow,
   show_lineup: shows.showLineup,
 
@@ -66,6 +67,10 @@ async function handleCommand(interaction) {
       await interaction.deferReply({ ephemeral: true });
       return shows.collect(interaction);
     }
+   if (interaction.customId.startsWith("collect_show_")) {
+     const showId = Number(interaction.customId.replace("collect_show_", ""));
+     return shows.collectShow(interaction, showId);
+   }
     if (
       interaction.customId === "shows_home" ||
       interaction.customId.startsWith("shows_upcoming_") ||
@@ -124,7 +129,6 @@ async function handleCommand(interaction) {
       ephemeral: true,
     });
   }
-
 
     if (!interaction.isChatInputCommand()) return;
 
