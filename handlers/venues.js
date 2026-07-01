@@ -32,6 +32,8 @@ async function buyVenue(interaction) {
   }
   const user = getUser(userId);
 
+  const venueStaffCount = 0;
+
   if (user.reputation < venueType.repRequired) {
     return interaction.reply({
       content:

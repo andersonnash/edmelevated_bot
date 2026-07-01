@@ -382,7 +382,18 @@ const commands = [
 
   new SlashCommandBuilder()
     .setName("collect")
-    .setDescription("Collect unclaimed show profits"),
+    .setDescription("Collect unclaimed passive income"),
+
+  new SlashCommandBuilder()
+  .setName("collect_show")
+  .setDescription("Collect payouts from one completed show")
+  .addStringOption((option) =>
+    option
+      .setName("show")
+      .setDescription("Completed show to collect")
+      .setRequired(true)
+      .setAutocomplete(true),
+  ),
 
   new SlashCommandBuilder()
     .setName("leaderboard")

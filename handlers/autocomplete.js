@@ -3,13 +3,6 @@ const db = require("../db");
 async function handleAutocomplete(interaction) {
   const userId = interaction.user.id;
   const focused = interaction.options.getFocused();
-
-  
-  
-  
-
-  
-
   if (
     ["create_show", "upgrade_venue", "hire_venue_staff"].includes(
       interaction.commandName,
@@ -44,63 +37,6 @@ async function handleAutocomplete(interaction) {
 
     return interaction.respond(choices);
   }
-
-  
-  
-  
-  
-  
-  
-  
-  
-  
-
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-
-  
-  
-  
-  
-  
-  
-  
-  
-
-  
-  
-  
-  
-  
-
-  
-  
-  
-  
-  
-  
-  
-  
-
-  
-  
-
-  
-  
-  
-
   if (
     [
       "buy_ticket",
@@ -135,11 +71,6 @@ async function handleAutocomplete(interaction) {
       })),
     );
   }
-
-  
-  
-  
-
   if (interaction.commandName === "give_kandi") {
     const kandi = db
       .prepare(
@@ -184,7 +115,6 @@ async function handleAutocomplete(interaction) {
       })),
     );
   }
-
   if (interaction.commandName === "enter_contest") {
     const contests = db
       .prepare(
@@ -210,7 +140,6 @@ async function handleAutocomplete(interaction) {
       })),
     );
   }
-
   if (interaction.commandName === "draw_winner") {
     const userId = interaction.user.id;
 
@@ -239,7 +168,38 @@ async function handleAutocomplete(interaction) {
       })),
     );
   }
+  if (interaction.commandName === "collect_show") {
+    const focused = interaction.options.getFocused();
 
+    const shows = db
+      .prepare(
+        `
+        SELECT
+          s.id,
+          s.name
+        FROM shows s
+        WHERE s.owner_id = ?
+          AND s.status = 'completed'
+          AND s.name LIKE ?
+          AND EXISTS (
+            SELECT 1
+            FROM show_payouts sp
+            WHERE sp.show_id = s.id
+              AND sp.paid = 0
+          )
+        ORDER BY s.id DESC
+        LIMIT 25
+        `,
+      )
+      .all(interaction.user.id, `%${focused}%`);
+
+    return interaction.respond(
+      shows.map((show) => ({
+        name: show.name,
+        value: String(show.id),
+      })),
+    );
+  }
   if (
     interaction.commandName === "run_show" ||
     interaction.commandName === "force_run_show"

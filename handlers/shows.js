@@ -689,11 +689,11 @@ async function runShow(interaction, buttonShowId = null) {
           `**Net Profit:** $${netProfit}`,
       },
       {
-        name: "👷 Staff Paid",
+        name: "👷 Staff Earnings",
         value: staffSummary,
       },
       {
-        name: "🎧 DJs Paid",
+        name: "🎧 DJs Earnings",
         value: lineupSummary,
       },
       {
@@ -710,8 +710,8 @@ async function runShow(interaction, buttonShowId = null) {
 
   const row = new ActionRowBuilder().addComponents(
     new ButtonBuilder()
-      .setCustomId("collect_payouts")
-      .setLabel("💰 Collect Profit")
+      .setCustomId(`collect_show_${show.show_id}`)
+      .setLabel("💰 Collect Show Profit")
       .setStyle(ButtonStyle.Success),
   );
 
@@ -763,6 +763,144 @@ async function collect(interaction) {
   } catch (error) {
     console.error("Collection error:", error);
     return interaction.editReply("An error occurred while collecting.");
+  }
+}
+
+async function collectShow(interaction, buttonShowId = null) {
+  if (!interaction.deferred && !interaction.replied) {
+    await interaction.deferReply({ ephemeral: true });
+  }
+
+  const userId = interaction.user.id;
+  const showId = buttonShowId || Number(interaction.options.getString("show"));
+
+  try {
+    const show = db
+      .prepare(
+        `
+        SELECT *
+        FROM shows
+        WHERE id = ?
+          AND owner_id = ?
+        `,
+      )
+      .get(showId, userId);
+
+    if (!show) {
+      return interaction.editReply(
+        "I couldn't find a show with that ID that belongs to you.",
+      );
+    }
+
+    if (show.status !== "completed") {
+      return interaction.editReply(
+        "That show is not completed yet. You can only collect completed shows.",
+      );
+    }
+
+    const payouts = db
+      .prepare(
+        `
+        SELECT *
+        FROM show_payouts
+        WHERE show_id = ?
+          AND paid = 0
+        ORDER BY
+          CASE role
+            WHEN 'owner' THEN 1
+            WHEN 'dj' THEN 2
+            WHEN 'staff' THEN 3
+            ELSE 4
+          END,
+          id ASC
+        `,
+      )
+      .all(showId);
+
+    if (!payouts.length) {
+      return interaction.editReply(
+        "There are no unpaid payouts for this show. It may have already been collected.",
+      );
+    }
+
+    const ownerPayouts = payouts.filter((p) => p.role === "owner");
+    const djPayouts = payouts.filter((p) => p.role === "dj");
+    const staffPayouts = payouts.filter((p) => p.role === "staff");
+
+    const ownerTake = ownerPayouts.reduce((sum, p) => sum + p.amount, 0);
+    const totalPaid = payouts.reduce((sum, p) => sum + p.amount, 0);
+
+    const transaction = db.transaction(() => {
+      for (const payout of payouts) {
+        addCash(payout.user_id, payout.amount);
+      }
+
+      db.prepare(
+        `
+        UPDATE show_payouts
+        SET paid = 1
+        WHERE show_id = ?
+          AND paid = 0
+        `,
+      ).run(showId);
+    });
+
+    transaction();
+
+    const balance =
+      db.prepare("SELECT cash FROM users WHERE discord_id = ?").get(userId)
+        ?.cash ?? 0;
+
+    const formatPayoutLine = (payout) => {
+      const mention = `<@${payout.user_id}>`;
+      return `• ${mention}: ${money(payout.amount)}`;
+    };
+
+    const djLines = djPayouts.length
+      ? djPayouts.map(formatPayoutLine).join("\n")
+      : "• None";
+
+    const staffLines = staffPayouts.length
+      ? staffPayouts.map(formatPayoutLine).join("\n")
+      : "• None";
+
+    const embed = new EmbedBuilder()
+      .setColor(show.status === "completed" ? 0x22c55e : 0xfacc15)
+      .setTitle("💰 SHOW PAYDAY!")
+      .setDescription(`**${show.name}**\nEveryone has been paid for this show.`)
+      .addFields(
+        {
+          name: "🏟️ Owner",
+          value: `${interaction.user}\n${money(ownerTake)}`,
+          inline: false,
+        },
+        {
+          name: "🎧 DJs",
+          value: djLines,
+          inline: true,
+        },
+        {
+          name: "👥 Staff",
+          value: staffLines,
+          inline: true,
+        },
+        {
+          name: "📊 Settlement",
+          value:
+            `**Total Distributed:** ${money(totalPaid)}\n` +
+            `**Balance:** ${money(balance)}`,
+          inline: false,
+        },
+      )
+      .setFooter({
+        text: `${show.name} has been settled.`,
+      });
+    return interaction.editReply({ embeds: [embed] });
+  } catch (error) {
+    console.error("collectShow error:", error);
+    return interaction.editReply(
+      "An error occurred while collecting this show.",
+    );
   }
 }
 
@@ -923,4 +1061,5 @@ module.exports = {
   showLineup,
   announceLevelUp,
   handleShowPage,
+  collectShow,
 };
