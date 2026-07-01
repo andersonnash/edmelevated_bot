@@ -18,8 +18,6 @@ const {
   venueCapacity,
 } = require("../services/venueEngine");
 
-
-
 async function buyVenue(interaction) {
   const userId = interaction.user.id;
   const type = interaction.options.getString("type");
@@ -164,9 +162,7 @@ function buildVenuePage(userId, page = 0) {
   const venue = venues[safePage];
   const hours = hoursSince(venue.last_collected_at);
   const displayTime =
-    hours < 1
-      ? `${Math.round(hours * 60)}m`
-      : `${hours.toFixed(2)}h`;
+    hours < 1 ? `${Math.round(hours * 60)}m` : `${hours.toFixed(2)}h`;
 
   const venueStaffCount = db
     .prepare(
@@ -306,7 +302,6 @@ async function upgradeVenue(interaction) {
   const currentBenefit = department.benefitPerLevel * currentLevel;
   const nextBenefit = department.benefitPerLevel * nextLevel;
   const repGain = department.reputationPerLevel;
-
 
   const user = getUser(userId);
 

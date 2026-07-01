@@ -1,5 +1,10 @@
 const db = require("../db");
-const { VENUE_TYPES, EQUIPMENT_TYPES, VENUE_DEPARTMENTS, VENUE_STAFF_ROLES } = require("../constants");
+const {
+  VENUE_TYPES,
+  EQUIPMENT_TYPES,
+  VENUE_DEPARTMENTS,
+  VENUE_STAFF_ROLES,
+} = require("../constants");
 
 function venueReputation(venue) {
   return Object.values(VENUE_DEPARTMENTS).reduce((sum, department) => {
@@ -19,10 +24,9 @@ function hoursSince(timestamp) {
 
   if (diffMs < 0) return 0;
   return diffHours;
-}   
+}
 
 function getVenueIncomeMultiplier(venueId) {
-  
   const staff = db
     .prepare(
       `
@@ -40,7 +44,7 @@ function getVenueIncomeMultiplier(venueId) {
     }
   });
 
-  return 1 + totalBoost; 
+  return 1 + totalBoost;
 }
 
 function venueHourlyIncome(venue) {
@@ -73,14 +77,12 @@ function equipmentHourlyIncome(item) {
 
 function equipmentMinuteIncome(item) {
   return equipmentHourlyIncome(item) / 60;
-}   
+}
 
 function venuePendingIncome(venue) {
-  const rate = venueHourlyIncome(venue); 
-  const hours = hoursSince(venue.last_collected_at); 
+  const rate = venueHourlyIncome(venue);
+  const hours = hoursSince(venue.last_collected_at);
 
-  
-  
   return Math.floor(hours * rate);
 }
 
@@ -92,9 +94,8 @@ function equipmentPendingIncome(item) {
   const hours = hoursSince(item.last_collected_at);
   const rawIncome = hours * hourlyRate;
 
-
   return Math.floor(rawIncome);
-} 
+}
 
 function getVenueIncome(userId) {
   const venues = db
@@ -135,7 +136,7 @@ function getVenueIncome(userId) {
     baseHourly: totalBaseIncome,
     staffBoostHourly: totalStaffBoost,
   };
-}   
+}
 
 function getEquipmentIncome(userId) {
   const equipment = db
@@ -146,21 +147,18 @@ function getEquipmentIncome(userId) {
     return { equipment: [], total: 0, hourly: 0 };
   }
 
-  
   const total = equipment.reduce((sum, item) => {
     const income = equipmentPendingIncome(item);
     return sum + (income || 0);
   }, 0);
 
-  
   const hourly = equipment.reduce((sum, item) => {
     const income = equipmentHourlyIncome(item) || 0;
     return sum + income;
   }, 0);
 
-  
   return { equipment, total: Math.floor(total), hourly };
-}   
+}
 
 function resetVenueCollection(userId) {
   db.prepare(

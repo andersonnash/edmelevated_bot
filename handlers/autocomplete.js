@@ -7,7 +7,7 @@ async function handleAutocomplete(interaction) {
     ["create_show", "upgrade_venue", "hire_venue_staff"].includes(
       interaction.commandName,
     ) &&
-    interaction.options.getFocused(true).name === "venue" 
+    interaction.options.getFocused(true).name === "venue"
   ) {
     const venues = db
       .prepare(
@@ -20,7 +20,6 @@ async function handleAutocomplete(interaction) {
     );
   }
 
-  
   if (
     interaction.commandName === "hire_venue_staff" &&
     interaction.options.getFocused(true).name === "role"
@@ -232,5 +231,4 @@ async function handleAutocomplete(interaction) {
   return interaction.respond([]);
 }
 
-module.exports =
-  handleAutocomplete;
+module.exports = handleAutocomplete;

@@ -7,7 +7,6 @@ const {
 
 const { EmbedBuilder } = require("discord.js");
 
-
 async function addLineup(interaction) {
   const userId = interaction.user.id;
   const showId = interaction.options.getString("show");
@@ -120,9 +119,9 @@ async function addLineup(interaction) {
       text: "Build your lineup before show day",
     });
 
-    return interaction.reply({
-      embeds: [embed],
-    });
+  return interaction.reply({
+    embeds: [embed],
+  });
 }
 
 module.exports = {

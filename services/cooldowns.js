@@ -15,17 +15,17 @@ function checkCooldown(userId, game, minutes) {
     return null;
   }
 
-const remaining = minutes * 60 * 1000 - (Date.now() - last);
+  const remaining = minutes * 60 * 1000 - (Date.now() - last);
 
-const hours = Math.floor(remaining / 3600000);
+  const hours = Math.floor(remaining / 3600000);
 
-const mins = Math.ceil((remaining % 3600000) / 60000);
+  const mins = Math.ceil((remaining % 3600000) / 60000);
 
-if (hours > 0) {
-  return `${hours}h ${mins}m`;
-}
+  if (hours > 0) {
+    return `${hours}h ${mins}m`;
+  }
 
-return `${mins}m`;
+  return `${mins}m`;
 
   cooldowns.set(key, Date.now());
 

@@ -48,5 +48,5 @@ function addPendingPayout(userId, sourceName, amount) {
 module.exports = {
   addCash,
   trackEarnings,
-  addPendingPayout
+  addPendingPayout,
 };

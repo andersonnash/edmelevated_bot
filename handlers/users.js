@@ -8,7 +8,12 @@ const {
 const db = require("../db");
 const { OWNER_ID } = require("../constants");
 const { getUser, addRole } = require("../services/roles");
-const { addXp, announceLevelUp, xpBar, getLevelTitle } = require("../services/xp");
+const {
+  addXp,
+  announceLevelUp,
+  xpBar,
+  getLevelTitle,
+} = require("../services/xp");
 const { addCash } = require("../services/economy");
 const { money } = require("../services/formatters");
 const {
@@ -188,8 +193,8 @@ async function profile(interaction) {
         name: "🏢 PASSIVE INCOME",
         value:
           "```ansi\n" +
-          `Venues: ${venues.length} ($${venueIncome.hourly}/hr) ${venueIncome.staffBoostHourly > 0 ? "👥" : ""} +$${venueIncome.total}\n` +
-          `Equipment: ${equipment.length} ($${equipmentIncome.hourly}/hr) +$${equipmentIncome.total}\n` +
+          `Venues: ${venues.length} (${money(venueIncome.hourly)}/hr) ${money(venueIncome.staffBoostHourly) > 0 ? "👥" : ""} +${money(venueIncome.total)}\n` +
+          `Equipment: ${equipment.length} (${money(equipmentIncome.hourly)}/hr) +${money(equipmentIncome.total)}\n` +
           `Pending Total: ${money(passiveTotal)}\n` +
           "```",
       },
@@ -216,13 +221,13 @@ async function profile(interaction) {
 
   const row = new ActionRowBuilder().addComponents(
     new ButtonBuilder()
-      .setCustomId("collect_payouts")
+      .setCustomId("collect_passive")
       .setLabel("💰 Collect Everything")
       .setStyle(ButtonStyle.Success),
   );
 
   return interaction.reply({ embeds: [embed], components: [row] });
-}   
+}
 
 async function roles(interaction) {
   const userId = interaction.user.id;
@@ -322,64 +327,61 @@ async function roles(interaction) {
 }
 
 async function work(interaction) {
-    const userId = interaction.user.id;
-    const user = getUser(userId);
+  const userId = interaction.user.id;
+  const user = getUser(userId);
 
-    const level = user.level || 1;
+  const level = user.level || 1;
 
-    const minEarned = 25 + level * 5;
-    const maxEarned = 60 + level * 15;
+  const minEarned = 25 + level * 5;
+  const maxEarned = 60 + level * 15;
 
-    const earned =
-      Math.floor(Math.random() * (maxEarned - minEarned + 1)) + minEarned;
+  const earned =
+    Math.floor(Math.random() * (maxEarned - minEarned + 1)) + minEarned;
 
-    addCash(userId, earned);
+  addCash(userId, earned);
 
+  const xpUpdate = addXp(userId, 15);
+  await announceLevelUp(interaction, xpUpdate);
 
-    const xpUpdate = addXp(userId, 15);
-    await announceLevelUp(interaction, xpUpdate);
-
-    return interaction.reply(
-      `You passed out flyers downtown and earned **$${earned}** and **15 XP**.`,
-    );   
+  return interaction.reply(
+    `You passed out flyers downtown and earned **$${earned}** and **15 XP**.`,
+  );
 }
 
- async function leaderboard(interaction) {
-    const users = db
-      .prepare(
-        `
+async function leaderboard(interaction) {
+  const users = db
+    .prepare(
+      `
         SELECT username, cash, reputation
         FROM users
         ORDER BY reputation DESC, cash DESC
         LIMIT 10
       `,
-      )
-      .all();
+    )
+    .all();
 
-    const board = users
-      .map(
-        (u, i) =>
-          `${i + 1}. **${u.username}** — Rep: ${u.reputation}, Cash: $${money(u.cash)}`,
-      )
-      .join("\n");
+  const board = users
+    .map(
+      (u, i) =>
+        `${i + 1}. **${u.username}** — Rep: ${u.reputation}, Cash: $${money(u.cash)}`,
+    )
+    .join("\n");
 
-    const embed = new EmbedBuilder()
-      .setColor(0xffd000)
-      .setTitle("🏆 EDMELEVATED LEADERBOARD")
-      .setDescription("Top scene members");
+  const embed = new EmbedBuilder()
+    .setColor(0xffd000)
+    .setTitle("🏆 EDMELEVATED LEADERBOARD")
+    .setDescription("Top scene members");
 
-    users.forEach((user, index) => {
-      embed.addFields({
-        name: `${index + 1}. ${user.username}`,
-        value:
-          `**Rep:** ${user.reputation}\n` +
-          `**Cash:** $${money(user.cash)}`,
-      });
+  users.forEach((user, index) => {
+    embed.addFields({
+      name: `${index + 1}. ${user.username}`,
+      value: `**Rep:** ${user.reputation}\n` + `**Cash:** $${money(user.cash)}`,
     });
+  });
 
-    return interaction.reply({
-      embeds: [embed],
-    });
+  return interaction.reply({
+    embeds: [embed],
+  });
 }
 
 module.exports = {

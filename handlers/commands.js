@@ -48,8 +48,6 @@ const commandMap = {
   my_jobs: staff.myJobs,
   hire_venue_staff: staff.hireVenueStaff,
 
-  
-
   add_lineup: lineup.addLineup,
 
   start_contest: contests.startContest,
@@ -63,14 +61,14 @@ const commandMap = {
 
 async function handleCommand(interaction) {
   if (interaction.isButton()) {
-    if (interaction.customId === "collect_payouts") {
+    if (interaction.customId === "collect_passive") {
       await interaction.deferReply({ ephemeral: true });
       return shows.collect(interaction);
     }
-   if (interaction.customId.startsWith("collect_show_")) {
-     const showId = Number(interaction.customId.replace("collect_show_", ""));
-     return shows.collectShow(interaction, showId);
-   }
+    if (interaction.customId.startsWith("collect_show_")) {
+      const showId = Number(interaction.customId.replace("collect_show_", ""));
+      return shows.collectShow(interaction, showId);
+    }
     if (
       interaction.customId === "shows_home" ||
       interaction.customId.startsWith("shows_upcoming_") ||
@@ -109,7 +107,6 @@ async function handleCommand(interaction) {
       return shows.runShow(interaction, showId);
     }
 
-
     if (interaction.customId.startsWith("promote_show_")) {
       return interaction.reply({
         content: "Use `/promote_show` and select this show from the list.",
@@ -130,12 +127,12 @@ async function handleCommand(interaction) {
     });
   }
 
-    if (!interaction.isChatInputCommand()) return;
+  if (!interaction.isChatInputCommand()) return;
 
   const handler = commandMap[interaction.commandName];
 
-    console.log("COMMAND:", interaction.commandName);
-    console.log("HANDLER EXISTS:", Boolean(handler));
+  console.log("COMMAND:", interaction.commandName);
+  console.log("HANDLER EXISTS:", Boolean(handler));
 
   if (!handler) {
     return interaction.reply({

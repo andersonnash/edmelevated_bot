@@ -1,9 +1,6 @@
 const Database = require("better-sqlite3");
 
-const db =
-  new Database(
-    "edmelevated.db"
-  );
+const db = new Database("edmelevated.db");
 
 db.exec(`
 CREATE TABLE IF NOT EXISTS users (
@@ -180,5 +177,4 @@ CREATE TABLE IF NOT EXISTS dj_profiles (
   );
 `);
 
-module.exports =
-  db;
+module.exports = db;
