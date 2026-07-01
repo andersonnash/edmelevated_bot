@@ -108,46 +108,75 @@ async function runShowById(showId) {
 
   
   const transaction = db.transaction(() => {
-    
     for (const dj of lineup) {
-      addCash(dj.dj_user_id, dj.pay);
+      db.prepare(
+        `
+        INSERT INTO show_payouts (
+          show_id,
+          user_id,
+          username,
+          role,
+          amount,
+          paid
+        )
+        VALUES (?, ?, ?, 'dj', ?, 0)
+        `,
+      ).run(show.show_id, dj.dj_user_id, dj.dj_username, dj.pay);
+
       const djRepGain = Math.max(1, Math.floor(totalAttendance / 75));
       addDjReputation(dj.dj_user_id, djRepGain);
     }
 
-    
     for (const person of staff) {
-      addCash(person.hired_user_id, person.pay);
-      db.prepare("UPDATE show_staff SET paid = 1 WHERE id = ?").run(person.id);
+      db.prepare(
+        `
+        INSERT INTO show_payouts (
+          show_id,
+          user_id,
+          username,
+          role,
+          amount,
+          paid
+        )
+        VALUES (?, ?, ?, 'staff', ?, 0)
+        `,
+      ).run(
+        show.show_id,
+        person.hired_user_id,
+        person.hired_username,
+        person.pay,
+      );
     }
 
-    
     db.prepare(
       `
-      INSERT INTO rave_payouts (
-        user_id,
+      INSERT INTO show_payouts (
         show_id,
-        show_name,
-        profit,
-        collected
+        user_id,
+        username,
+        role,
+        amount,
+        paid
       )
-      VALUES (?, ?, ?, ?, 0)
-    `,
-    ).run(show.owner_id, show.show_id, show.name, netProfit);
+      VALUES (?, ?, ?, 'owner', ?, 0)
+      `,
+    ).run(show.show_id, show.owner_id, null, netProfit);
 
-    
     db.prepare(
       `
       UPDATE users
-      SET reputation = reputation + ?  -- Added the "+ ?"
+      SET reputation = reputation + ?
       WHERE discord_id = ?
-    `,
+      `,
     ).run(reputationGain, show.owner_id);
 
-    
-    db.prepare("UPDATE shows SET status = 'completed' WHERE id = ?").run(
-      show.show_id,
-    );
+    db.prepare(
+      `
+      UPDATE shows
+      SET status = 'completed'
+      WHERE id = ?
+      `,
+    ).run(show.show_id);
   });
 
   transaction();
@@ -168,6 +197,19 @@ async function runShowById(showId) {
     bonusRevenue,
     netProfit,
     reputationGain,
+    payouts: {
+      owner: netProfit,
+      djs: lineup.map((dj) => ({
+        userId: dj.dj_user_id,
+        username: dj.dj_username,
+        amount: dj.pay,
+      })),
+      staff: staff.map((person) => ({
+        userId: person.hired_user_id,
+        username: person.hired_username,
+        amount: person.pay,
+      })),
+    },
   };
 }
 
