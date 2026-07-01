@@ -13,21 +13,20 @@ const { runShowById } = require("../services/showRunner");
 const { addCash } = require("../services/economy");
 const { money } = require("../services/formatters");
 
-
-const { getVenueIncome, getEquipmentIncome } = require("../services/venueEngine")
+const {
+  getVenueIncome,
+  getEquipmentIncome,
+} = require("../services/venueEngine");
 
 const {
   calculateProjectedWalkins,
   attendanceBonusPercent,
 } = require("../services/showForecast");
 
-
 const {
   venueCapacity,
   venueAttendanceBonus,
 } = require("../services/venueEngine");
-
-
 
 const {
   EmbedBuilder,
@@ -78,8 +77,8 @@ async function createShow(interaction) {
   });
 
   const created = db
-  .prepare(
-    `
+    .prepare(
+      `
     INSERT INTO shows (
       owner_id,
       venue_id,
@@ -91,15 +90,15 @@ async function createShow(interaction) {
     )
     VALUES (?, ?, ?, ?, ?, ?, 'upcoming')
   `,
-  )
-  .run(
-    userId,
-    venue.id,
-    event.name,
-    event.date,
-    event.price,
-    projectedWalkins,
-  );
+    )
+    .run(
+      userId,
+      venue.id,
+      event.name,
+      event.date,
+      event.price,
+      projectedWalkins,
+    );
 
   const showId = created.lastInsertRowid;
   const xpUpdate = addXp(userId, 40);
@@ -166,29 +165,34 @@ async function createShow(interaction) {
       .setStyle(ButtonStyle.Success),
   );
 
-  await postSceneFeed(interaction.client, process.env.SCENE_FEED_CHANNEL_ID, {embeds: [embed]}, {
-    color: 0x8b5cf6,
-    title: "🎧 New Show Created",
-    description: `**${interaction.user.username}** created **${event.name}**`,
-    fields: [
-      {
-        name: "Venue",
-        value: venue.name,
-        inline: true,
-      },
-      {
-        name: "Date",
-        value: event.date,
-        inline: true,
-      },
-      {
-        name: "Tickets",
-        value: `$${event.price}`,
-        inline: true,
-      },
-    ],
-    footer: "EDMELEVATED Scene Feed",
-  });
+  await postSceneFeed(
+    interaction.client,
+    process.env.SCENE_FEED_CHANNEL_ID,
+    { embeds: [embed] },
+    {
+      color: 0x8b5cf6,
+      title: "🎧 New Show Created",
+      description: `**${interaction.user.username}** created **${event.name}**`,
+      fields: [
+        {
+          name: "Venue",
+          value: venue.name,
+          inline: true,
+        },
+        {
+          name: "Date",
+          value: event.date,
+          inline: true,
+        },
+        {
+          name: "Tickets",
+          value: `$${event.price}`,
+          inline: true,
+        },
+      ],
+      footer: "EDMELEVATED Scene Feed",
+    },
+  );
 
   return interaction.reply({
     embeds: [embed],
@@ -278,11 +282,11 @@ async function showLineup(interaction, buttonShowId = null) {
     value: `Tickets: ${show.tickets_sold}\n` + `Price: $${show.ticket_price}`,
   });
 
-if (interaction.deferred || interaction.replied) {
-  return interaction.editReply({
-    embeds: [embed],
-  });
-}
+  if (interaction.deferred || interaction.replied) {
+    return interaction.editReply({
+      embeds: [embed],
+    });
+  }
 
   return interaction.reply({
     embeds: [embed],
@@ -389,7 +393,6 @@ function buildShowPage(userId, status, page = 0) {
 
   const { djCount, showStaffCount } = getShowCounts(show.id);
   const finalCapacity = venueCapacity(show);
-
 
   const title =
     status === "upcoming"
@@ -590,8 +593,7 @@ async function runShow(interaction, buttonShowId = null) {
 
   const showId = buttonShowId || interaction.options?.getString("show");
 
-  const bypassDate =
-    interaction.commandName === "force_run_show" 
+  const bypassDate = interaction.commandName === "force_run_show";
 
   const showCheck = db
     .prepare(
@@ -725,7 +727,7 @@ async function runShow(interaction, buttonShowId = null) {
   }
 
   return interaction.reply(response);
-} 
+}
 
 async function collect(interaction) {
   if (!interaction.deferred && !interaction.replied) {
@@ -911,7 +913,6 @@ async function promoteShow(interaction) {
 
   const showId = interaction.options.getString("show");
 
-
   const show = db
     .prepare(
       `
@@ -969,7 +970,6 @@ async function promoteShow(interaction) {
   const promo = promoOptions[Math.floor(Math.random() * promoOptions.length)];
 
   const user = getUser(userId);
-  
 
   if (user.cash < promo.cost) {
     return interaction.reply({

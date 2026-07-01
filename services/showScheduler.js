@@ -5,7 +5,6 @@ const { runShowById } = require("./showRunner");
 const { EmbedBuilder } = require("discord.js");
 const { postSceneFeed } = require("./sceneFeed");
 
-
 const SCENE_FEED_CHANNEL_ID = process.env.SCENE_FEED_CHANNEL_ID;
 
 function startShowScheduler(client) {
@@ -61,9 +60,8 @@ function startShowScheduler(client) {
           },
           {
             name: "⭐ Rewards",
-            value:
-              `**Reputation:** +${result.reputationGain}\n`
-          }
+            value: `**Reputation:** +${result.reputationGain}\n`,
+          },
         )
         .setFooter({
           text:

@@ -114,7 +114,7 @@ async function enterContest(interaction) {
 
 async function drawWinner(interaction) {
   const contestId = interaction.options.getString("contest");
-  
+
   const contest = db
     .prepare(
       `

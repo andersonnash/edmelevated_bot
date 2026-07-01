@@ -76,7 +76,6 @@ async function runShowById(showId) {
 
   const finalCapacity = venueCapacity(show);
 
-  
   totalAttendance = Math.floor(
     totalAttendance * (1 + (venueAttendanceBonus(show) || 0)),
   );
@@ -89,7 +88,6 @@ async function runShowById(showId) {
   const operatingCost =
     Math.floor(finalCapacity * 0.5) + Math.floor(totalAttendance * 1);
 
-  
   const upgradeBonus =
     (show.lights_level || 0) * 0.1 +
     (show.sound_level || 0) * 0.15 +
@@ -106,7 +104,6 @@ async function runShowById(showId) {
     Math.floor(totalAttendance / 2) + (event.reputation || 0),
   );
 
-  
   const transaction = db.transaction(() => {
     for (const dj of lineup) {
       db.prepare(
@@ -215,4 +212,4 @@ async function runShowById(showId) {
 
 module.exports = {
   runShowById,
-};   
+};

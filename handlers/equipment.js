@@ -2,7 +2,12 @@ const { EmbedBuilder } = require("discord.js");
 const db = require("../db");
 const { EQUIPMENT_TYPES } = require("../constants");
 const { money } = require("../services/formatters");
-const {equipmentHourlyIncome, equipmentPendingIncome, hoursSince, equipmentMinuteIncome} = require("../services/venueEngine")
+const {
+  equipmentHourlyIncome,
+  equipmentPendingIncome,
+  hoursSince,
+  equipmentMinuteIncome,
+} = require("../services/venueEngine");
 
 async function buyEquipment(interaction) {
   const userId = interaction.user.id;
@@ -34,7 +39,6 @@ async function buyEquipment(interaction) {
     WHERE discord_id = ?
   `,
   ).run(equipment.cost, userId);
-
 
   const existing = db
     .prepare(
@@ -120,31 +124,31 @@ async function myEquipment(interaction) {
   }
 
   const totalHourly = equipment.reduce(
-  (sum, item) => sum + equipmentHourlyIncome(item),
-  0
-);
+    (sum, item) => sum + equipmentHourlyIncome(item),
+    0,
+  );
 
   const totalPending = equipment.reduce(
     (sum, item) => sum + equipmentPendingIncome(item),
-    0
+    0,
   );
 
-    const list = equipment
-      .map((item) => {
-        const itemHours = hoursSince(item.last_collected_at);
-        const itemDisplayTime =
-          itemHours < 1
-            ? `${Math.round(itemHours * 60)}m`
-            : `${itemHours.toFixed(2)}h`;
+  const list = equipment
+    .map((item) => {
+      const itemHours = hoursSince(item.last_collected_at);
+      const itemDisplayTime =
+        itemHours < 1
+          ? `${Math.round(itemHours * 60)}m`
+          : `${itemHours.toFixed(2)}h`;
 
-        return (
-          `🎛 **${item.name}** x${item.quantity}\n` +
-          `Rental Income: ${money(equipmentHourlyIncome(item))}/hr\n` +
-          `Uncollected: ${money(equipmentPendingIncome(item))}\n` +
-          `Rented For: ${itemDisplayTime}`
-        );
-      })
-      .join("\n\n");
+      return (
+        `🎛 **${item.name}** x${item.quantity}\n` +
+        `Rental Income: ${money(equipmentHourlyIncome(item))}/hr\n` +
+        `Uncollected: ${money(equipmentPendingIncome(item))}\n` +
+        `Rented For: ${itemDisplayTime}`
+      );
+    })
+    .join("\n\n");
 
   const embed = new EmbedBuilder()
     .setColor(0x8b5cf6)
@@ -153,13 +157,12 @@ async function myEquipment(interaction) {
     .addFields({
       name: "📈 Total Rental Income",
       value:
-        `${money(totalHourly)}/hr\n` +
-        `Uncollected: ${money(totalPending)}`,
+        `${money(totalHourly)}/hr\n` + `Uncollected: ${money(totalPending)}`,
     });
-    return interaction.reply({
-      embeds: [embed],
-    });
-  }
+  return interaction.reply({
+    embeds: [embed],
+  });
+}
 module.exports = {
   buyEquipment,
   myEquipment,

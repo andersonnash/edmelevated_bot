@@ -4,7 +4,6 @@ const { EmbedBuilder } = require("discord.js");
 
 const { addXp, announceLevelUp } = require("../services/xp");
 
-
 async function createKandi(interaction) {
   const userId = interaction.user.id;
   const username = interaction.user.username;
@@ -115,21 +114,21 @@ async function myKandi(interaction) {
     : "None yet.";
 
   const embed = new EmbedBuilder()
-  .setColor(0xff66cc)
-  .setTitle("🌈 YOUR KANDI COLLECTION")
-  .addFields(
-    {
-      name: "✨ Created",
-      value: createdList,
-    },
-    {
-      name: "🎁 Received",
-      value: receivedList,
-    },
-  )
-  .setFooter({
-    text: "Use /create_kandi or /give_kandi",
-  });
+    .setColor(0xff66cc)
+    .setTitle("🌈 YOUR KANDI COLLECTION")
+    .addFields(
+      {
+        name: "✨ Created",
+        value: createdList,
+      },
+      {
+        name: "🎁 Received",
+        value: receivedList,
+      },
+    )
+    .setFooter({
+      text: "Use /create_kandi or /give_kandi",
+    });
 
   return interaction.reply({
     embeds: [embed],

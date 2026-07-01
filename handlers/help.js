@@ -260,37 +260,37 @@ function helpButtons(active = "home") {
       .setDisabled(active === "staff"),
   );
 
-const row2 = new ActionRowBuilder().addComponents(
-  new ButtonBuilder()
-    .setCustomId("help_economy")
-    .setLabel("💵 Economy")
-    .setStyle(ButtonStyle.Success)
-    .setDisabled(active === "economy"),
+  const row2 = new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
+      .setCustomId("help_economy")
+      .setLabel("💵 Economy")
+      .setStyle(ButtonStyle.Success)
+      .setDisabled(active === "economy"),
 
-  new ButtonBuilder()
-    .setCustomId("help_equipment")
-    .setLabel("🎛 Equipment")
-    .setStyle(ButtonStyle.Success)
-    .setDisabled(active === "equipment"),
+    new ButtonBuilder()
+      .setCustomId("help_equipment")
+      .setLabel("🎛 Equipment")
+      .setStyle(ButtonStyle.Success)
+      .setDisabled(active === "equipment"),
 
-  new ButtonBuilder()
-    .setCustomId("help_progression")
-    .setLabel("🌟 Progression")
-    .setStyle(ButtonStyle.Secondary)
-    .setDisabled(active === "progression"),
+    new ButtonBuilder()
+      .setCustomId("help_progression")
+      .setLabel("🌟 Progression")
+      .setStyle(ButtonStyle.Secondary)
+      .setDisabled(active === "progression"),
 
-  new ButtonBuilder()
-    .setCustomId("help_social")
-    .setLabel("🌈 Social")
-    .setStyle(ButtonStyle.Secondary)
-    .setDisabled(active === "social"),
+    new ButtonBuilder()
+      .setCustomId("help_social")
+      .setLabel("🌈 Social")
+      .setStyle(ButtonStyle.Secondary)
+      .setDisabled(active === "social"),
 
-  new ButtonBuilder()
-    .setCustomId("help_scene")
-    .setLabel("📣 Scene")
-    .setStyle(ButtonStyle.Secondary)
-    .setDisabled(active === "scene"),
-);
+    new ButtonBuilder()
+      .setCustomId("help_scene")
+      .setLabel("📣 Scene")
+      .setStyle(ButtonStyle.Secondary)
+      .setDisabled(active === "scene"),
+  );
 
   const row3 = new ActionRowBuilder().addComponents(
     new ButtonBuilder()

@@ -1,8 +1,4 @@
-const {
-  REST,
-  Routes,
-  SlashCommandBuilder,
-} = require("discord.js");
+const { REST, Routes, SlashCommandBuilder } = require("discord.js");
 
 const commands = [
   new SlashCommandBuilder()
@@ -300,24 +296,23 @@ const commands = [
       option.setName("pay").setDescription("Pay amount").setRequired(true),
     ),
 
-    new SlashCommandBuilder()
-      .setName("hire_venue_staff")
-      .setDescription("Hire a permanent staff member for your venue")
-      .addStringOption((option) =>
-        option
-          .setName("venue")
-          .setDescription("Choose one of your venues")
-          .setRequired(true)
-          .setAutocomplete(true),
-      )
-      .addStringOption((option) =>
-        option
-          .setName("role")
-          .setDescription("Staff role to hire")
-          .setRequired(true)
-          .setAutocomplete(true)
-      ),
-  
+  new SlashCommandBuilder()
+    .setName("hire_venue_staff")
+    .setDescription("Hire a permanent staff member for your venue")
+    .addStringOption((option) =>
+      option
+        .setName("venue")
+        .setDescription("Choose one of your venues")
+        .setRequired(true)
+        .setAutocomplete(true),
+    )
+    .addStringOption((option) =>
+      option
+        .setName("role")
+        .setDescription("Staff role to hire")
+        .setRequired(true)
+        .setAutocomplete(true),
+    ),
 
   new SlashCommandBuilder()
     .setName("accept_staff")
@@ -385,15 +380,15 @@ const commands = [
     .setDescription("Collect unclaimed passive income"),
 
   new SlashCommandBuilder()
-  .setName("collect_show")
-  .setDescription("Collect payouts from one completed show")
-  .addStringOption((option) =>
-    option
-      .setName("show")
-      .setDescription("Completed show to collect")
-      .setRequired(true)
-      .setAutocomplete(true),
-  ),
+    .setName("collect_show")
+    .setDescription("Collect payouts from one completed show")
+    .addStringOption((option) =>
+      option
+        .setName("show")
+        .setDescription("Completed show to collect")
+        .setRequired(true)
+        .setAutocomplete(true),
+    ),
 
   new SlashCommandBuilder()
     .setName("leaderboard")
@@ -404,8 +399,11 @@ async function registerCommands() {
   const rest = new REST({ version: "10" }).setToken(process.env.DISCORD_TOKEN);
 
   await rest.put(
-    Routes.applicationGuildCommands(process.env.CLIENT_ID, process.env.GUILD_ID),
-    { body: commands }
+    Routes.applicationGuildCommands(
+      process.env.CLIENT_ID,
+      process.env.GUILD_ID,
+    ),
+    { body: commands },
   );
 
   console.log("Slash commands registered.");

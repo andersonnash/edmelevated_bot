@@ -100,14 +100,14 @@ function sleep(ms) {
 
 async function crateDig(interaction) {
   const userId = interaction.user.id;
-    const cooldown = checkCooldown(interaction.user.id, "crate", 360);
+  const cooldown = checkCooldown(interaction.user.id, "crate", 360);
 
-    if (cooldown) {
-      return interaction.reply({
-        content: `⏳ You already went crate digging.\nTry again in **${cooldown}**.`,
-        ephemeral: true,
-      });
-    }
+  if (cooldown) {
+    return interaction.reply({
+      content: `⏳ You already went crate digging.\nTry again in **${cooldown}**.`,
+      ephemeral: true,
+    });
+  }
 
   const used = [];
 
@@ -164,7 +164,7 @@ async function crateDig(interaction) {
       },
       {
         name: "💵 Found",
-        value: `$${money(pull.cash)}`,
+        value: `${money(pull.cash)}`,
         inline: true,
       },
     )
@@ -287,7 +287,7 @@ async function streetTeam(interaction) {
   const reward =
     streetTeamRewards[Math.floor(Math.random() * streetTeamRewards.length)];
 
-    addPendingPayout(userId, "Street Team", reward.cash);
+  addPendingPayout(userId, "Street Team", reward.cash);
 
   db.prepare(
     `
@@ -333,7 +333,7 @@ async function streetTeam(interaction) {
       },
       {
         name: "💵 Cash",
-        value: `+$${money(reward.cash)}`,
+        value: `+${money(reward.cash)}`,
         inline: true,
       },
       {
@@ -560,7 +560,7 @@ async function handleRaveStoryChoice(interaction) {
     .addFields(
       {
         name: "💵 Cash",
-        value: `+$${money(choice.cash)}`,
+        value: `+${money(choice.cash)}`,
         inline: true,
       },
       {

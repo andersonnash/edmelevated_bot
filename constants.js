@@ -142,27 +142,27 @@ const VENUE_STAFF_ROLES = {
     label: "Bartender",
     emoji: "🍹",
     cost: 1000,
-    incomeBoost: 0.05, 
+    incomeBoost: 0.05,
   },
   bouncer: {
     label: "Bouncer",
     emoji: "💪",
     cost: 1500,
-    incomeBoost: 0.1, 
+    incomeBoost: 0.1,
   },
   manager: {
     label: "Manager",
     emoji: "👔",
     cost: 5000,
-    incomeBoost: 0.2, 
+    incomeBoost: 0.2,
   },
   promoter: {
     label: "Promoter",
     emoji: "📣",
     cost: 2000,
-    incomeBoost: 0.08, 
+    incomeBoost: 0.08,
   },
-};   
+};
 
 const VENUE_DEPARTMENTS = {
   bar: {
@@ -206,13 +206,13 @@ const VENUE_DEPARTMENTS = {
   },
 };
 
-module.exports={
-OWNER_ID,
-VENUE_TYPES,
-STAFF_ROLES,
-EQUIPMENT_TYPES,
-INSURANCE_TIERS,
-VENUE_DEPARTMENTS,
-VENUE_STAFF_ROLES,
-isOwner,
+module.exports = {
+  OWNER_ID,
+  VENUE_TYPES,
+  STAFF_ROLES,
+  EQUIPMENT_TYPES,
+  INSURANCE_TIERS,
+  VENUE_DEPARTMENTS,
+  VENUE_STAFF_ROLES,
+  isOwner,
 };

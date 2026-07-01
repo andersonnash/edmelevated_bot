@@ -8,7 +8,7 @@ const {
   ButtonStyle,
 } = require("discord.js");
 
- const { venueHourlyIncome } = require("../services/venueEngine")
+const { venueHourlyIncome } = require("../services/venueEngine");
 
 const { getUser } = require("../services/roles");
 
@@ -154,7 +154,6 @@ async function hireVenueStaff(interaction) {
   const hiredUser = interaction.options.getUser("user");
   const role = interaction.options.getString("role");
 
-  
   const venue = db
     .prepare(
       `
@@ -170,7 +169,6 @@ async function hireVenueStaff(interaction) {
     });
   }
 
-  
   const staffCount = db
     .prepare(
       `
@@ -186,7 +184,6 @@ async function hireVenueStaff(interaction) {
     });
   }
 
-  
   const roleData = VENUE_STAFF_ROLES[role];
   if (!roleData) {
     return interaction.reply({
@@ -195,8 +192,7 @@ async function hireVenueStaff(interaction) {
     });
   }
 
-  
-  const user = getUser(userId); 
+  const user = getUser(userId);
   if (user.cash < roleData.cost) {
     return interaction.reply({
       content: `You need $${roleData.cost} to hire a ${roleData.label}.`,
@@ -204,28 +200,26 @@ async function hireVenueStaff(interaction) {
     });
   }
 
-  
   db.prepare(`UPDATE users SET cash = cash - ? WHERE discord_id = ?`).run(
     roleData.cost,
     userId,
   );
 
-    const npcUsername = `NPC ${roleData.label}`;
+  const npcUsername = `NPC ${roleData.label}`;
 
-    db.prepare(
-      `
+  db.prepare(
+    `
   INSERT INTO venue_staff (venue_id, role, status, username, hired_at)
   VALUES (?, ?, 'active', ?, CURRENT_TIMESTAMP)
 `,
-    ).run(venueId, role, npcUsername); 
+  ).run(venueId, role, npcUsername);
 
-  
-  const newIncome = venueHourlyIncome(venueId); 
+  const newIncome = venueHourlyIncome(venueId);
   const oldIncome =
-    newIncome - venue.base_passive_income * roleData.incomeBoost; 
+    newIncome - venue.base_passive_income * roleData.incomeBoost;
 
   const embed = new EmbedBuilder()
-    .setColor(0xffd000) 
+    .setColor(0xffd000)
     .setTitle("👥 STAFF HIRED PERMANENTLY")
     .setDescription(
       `**${npcUsername}** joined **${venue.name}** as ${roleData.label}`,
@@ -264,7 +258,7 @@ async function hireVenueStaff(interaction) {
     .setFooter({ text: "Staff will work automatically every cycle" });
 
   return interaction.reply({ embeds: [embed] });
-}   
+}
 
 async function myJobs(interaction) {
   const userId = interaction.user.id;
