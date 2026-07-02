@@ -2,6 +2,8 @@ const { EmbedBuilder } = require("discord.js");
 
 const db = require("../db");
 
+const { money } = require("../services/formatters");
+
 const {
   calculateDjBookingFee,
   getDjLevel,
@@ -36,21 +38,21 @@ async function djProfile(interaction) {
   const embed = new EmbedBuilder()
     .setColor(0xff00cc)
     .setTitle(`🎧 ${profile.username}`)
-    .setDescription(`**${title}** • DJ Level ${level}`)
+    .setDescription(`**${title}**\n🎧 DJ Level **${level}**`)
     .addFields(
       {
         name: "⭐ DJ Reputation",
-        value: `${profile.dj_reputation}`,
+        value: "```ansi\n" + `Reputation: ${profile.dj_reputation}` + "```",
         inline: true,
       },
       {
         name: "🎟 Bookings",
-        value: `${profile.bookings}`,
+        value: "```ansi\n" + `Bookings: ${profile.bookings}` + "```",
         inline: true,
       },
       {
         name: "💵 Booking Fee",
-        value: `$${bookingFee}`,
+        value: "```ansi\n" + `Booking Fee: ${money(bookingFee)}` + "```",
         inline: true,
       },
       {

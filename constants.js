@@ -129,7 +129,7 @@ const INSURANCE_TIERS = {
   },
 };
 
-const STAFF_ROLES = {
+const SHOW_STAFF_ROLES = {
   bartender: { label: "Bartender", minPay: 150, bonus: 10 },
   security: { label: "Security", minPay: 200, bonus: 10 },
   vj: { label: "VJ", minPay: 175, bonus: 15 },
@@ -206,13 +206,92 @@ const VENUE_DEPARTMENTS = {
   },
 };
 
+const ROLES = {
+  raver: {
+    name: "Raver",
+    emoji: "🎟",
+    unlock: "Join EDM Elevated City / register",
+  },
+
+  scene_explorer: {
+    name: "Scene Explorer",
+    emoji: "🎮",
+    unlock: "Play your first game",
+  },
+  crate_digger: {
+    name: "Crate Digger",
+    emoji: "🎵",
+    unlock: "Run /crate_dig 10 times",
+  },
+  street_team: {
+    name: "Street Team",
+    emoji: "📣",
+    unlock: "Run /street_team 5 times",
+  },
+  story_chaser: {
+    name: "Story Chaser",
+    emoji: "🪩",
+    unlock: "Complete /rave_story 5 times",
+  },
+  venue_owner: {
+    name: "Venue Owner",
+    emoji: "🏟",
+    unlock: "Buy your first venue",
+  },
+  promoter: {
+    name: "Promoter",
+    emoji: "🎤",
+    unlock: "Create your first show",
+  },
+  profitable_promoter: {
+    name: "Profitable Promoter",
+    emoji: "💰",
+    unlock: "Collect profit from a completed show",
+  },
+  scene_icon: {
+    name: "Scene Icon",
+    emoji: "🌟",
+    unlock: "Reach 100 reputation",
+  },
+  city_legend: {
+    name: "City Legend",
+    emoji: "👑",
+    unlock: "Reach Level 25",
+  },
+};
+
+const CAREER_ROLES = {
+  lineup_dj: {
+    name: "Lineup DJ",
+    emoji: "🎧",
+  },
+  bartender: {
+    name: "Bartender",
+    emoji: "🍸",
+  },
+  security: {
+    name: "Security",
+    emoji: "🛡️",
+  },
+  vj: {
+    name: "VJ",
+    emoji: "📺",
+  },
+  promoter: {
+    name: "Show Promoter",
+    emoji: "📣",
+  },
+};
+
 module.exports = {
   OWNER_ID,
   VENUE_TYPES,
-  STAFF_ROLES,
+  SHOW_STAFF_ROLES,
   EQUIPMENT_TYPES,
   INSURANCE_TIERS,
   VENUE_DEPARTMENTS,
   VENUE_STAFF_ROLES,
+  ROLES,
+  CAREER_ROLES,
   isOwner,
 };
