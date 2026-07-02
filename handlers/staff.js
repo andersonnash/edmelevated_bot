@@ -1,5 +1,5 @@
 const db = require("../db");
-const { STAFF_ROLES, VENUE_STAFF_ROLES } = require("../constants");
+const { SHOW_STAFF_ROLES, VENUE_STAFF_ROLES } = require("../constants");
 const { addRole } = require("../services/roles");
 const {
   EmbedBuilder,
@@ -71,7 +71,7 @@ async function hireStaff(interaction) {
     });
   }
 
-  const roleData = STAFF_ROLES[role];
+  const roleData = SHOW_STAFF_ROLES[role];
 
   if (pay < roleData.minPay) {
     return interaction.reply({
@@ -128,7 +128,7 @@ async function hireStaff(interaction) {
       },
       {
         name: "🚀 Effect",
-        value: STAFF_ROLES[role]?.description || "Supporting the show.",
+        value: SHOW_STAFF_ROLES[role]?.description || "Supporting the show.",
       },
     )
     .setFooter({
@@ -291,7 +291,7 @@ async function myJobs(interaction) {
   const output = jobs
     .map(
       (job) =>
-        `🎛️ **${STAFF_ROLES[job.role].label}**\n` +
+        `🎛️ **${SHOW_STAFF_ROLES[job.role].label}**\n` +
         `Show: ${job.show_name}\n` +
         `Date: ${job.show_date}\n` +
         `Pay: $${job.pay}\n` +

@@ -6,7 +6,12 @@ const {
 } = require("discord.js");
 
 const db = require("../db");
-const { OWNER_ID } = require("../constants");
+const { OWNER_ID, ROLES, CAREER_ROLES } = require("../constants");
+const ALL_ROLES = {
+  ...ROLES,
+  ...CAREER_ROLES,
+};
+
 const { getUser, addRole } = require("../services/roles");
 const {
   addXp,
@@ -174,6 +179,18 @@ async function profile(interaction) {
     ? roles.map((r) => `🏆 ${r.role}`).join("  ")
     : "No achievements yet.";
 
+  const roleEmojis = roles.length
+    ? roles
+        .map((r) => {
+          const roleData = Object.values(ALL_ROLES).find(
+            (role) => role.name === r.role,
+          );
+
+          return roleData?.emoji || "❓";
+        })
+        .join(" ")
+    : "None";
+
   const embed = new EmbedBuilder()
     .setColor(0xffd000)
     .setTitle("🎧 EDMELEVATED WALLET")
@@ -183,8 +200,7 @@ async function profile(interaction) {
         name: "💰 WALLET",
         value:
           "```ansi\n" +
-          `Cash:       $${money(user.cash)}\n` +
-          `Reputation: ${user.reputation}\n\n` +
+          `Cash:       $${money(user.cash)}\n\n` +
           `LVL ${level} ${bar} ${xp.toLocaleString()} / ${threshold.toLocaleString()} XP\n` +
           `${levelTitle}` +
           "```",
@@ -203,8 +219,8 @@ async function profile(interaction) {
         value:
           "```ansi\n" +
           `Reputation:    ${user.reputation || 0}\n` +
-          `Roles:         use \/roles \n` +
-          `Lifetime:      $${(user.lifetime_earned || 0).toLocaleString()}\n` +
+          `Roles:         ${roleEmojis} \n` +
+          `Lifetime:      ${money(user.lifetime_earned || 0)}\n` +
           "```",
       },
       {
@@ -238,68 +254,15 @@ async function roles(interaction) {
 
   const unlocked = roles.map((r) => r.role);
 
-  const roleProgress = [
-    {
-      role: "Raver",
-      emoji: "🎟",
-      unlock: "Join EDM Elevated City / register",
-    },
-    {
-      role: "Scene Explorer",
-      emoji: "🎮",
-      unlock: "Play your first game",
-    },
-    {
-      role: "Crate Digger",
-      emoji: "🎵",
-      unlock: "Run /crate_dig 10 times",
-    },
-    {
-      role: "Street Team",
-      emoji: "📣",
-      unlock: "Run /street_team 5 times",
-    },
-    {
-      role: "Story Chaser",
-      emoji: "🪩",
-      unlock: "Complete /rave_story 5 times",
-    },
-    {
-      role: "Venue Owner",
-      emoji: "🏟",
-      unlock: "Buy your first venue",
-    },
-    {
-      role: "Promoter",
-      emoji: "🎤",
-      unlock: "Create your first show",
-    },
-    {
-      role: "Profitable Promoter",
-      emoji: "💰",
-      unlock: "Collect profit from a completed show",
-    },
-    {
-      role: "Scene Icon",
-      emoji: "🌟",
-      unlock: "Reach 100 reputation",
-    },
-    {
-      role: "City Legend",
-      emoji: "👑",
-      unlock: "Reach Level 25",
-    },
-  ];
-
   const currentRoles = unlocked.length
-    ? unlocked.map((role) => `🏆 **${role}**`).join("\n")
+    ? unlocked.map((role) => `🏆 ${role}`).join("\n")
     : "No roles unlocked yet.";
 
-  const progression = roleProgress
-    .map((item) => {
-      const earned = unlocked.includes(item.role);
+  const progression = Object.values(ROLES)
+    .map((role) => {
+      const earned = unlocked.includes(role.name);
 
-      return `${earned ? "✅" : "⬜"} ${item.emoji} **${item.role}**\n↳ ${item.unlock}`;
+      return `${earned ? "✅" : "⬜"} ${role.emoji} ${role.name}\n↳ ${role.unlock}`;
     })
     .join("\n\n");
 
@@ -310,11 +273,11 @@ async function roles(interaction) {
     .addFields(
       {
         name: "Unlocked Roles",
-        value: currentRoles,
+        value: `Current Roles: ${currentRoles}\n`
       },
       {
         name: "Role Progression",
-        value: progression,
+        value:`Role Progression: ${progression}\n`
       },
     )
     .setFooter({

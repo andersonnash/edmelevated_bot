@@ -44,7 +44,7 @@ const {
   todayString,
 } = require("../services/generators");
 
-const { STAFF_ROLES, isOwner } = require("../constants");
+const { SHOW_STAFF_ROLES, isOwner } = require("../constants");
 
 async function createShow(interaction) {
   const userId = interaction.user.id;
