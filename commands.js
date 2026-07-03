@@ -156,7 +156,35 @@ const commands = [
 
   new SlashCommandBuilder()
     .setName("work")
-    .setDescription("Promote shows and earn cash"),
+    .setDescription("Pick up a scene job and earn cash")
+    .addStringOption((option) =>
+      option
+        .setName("job")
+        .setDescription("Choose a job")
+        .setRequired(true)
+        .addChoices(
+          {
+            name: "🚪 Door Shift — steady cash",
+            value: "door_shift",
+          },
+          {
+            name: "🍸 Barback Shift — better cash",
+            value: "barback_shift",
+          },
+          {
+            name: "🔊 Stagehand Load-In — cash + XP",
+            value: "stagehand_loadin",
+          },
+          {
+            name: "🎧 Open Decks — XP + reputation",
+            value: "open_decks",
+          },
+          {
+            name: "📣 Promo Runner — small cash + reputation",
+            value: "promo_runner",
+          },
+        ),
+    ),
 
   new SlashCommandBuilder()
     .setName("buy_venue")

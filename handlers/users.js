@@ -6,7 +6,15 @@ const {
 } = require("discord.js");
 
 const db = require("../db");
-const { OWNER_ID, ROLES, CAREER_ROLES } = require("../constants");
+const {
+  OWNER_ID,
+  ROLES,
+  CAREER_ROLES,
+  VENUE_TYPES,
+  EQUIPMENT_TYPES,
+  WORK_JOBS,
+} = require("../constants");
+
 const ALL_ROLES = {
   ...ROLES,
   ...CAREER_ROLES,
@@ -29,7 +37,7 @@ const {
   equipmentPendingIncome,
 } = require("../services/venueEngine");
 
-const { VENUE_TYPES, EQUIPMENT_TYPES } = require("../constants");
+const { checkCooldown } = require("../services/cooldowns");
 
 async function register(interaction) {
   const userId = interaction.user.id;
@@ -289,26 +297,90 @@ async function roles(interaction) {
   });
 }
 
+function roll(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
 async function work(interaction) {
   const userId = interaction.user.id;
   const user = getUser(userId);
 
+  const jobKey = interaction.options.getString("job");
+  const job = WORK_JOBS[jobKey];
+
+  if (!job) {
+    return interaction.reply({
+      content: "That job does not exist.",
+      ephemeral: true,
+    });
+  }
+
   const level = user.level || 1;
 
-  const minEarned = 25 + level * 5;
-  const maxEarned = 60 + level * 15;
+  if (job.minLevel && level < job.minLevel) {
+    return interaction.reply({
+      content: `${job.emoji} **${job.name}** unlocks at level ${job.minLevel}.`,
+      ephemeral: true,
+    });
+  }
 
-  const earned =
-    Math.floor(Math.random() * (maxEarned - minEarned + 1)) + minEarned;
+  const cooldown = checkCooldown(userId, `work_${jobKey}`, job.cooldownMinutes);
+
+  if (cooldown) {
+    return interaction.reply({
+      content: `⏳ You already worked that job.\nTry again in **${cooldown}**.`,
+      ephemeral: true,
+    });
+  }
+
+  const levelBonus = Math.floor(level * 5);
+  const earned = roll(job.minCash, job.maxCash) + levelBonus;
 
   addCash(userId, earned);
 
-  const xpUpdate = addXp(userId, 15);
+  if (job.reputation > 0) {
+    db.prepare(
+      `
+      UPDATE users
+      SET reputation = reputation + ?
+      WHERE discord_id = ?
+      `,
+    ).run(job.reputation, userId);
+  }
+
+  addRole(userId, "Scene Explorer");
+
+  const xpUpdate = addXp(userId, job.xp);
   await announceLevelUp(interaction, xpUpdate);
 
-  return interaction.reply(
-    `You passed out flyers downtown and earned **$${earned}** and **15 XP**.`,
-  );
+  const embed = new EmbedBuilder()
+    .setColor(0x22c55e)
+    .setTitle(`${job.emoji} WORK COMPLETE`)
+    .setDescription(job.flavor)
+    .addFields(
+      {
+        name: "💵 Cash",
+        value: `+$${money(earned)}`,
+        inline: true,
+      },
+      {
+        name: "✨ XP",
+        value: `+${job.xp}`,
+        inline: true,
+      },
+      {
+        name: "⭐ Reputation",
+        value: `+${job.reputation}`,
+        inline: true,
+      },
+    )
+    .setFooter({
+      text: "Work is reliable money. Bigger gains come from shows, venues, and equipment.",
+    });
+
+  return interaction.reply({
+    embeds: [embed],
+  });
 }
 
 async function leaderboard(interaction) {
