@@ -292,6 +292,67 @@ const CAREER_ROLES = {
   },
 };
 
+const WORK_JOBS = {
+  door_shift: {
+    name: "Door Shift",
+    emoji: "🚪",
+    minCash: 60,
+    maxCash: 120,
+    xp: 8,
+    reputation: 0,
+    cooldownMinutes: 30,
+    flavor:
+      "You worked the door, checked wristbands, and kept the line moving.",
+  },
+
+  barback_shift: {
+    name: "Barback Shift",
+    emoji: "🍸",
+    minCash: 90,
+    maxCash: 160,
+    xp: 6,
+    reputation: 0,
+    cooldownMinutes: 45,
+    flavor: "You hauled ice, restocked the bar, and somehow survived the rush.",
+  },
+
+  stagehand_loadin: {
+    name: "Stagehand Load-In",
+    emoji: "🔊",
+    minCash: 75,
+    maxCash: 140,
+    xp: 15,
+    reputation: 0,
+    cooldownMinutes: 45,
+    flavor: "You helped load subs, cables, decks, and lights into the venue.",
+  },
+
+  open_decks: {
+    name: "Open Decks",
+    emoji: "🎧",
+    minCash: 40,
+    maxCash: 100,
+    xp: 22,
+    reputation: 1,
+    cooldownMinutes: 60,
+    minLevel: 2,
+    flavor:
+      "You played an early open-decks slot and a few people actually noticed.",
+  },
+
+  promo_runner: {
+    name: "Promo Runner",
+    emoji: "📣",
+    minCash: 50,
+    maxCash: 110,
+    xp: 12,
+    reputation: 1,
+    cooldownMinutes: 45,
+    flavor:
+      "You pushed flyers, posted stories, and helped keep the scene alive.",
+  },
+};
+
 module.exports = {
   OWNER_ID,
   VENUE_TYPES,
@@ -302,5 +363,6 @@ module.exports = {
   VENUE_STAFF_ROLES,
   ROLES,
   CAREER_ROLES,
+  WORK_JOBS,
   isOwner,
 };
