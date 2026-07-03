@@ -97,14 +97,20 @@ function getRandomOpenVenueForOwner(ownerId) {
   return venues;
 }
 
+function getIncidentChance(venue) {
+  const maintenanceLevel = venue.maintenance_level || 0;
+  return Math.max(0.02, 0.1 - maintenanceLevel * 0.015);
+}
+
 function rollVenueEventForOwner(ownerId) {
   const venue = getRandomOpenVenueForOwner(ownerId);
 
   if (!venue) return null;
 
   const roll = Math.random();
+  const incidentChance = getIncidentChance(venue);
 
-  if (roll < 0.1) {
+  if (roll < incidentChance) {
     const event = pickRandom(VENUE_INCIDENTS);
     closeVenueForIncident(venue, event);
 
@@ -116,7 +122,7 @@ function rollVenueEventForOwner(ownerId) {
     };
   }
 
-  if (roll < 0.22) {
+  if (roll < incidentChance + 0.12) {
     const event = pickRandom(VENUE_BOOSTS);
     boostVenueForEvent(venue, event);
 
@@ -227,4 +233,5 @@ module.exports = {
   rollVenueEventForOwner,
   buildVenueEventEmbed,
   processVenueEvents,
+  getIncidentChance,
 };
