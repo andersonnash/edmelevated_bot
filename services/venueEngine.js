@@ -33,6 +33,19 @@ function hoursSince(timestamp) {
   return diffHours;
 }
 
+function hoursBetween(start, end) {
+  if (!start || !end) return 0;
+
+  const startTime = new Date(start.replace(" ", "T") + "Z");
+  const endTime = new Date(end.replace(" ", "T") + "Z");
+
+  return Math.max(0, (endTime - startTime) / 3600000);
+}
+
+function nowString() {
+  return new Date().toISOString().replace("T", " ").split(".")[0];
+}
+
 function getVenueIncomeMultiplier(venueId) {
   const staff = db
     .prepare(
@@ -96,10 +109,34 @@ function equipmentMinuteIncome(item) {
 }
 
 function venuePendingIncome(venue) {
-  const rate = venueHourlyIncome(venue);
-  const hours = hoursSince(venue.last_collected_at);
+  const rate = venueHourlyIncome({
+    ...venue,
+    closed_until: null,
+  });
 
-  return Math.floor(hours * rate);
+  if (venue.closed_at && venue.closed_until) {
+    const lastCollected = new Date(
+      venue.last_collected_at.replace(" ", "T") + "Z",
+    );
+    const closedUntil = new Date(venue.closed_until.replace(" ", "T") + "Z");
+    const now = new Date();
+
+    if (lastCollected >= closedUntil) {
+      return Math.floor(hoursSince(venue.last_collected_at) * rate);
+    }
+
+    const beforeClosureHours = hoursBetween(
+      venue.last_collected_at,
+      venue.closed_at,
+    );
+
+    const afterReopenHours =
+      now > closedUntil ? hoursBetween(venue.closed_until, nowString()) : 0;
+
+    return Math.floor((beforeClosureHours + afterReopenHours) * rate);
+  }
+
+  return Math.floor(hoursSince(venue.last_collected_at) * rate);
 }
 
 function equipmentPendingIncome(item) {
@@ -189,6 +226,7 @@ function resetEquipmentCollection(userId) {
 
 module.exports = {
   hoursSince,
+  hoursBetween,
   venueHourlyIncome,
   equipmentHourlyIncome,
   venuePendingIncome,
@@ -201,4 +239,5 @@ module.exports = {
   resetVenueCollection,
   resetEquipmentCollection,
   equipmentMinuteIncome,
+  nowString,
 };

@@ -74,9 +74,10 @@ async function buyVenue(interaction) {
     bar_level,
     security_level,
     production_level,
-    maintenance_level
+    maintenance_level,
+    created_at
   )
-  VALUES (?, ?, ?, 1, ?, ?, ?, CURRENT_TIMESTAMP, 'none', 0, 0, 0, 0)
+  VALUES (?, ?, ?, 1, ?, ?, ?, CURRENT_TIMESTAMP, 'none', 0, 0, 0, 0, CURRENT_TIMESTAMP)
   `,
   ).run(
     userId,
@@ -153,6 +154,44 @@ function buildVenuePage(userId, page = 0) {
     };
   }
 
+  function isActiveUntil(timestamp) {
+    if (!timestamp) return false;
+
+    return new Date(timestamp.replace(" ", "T") + "Z") > new Date();
+  }
+
+  function remainingTime(timestamp) {
+    if (!timestamp) return "";
+
+    const end = new Date(timestamp.replace(" ", "T") + "Z");
+    const diff = end - new Date();
+
+    if (diff <= 0) return "Expired";
+
+    const totalMinutes = Math.floor(diff / 60000);
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+
+    if (hours === 0) return `${minutes}m`;
+    if (minutes === 0) return `${hours}h`;
+
+    return `${hours}h ${minutes}m`;
+  }
+
+  function venueStatusText(venue) {
+    if (isActiveUntil(venue.closed_until)) {
+      const title = venue.closure_reason.split(":")[0];
+
+      return `${title}\n❌ Closed • ${remainingTime(venue.closed_until)} remaining`;
+    }
+
+    if (isActiveUntil(venue.boosted_until)) {
+      return `📈 Income Boost\n🚀 x${venue.income_multiplier} • ${remainingTime(venue.boosted_until)} remaining`;
+    }
+
+    return "🟢 Operating Normally";
+  }
+
   const totalHourly = venues.reduce(
     (sum, venue) => sum + venueHourlyIncome(venue),
     0,
@@ -166,23 +205,40 @@ function buildVenuePage(userId, page = 0) {
   const totalPages = venues.length;
   const safePage = Math.max(0, Math.min(page, totalPages - 1));
   const venue = venues[safePage];
-  const hours = hoursSince(venue.last_collected_at);
+  const hours = hoursSince(venue.created_at);
+
+  const totalMinutes = Math.floor(hours * 60);
+  const wholeHours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+
   const displayTime =
-    hours < 1 ? `${Math.round(hours * 60)}m` : `${hours.toFixed(2)}h`;
+    wholeHours === 0
+      ? `${minutes}m`
+      : minutes === 0
+        ? `${wholeHours}h`
+        : `${wholeHours}h ${minutes}m`;
 
   const venueStaffCount = db
     .prepare(
       `
-  SELECT COUNT(*) as count FROM venue_staff 
-  WHERE venue_id = ? AND status = 'active'
-`,
+      SELECT COUNT(*) as count FROM venue_staff 
+      WHERE venue_id = ? AND status = 'active'
+      `,
     )
     .get(venue.id).count;
 
+  let color = 0x06b6d4; // default
+
+  if (isActiveUntil(venue.closed_until)) {
+    color = 0xef4444; // red
+  } else if (isActiveUntil(venue.boosted_until)) {
+    color = 0xf59e0b; // gold
+  }
+
   const embed = new EmbedBuilder()
-    .setColor(0x06b6d4)
+    .setColor(color)
     .setTitle(`🏟 YOUR VENUES (${safePage + 1}/${totalPages})`)
-    .setDescription(`**${venue.name}**`)
+    .setDescription(`**${venue.name}**\n\n**${venueStatusText(venue)}**`)
     .addFields(
       {
         name: "💰 Income",
@@ -190,12 +246,12 @@ function buildVenuePage(userId, page = 0) {
         inline: true,
       },
       {
-        name: "💵 Uncollected",
+        name: "💵 Pending",
         value: money(venuePendingIncome(venue)),
         inline: true,
       },
       {
-        name: "🕒 Open For",
+        name: "🕒 Owned",
         value: displayTime,
         inline: true,
       },
@@ -220,7 +276,7 @@ function buildVenuePage(userId, page = 0) {
         inline: true,
       },
       {
-        name: "📈 Empire Summary",
+        name: "📈 Empire Income",
         value:
           `Venues Owned: **${venues.length}**\n` +
           `Total Income: **${money(totalHourly)}/hr**\n` +
