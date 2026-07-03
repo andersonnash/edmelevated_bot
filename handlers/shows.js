@@ -542,7 +542,7 @@ async function buyTicket(interaction) {
 
   const existing = db
     .prepare("SELECT * FROM show_tickets WHERE show_id = ? AND user_id = ?")
-    .get(show.show_id, userId);
+    .get(show.id, userId);
 
   if (existing) {
     return interaction.editReply({
@@ -576,11 +576,11 @@ async function buyTicket(interaction) {
     )
     VALUES (?, ?, ?, ?, 'paid')
   `,
-  ).run(show.show_id, userId, username, show.ticket_price);
+  ).run(show.id, userId, username, show.ticket_price);
 
   db.prepare(
     "UPDATE shows SET tickets_sold = tickets_sold + 1 WHERE id = ?",
-  ).run(show.show_id);
+  ).run(show.id);
 
   const xpUpdate = addXp(userId, 10);
   await announceLevelUp(interaction, xpUpdate);
