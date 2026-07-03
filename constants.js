@@ -13,6 +13,7 @@ const VENUE_TYPES = {
     baseCapacity: 25,
     staffLimit: 1,
     djLimit: 1,
+    maxOwned: 10,
     description: "A small DIY party where every promoter starts.",
   },
 
@@ -24,6 +25,7 @@ const VENUE_TYPES = {
     baseCapacity: 100,
     staffLimit: 3,
     djLimit: 2,
+    maxOwned: 6,
     description: "A gritty warehouse space built for underground shows.",
   },
 
@@ -35,6 +37,7 @@ const VENUE_TYPES = {
     baseCapacity: 250,
     staffLimit: 6,
     djLimit: 3,
+    maxOwned: 5,
     description: "A dark basement club with loyal late-night regulars.",
   },
 
@@ -46,6 +49,7 @@ const VENUE_TYPES = {
     baseCapacity: 600,
     staffLimit: 10,
     djLimit: 5,
+    maxOwned: 3,
     description: "A stylish rooftop venue with city views and bigger crowds.",
   },
 
@@ -57,6 +61,7 @@ const VENUE_TYPES = {
     baseCapacity: 2_500,
     staffLimit: 25,
     djLimit: 12,
+    maxOwned: 1,
     description: "A desert-scale event space for major EDM productions.",
   },
 };

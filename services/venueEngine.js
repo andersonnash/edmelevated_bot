@@ -80,7 +80,12 @@ function venueHourlyIncome(venue) {
     ? venue.income_multiplier || 1
     : 1;
 
-  return Math.floor(baseIncome * staffMultiplier * eventMultiplier);
+  const barLevel = venue.bar_level || 0;
+  const barMultiplier = 1 + barLevel * 0.1;
+
+  return Math.floor(
+    baseIncome * barMultiplier * staffMultiplier * eventMultiplier,
+  );
 }
 
 function venueCapacity(venue) {

@@ -47,6 +47,28 @@ async function buyVenue(interaction) {
     });
   }
 
+  const maxOwned = venueType.maxOwned ?? Infinity;
+
+  const ownedCount = db
+    .prepare(
+      `
+      SELECT COUNT(*) AS count
+      FROM venues
+      WHERE owner_id = ?
+        AND type = ?
+      `,
+    )
+    .get(userId, type).count;
+
+  if (ownedCount >= maxOwned) {
+    return interaction.reply({
+      content:
+        `You already own the maximum number of **${venueType.name}** venues.\n` +
+        `Owned: **${ownedCount}/${maxOwned}**`,
+      ephemeral: true,
+    });
+  }
+
   if (user.cash < venueType.cost) {
     return interaction.reply({
       content: `You need ${money(venueType.cost)}. You currently have ${money(user.cash)}.`,
@@ -98,6 +120,11 @@ async function buyVenue(interaction) {
       {
         name: "💰 Cost",
         value: money(venueType.cost),
+        inline: true,
+      },
+      {
+        name: "🏢 Owned",
+        value: `${ownedCount + 1}/${maxOwned}`,
         inline: true,
       },
       {
