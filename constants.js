@@ -283,8 +283,12 @@ const CAREER_ROLES = {
     emoji: "📺",
   },
   promoter: {
-    name: "Show Promoter",
+    name: "Promoter",
     emoji: "📣",
+  },
+  general_staff: {
+    name: "General Staff",
+    emoji: "👷",
   },
 };
 
