@@ -807,6 +807,8 @@ async function collectShow(interaction, buttonShowId = null) {
       );
     }
 
+    addRole(userId, "Profitable Promoter");
+
     const { djs, staff, ownerTake, totalPaid } = settlement;
 
     const balance =
