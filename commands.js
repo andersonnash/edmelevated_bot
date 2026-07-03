@@ -380,6 +380,14 @@ const commands = [
     .setDescription("Collect unclaimed passive income"),
 
   new SlashCommandBuilder()
+    .setName("test_venue_event")
+    .setDescription("Owner only: test a random venue event"),
+
+  new SlashCommandBuilder()
+    .setName("run_venue_events")
+    .setDescription("Owner only: run the daily venue event check"),
+
+  new SlashCommandBuilder()
     .setName("collect_show")
     .setDescription("Collect payouts from one completed show")
     .addStringOption((option) =>
