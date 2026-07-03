@@ -57,6 +57,9 @@ const commandMap = {
   create_kandi: kandi.createKandi,
   give_kandi: kandi.giveKandi,
   my_kandi: kandi.myKandi,
+
+  test_venue_event: venues.testVenueEvent,
+  run_venue_events: venues.runVenueEvents,
 };
 
 async function handleCommand(interaction) {

@@ -177,4 +177,18 @@ CREATE TABLE IF NOT EXISTS dj_profiles (
   );
 `);
 
+function addColumnIfMissing(table, column, definition) {
+  const columns = db.prepare(`PRAGMA table_info(${table})`).all();
+  const exists = columns.some((col) => col.name === column);
+
+  if (!exists) {
+    db.prepare(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`).run();
+  }
+}
+
+addColumnIfMissing("venues", "closed_until", "TEXT");
+addColumnIfMissing("venues", "closure_reason", "TEXT");
+addColumnIfMissing("venues", "boosted_until", "TEXT");
+addColumnIfMissing("venues", "income_multiplier", "REAL DEFAULT 1");
+
 module.exports = db;

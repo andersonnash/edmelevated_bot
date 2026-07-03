@@ -13,6 +13,13 @@ function venueReputation(venue) {
   }, 0);
 }
 
+function isActiveUntil(timestamp) {
+  if (!timestamp) return false;
+
+  const utcString = timestamp.replace(" ", "T") + "Z";
+  return new Date(utcString) > new Date();
+}
+
 function hoursSince(timestamp) {
   if (!timestamp) return 0;
 
@@ -49,9 +56,18 @@ function getVenueIncomeMultiplier(venueId) {
 
 function venueHourlyIncome(venue) {
   const baseIncome = VENUE_TYPES[venue.type]?.passiveIncome || 0;
-  const multiplier = getVenueIncomeMultiplier(venue.id);
 
-  return Math.floor(baseIncome * multiplier);
+  if (isActiveUntil(venue.closed_until)) {
+    return 0;
+  }
+
+  const staffMultiplier = getVenueIncomeMultiplier(venue.id);
+
+  const eventMultiplier = isActiveUntil(venue.boosted_until)
+    ? venue.income_multiplier || 1
+    : 1;
+
+  return Math.floor(baseIncome * staffMultiplier * eventMultiplier);
 }
 
 function venueCapacity(venue) {
@@ -97,47 +113,6 @@ function equipmentPendingIncome(item) {
   return Math.floor(rawIncome);
 }
 
-function getVenueIncome(userId) {
-  const venues = db
-    .prepare("SELECT * FROM venues WHERE owner_id = ?")
-    .all(userId);
-
-  let totalBaseIncome = 0;
-  let totalStaffBoost = 0;
-  let totalPendingIncome = 0;
-
-  venues.forEach((venue) => {
-    const baseRate = VENUE_TYPES[venue.type]?.passiveIncome || 0;
-    totalBaseIncome += baseRate;
-
-    const staff = db
-      .prepare(
-        `SELECT role FROM venue_staff WHERE venue_id = ? AND status = 'active'`,
-      )
-      .all(venue.id);
-    let multiplier = 0;
-    staff.forEach((member) => {
-      const roleData = VENUE_STAFF_ROLES[member.role];
-      if (roleData) multiplier += roleData.incomeBoost;
-    });
-    totalStaffBoost += baseRate * multiplier;
-
-    const effectiveRate = baseRate * (1 + multiplier);
-    const hours = hoursSince(venue.last_collected_at);
-    totalPendingIncome += Math.floor(hours * effectiveRate);
-  });
-
-  const totalHourly = totalBaseIncome + totalStaffBoost;
-
-  return {
-    venues,
-    total: totalPendingIncome,
-    hourly: totalHourly,
-    baseHourly: totalBaseIncome,
-    staffBoostHourly: totalStaffBoost,
-  };
-}
-
 function getEquipmentIncome(userId) {
   const equipment = db
     .prepare(`SELECT * FROM user_equipment WHERE user_id = ?`)
@@ -158,6 +133,38 @@ function getEquipmentIncome(userId) {
   }, 0);
 
   return { equipment, total: Math.floor(total), hourly };
+}
+
+function getVenueIncome(userId) {
+  const venues = db
+    .prepare(
+      `
+      SELECT *
+      FROM venues
+      WHERE owner_id = ?
+      `,
+    )
+    .all(userId);
+
+  let baseHourly = 0;
+  let hourly = 0;
+  let total = 0;
+
+  venues.forEach((venue) => {
+    const baseIncome = VENUE_TYPES[venue.type]?.passiveIncome || 0;
+
+    baseHourly += baseIncome;
+    hourly += venueHourlyIncome(venue);
+    total += venuePendingIncome(venue);
+  });
+
+  return {
+    venues,
+    total: Math.floor(total),
+    hourly,
+    baseHourly,
+    staffBoostHourly: Math.max(0, hourly - baseHourly),
+  };
 }
 
 function resetVenueCollection(userId) {

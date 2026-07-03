@@ -4,6 +4,7 @@ const db = require("../db");
 const { runShowById } = require("./showRunner");
 const { EmbedBuilder } = require("discord.js");
 const { postSceneFeed } = require("./sceneFeed");
+const { processVenueEvents } = require("./venueIncidents");
 
 const SCENE_FEED_CHANNEL_ID = process.env.SCENE_FEED_CHANNEL_ID;
 
@@ -74,6 +75,10 @@ function startShowScheduler(client) {
         embeds: [embed],
       });
     }
+  });
+
+  cron.schedule("0 12 * * *", async () => {
+    await processVenueEvents(client);
   });
 }
 

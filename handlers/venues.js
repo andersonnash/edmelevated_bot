@@ -3,6 +3,12 @@ const { VENUE_TYPES, VENUE_DEPARTMENTS } = require("../constants");
 const { getUser, addRole } = require("../services/roles");
 
 const { money } = require("../services/formatters");
+const { isOwner } = require("../constants");
+const {
+  rollVenueEventForOwner,
+  buildVenueEventEmbed,
+  processVenueEvents,
+} = require("../services/venueIncidents");
 
 const {
   EmbedBuilder,
@@ -270,6 +276,69 @@ async function handleVenuePage(interaction) {
   });
 }
 
+async function testVenueEvent(interaction) {
+  const userId = interaction.user.id;
+
+  if (!isOwner(userId)) {
+    return interaction.reply({
+      content: "Owner only.",
+      ephemeral: true,
+    });
+  }
+
+  const result = rollVenueEventForOwner(userId);
+
+  if (!result) {
+    return interaction.reply({
+      content: "No venue event triggered.",
+      ephemeral: true,
+    });
+  }
+
+  const { venue, type, event } = result;
+  const embed = buildVenueEventEmbed(venue, type, event);
+
+  const user = await interaction.client.users.fetch(userId);
+
+  await user.send({
+    embeds: [embed],
+  });
+
+  return interaction.reply({
+    embeds: [embed],
+    content: "Venue event triggered. Check your DMs.",
+    ephemeral: false,
+  });
+}
+
+async function runVenueEvents(interaction) {
+  const userId = interaction.user.id;
+
+  if (!isOwner(userId)) {
+    return interaction.reply({
+      content: "Owner only.",
+      ephemeral: true,
+    });
+  }
+
+  const results = await processVenueEvents(interaction.client);
+
+  if (results.length === 0) {
+    return interaction.reply({
+      content: "No venue events occurred.",
+      ephemeral: true,
+    });
+  }
+
+  const { venue, type, event } = results[0];
+  const embed = buildVenueEventEmbed(venue, type, event);
+
+  return interaction.reply({
+    embeds: [embed],
+    content: `Processed ${results.length} venue event(s).`,
+  });
+}
+
 async function upgradeVenue(interaction) {
   const userId = interaction.user.id;
   const venueId = interaction.options.getString("venue");
@@ -384,4 +453,6 @@ module.exports = {
   myVenues,
   upgradeVenue,
   handleVenuePage,
+  testVenueEvent,
+  runVenueEvents,
 };
