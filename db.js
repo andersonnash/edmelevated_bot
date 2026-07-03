@@ -190,5 +190,7 @@ addColumnIfMissing("venues", "closed_until", "TEXT");
 addColumnIfMissing("venues", "closure_reason", "TEXT");
 addColumnIfMissing("venues", "boosted_until", "TEXT");
 addColumnIfMissing("venues", "income_multiplier", "REAL DEFAULT 1");
+addColumnIfMissing("venues", "created_at", "TEXT");
+addColumnIfMissing("venues", "closed_at", "TEXT");
 
 module.exports = db;

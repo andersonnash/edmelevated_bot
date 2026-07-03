@@ -181,8 +181,10 @@ function closeVenueForIncident(venue, incident) {
   db.prepare(
     `
     UPDATE venues
-    SET closed_until = datetime('now', ?),
-        closure_reason = ?
+    SET
+      closed_at = CURRENT_TIMESTAMP,
+      closed_until = datetime('now', ?),
+      closure_reason = ?
     WHERE id = ?
     `,
   ).run(
