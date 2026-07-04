@@ -8,55 +8,67 @@ const {
 function mainHelpEmbed() {
   return new EmbedBuilder()
     .setColor(0x8b5cf6)
-    .setTitle("🎧 WELCOME TO EDM ELEVATED CITY")
+    .setTitle("🎧 WELCOME TO EDMELEVATED CITY")
     .setDescription(
-      "Build your reputation, throw shows, book DJs, hire staff, and become a legend in the EDM Elevated scene.",
+      "Build your name in the scene: work jobs, buy gear, throw shows, promote events, and grow from bedroom DJ to city legend.",
     )
     .addFields(
       {
         name: "🆕 New Player Path",
         value:
-          "`/profile` — View your stats and progression\n" +
-          "`/crate_dig` — Discover tracks and earn your first rewards\n" +
-          "`/rave_story` — Make choices and gain XP\n" +
-          "`/work` — Earn reliable cash\n" +
-          "`/buy_venue` — Start your empire\n" +
+          "`/profile` — View your cash, XP, reputation, and next objective\n" +
+          "`/work` — Pick a scene job and earn starter cash\n" +
+          "`/buy_equipment` — Buy gear that generates passive rental income\n" +
+          "`/buy_venue` — Save up and buy your first event space\n" +
           "`/create_show` — Throw your first event\n" +
-          "`/street_team` — Boost **upcoming** shows and build reputation",
+          "`/promote_show` — Promote your show for more walk-ins\n" +
+          "`/collect` — Collect passive venue and equipment income",
       },
       {
         name: "🎵 Core Game Loop",
         value:
-          "Play games → Earn cash + XP → Buy venues & equipment → Generate passive income → Create shows → Collect profits",
+          "Work jobs → earn cash + XP → buy equipment → buy venues → create shows → promote shows → collect income → reinvest.",
+      },
+      {
+        name: "💵 Ways To Earn",
+        value:
+          "`/work` gives reliable cash.\n" +
+          "`/crate_dig` and `/rave_story` give quick rewards.\n" +
+          "`/street_team` helps promote upcoming shows and build reputation.\n" +
+          "`/collect` claims passive income from venues and equipment.\n" +
+          "`/collect_show` claims payouts from completed shows.",
       },
       {
         name: "🪩 How Shows Work",
         value:
           "Shows automatically run on their scheduled date.\n" +
-          "While waiting, play games, promote events, build lineups, and hire staff.",
+          "While waiting, you can promote the show, add DJs, hire staff, work jobs, buy gear, or build reputation.",
       },
       {
         name: "🏆 How Progression Works",
         value:
           "Participating earns **XP**, **cash**, and **reputation**.\n" +
-          "Higher reputation unlocks better venues. Higher DJ reputation increases booking fees.",
+          "XP increases your level. Reputation helps unlock better opportunities.",
       },
       {
         name: "💼 Passive Income",
         value:
           "Own **venues** and **equipment** to generate income over time.\n" +
+          "Upgrade venues and hire permanent venue staff to improve earnings.\n\n" +
           "`/my_venues` — View your venues\n" +
+          "`/upgrade_venue` — Improve venue departments\n" +
+          "`/hire_venue_staff` — Hire permanent venue staff\n" +
           "`/my_equipment` — View your equipment\n" +
-          "`/collect` — Collect all passive income",
+          "`/collect` — Collect passive income",
       },
       {
-        name: "🎮 Games",
+        name: "🧭 Lost?",
         value:
-          "Visit the Games tab below to see interactive ways to earn money, XP, and reputation.",
+          "Use `/profile` anytime. It should be your home base when you are not sure what to do next.",
       },
     )
     .setFooter({
-      text: "💡 Shows run automatically on their scheduled date. Play games while you wait.",
+      text: "Tip: Start with /profile, then use /work to earn your first stack of cash.",
     });
 }
 
@@ -67,48 +79,54 @@ function categoryEmbed(category) {
       .setTitle("🎵 Shows Commands")
       .setDescription("Create, promote, and manage your shows.")
       .addFields(
-        { name: "/create_show", value: "Create a new show." },
-        { name: "/my_shows", value: "View your upcoming shows." },
+        {
+          name: "/create_show",
+          value: "Create a new show at one of your venues.",
+        },
+        { name: "/my_shows", value: "View your upcoming and active shows." },
         { name: "/promote_show", value: "Promote a show for more walk-ins." },
         { name: "/buy_ticket", value: "Buy a ticket to a show." },
+        { name: "/add_lineup", value: "Add a DJ to your show lineup." },
+        { name: "/hire_staff", value: "Hire staff for your show." },
         { name: "/show_lineup", value: "View DJs and staff for a show." },
-        { name: "/collect", value: "Collect completed show profits." },
         {
-          name: "/force_run_show",
-          value: "Dev/test command to run a show immediately.",
+          name: "/collect_show",
+          value: "Collect payouts from a completed show.",
         },
       ),
 
     games: new EmbedBuilder()
       .setColor(0xec4899)
-      .setTitle("🎮 Games Commands")
+      .setTitle("🎮 Games & Side Activities")
       .setDescription(
-        "Earn rewards, reputation, and progress while waiting for show day.",
+        "Quick ways to earn rewards, build reputation, and stay active while waiting for show day.",
       )
       .addFields(
         {
           name: "/crate_dig",
-          value: "Dig through crates and discover tracks for rewards.",
+          value: "Dig through crates, discover tracks, and earn quick rewards.",
         },
-
         {
           name: "/rave_story",
-          value: "Interactive EDM adventures with choices and consequences.",
+          value:
+            "Play a short story event with choices, XP, cash, and reputation.",
         },
-
         {
           name: "/street_team",
-          value: "Promote one of your upcoming shows and boost attendance.",
+          value:
+            "Promote one of your upcoming shows, boost attendance, and build reputation.",
         },
       )
       .setFooter({
-        text: "Games help fund your journey into show ownership.",
+        text: "Games should feel like quick rewards. Shows and venues are the bigger long-term money path.",
       }),
 
     venues: new EmbedBuilder()
       .setColor(0x38bdf8)
       .setTitle("🏟 Venues Commands")
-      .setDescription("Buy venues, host shows, and build passive income.")
+      .setDescription(
+        "Buy venues, upgrade departments, hire permanent staff, host shows, and build passive income.",
+      )
       .addFields(
         {
           name: "How venues make money",
@@ -117,17 +135,53 @@ function categoryEmbed(category) {
             "Income accumulates while you're away until you collect it.\n" +
             "Bigger venues earn more per hour and can host bigger shows.",
         },
-        { name: "/buy_venue", value: "Purchase a venue." },
+        {
+          name: "How venue upgrades work",
+          value:
+            "`/upgrade_venue` lets you improve specific venue departments:\n\n" +
+            "🍺 **Bar** — increases passive income\n" +
+            "🚪 **Security** — increases venue capacity\n" +
+            "🎛 **Production** — boosts show attendance\n" +
+            "🧹 **Maintenance** — reduces future incident impact\n\n" +
+            "Each upgrade costs more as the department level increases.",
+        },
+        {
+          name: "How venue staff work",
+          value:
+            "`/hire_venue_staff` hires permanent staff for one of your venues.\n" +
+            "Venue staff increase that venue's income over time.\n\n" +
+            "🍹 **Bartender** — small income boost\n" +
+            "💪 **Bouncer** — stronger income boost\n" +
+            "📣 **Promoter** — income boost for venue activity\n" +
+            "👔 **Manager** — strongest income boost",
+        },
+        {
+          name: "/buy_venue",
+          value: "Purchase a venue and start building passive income.",
+        },
         {
           name: "/my_venues",
-          value: "View venue income, uncollected earnings, and capacity.",
+          value:
+            "View your owned venues, capacity, income, staff, upgrades, and uncollected earnings.",
         },
         {
           name: "/upgrade_venue",
-          value: "Upgrade lights, sound, DJ gear, or stage.",
+          value:
+            "Upgrade Bar, Security, Production, or Maintenance for one of your venues.",
         },
-        { name: "/collect", value: "Collect venue income and other earnings." },
-      ),
+        {
+          name: "/hire_venue_staff",
+          value:
+            "Hire permanent staff members for a venue to increase its income.",
+        },
+        {
+          name: "/collect",
+          value: "Collect passive income from venues and equipment.",
+        },
+      )
+      .setFooter({
+        text: "Tip: Upgrades improve venue stats. Staff improve venue income.",
+      }),
 
     djs: new EmbedBuilder()
       .setColor(0xa78bfa)
@@ -158,11 +212,11 @@ function categoryEmbed(category) {
       .setDescription("Buy gear, rent it out, and grow your passive income.")
       .addFields(
         {
-          name: "How equipment makes money",
+          name: "Why equipment matters",
           value:
-            "Equipment earns rental income over time.\n" +
+            "Equipment helps new players start earning passive income.\n" +
             "Multiple copies increase your hourly rental income.\n" +
-            "Higher-end gear earns more per hour.",
+            "Better gear earns more over time.",
         },
         { name: "/buy_equipment", value: "Purchase gear for rental income." },
         {
@@ -171,19 +225,32 @@ function categoryEmbed(category) {
         },
         {
           name: "/collect",
-          value: "Collect equipment income and other earnings.",
+          value: "Collect equipment and venue income.",
         },
       ),
 
     economy: new EmbedBuilder()
       .setColor(0x22c55e)
       .setTitle("💵 Economy Commands")
-      .setDescription("Earn money and manage your wallet.")
+      .setDescription("Earn cash, collect income, and track your progress.")
       .addFields(
-        { name: "/profile", value: "View your player profile." },
-        { name: "/work", value: "Earn cash and XP." },
-        { name: "/collect", value: "Collect show earnings." },
-        { name: "/leaderboard", value: "View top players." },
+        {
+          name: "/profile",
+          value:
+            "View your cash, level, XP, reputation, venues, gear, and next objective.",
+        },
+        {
+          name: "/work",
+          value: "Pick a required scene job and earn reliable cash.",
+        },
+        {
+          name: "/collect",
+          value: "Collect passive income from venues and equipment.",
+        },
+        {
+          name: "/leaderboard",
+          value: "View the top players in the city.",
+        },
       ),
 
     progression: new EmbedBuilder()

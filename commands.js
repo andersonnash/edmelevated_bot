@@ -343,17 +343,6 @@ const commands = [
     ),
 
   new SlashCommandBuilder()
-    .setName("accept_staff")
-    .setDescription("Accept a staff job offer")
-    .addStringOption((option) =>
-      option
-        .setName("show")
-        .setDescription("Choose a show")
-        .setRequired(true)
-        .setAutocomplete(true),
-    ),
-
-  new SlashCommandBuilder()
     .setName("start_contest")
     .setDescription("Start a free ticket contest for your show")
     .addStringOption((option) =>

@@ -73,9 +73,17 @@ async function register(interaction) {
   );
 }
 
-function nextObjective(user, venues, equipment) {
+function nextObjective(user, venues, equipment, readyToCollect = 0) {
   const cash = user.cash || 0;
   const reputation = user.reputation || 0;
+
+  if (readyToCollect > 0) {
+    return (
+      "You have income ready to collect.\n\n" +
+      `Ready: **${money(readyToCollect)}**\n` +
+      "Claim it, then reinvest into gear, venue staff, or upgrades."
+    );
+  }
 
   if (!equipment.length) {
     return (
@@ -157,11 +165,12 @@ async function profile(interaction) {
   const equipment = db
     .prepare("SELECT * FROM user_equipment WHERE user_id = ?")
     .all(userId);
-  const objective = nextObjective(user, venues, equipment);
 
   const passiveTotal =
     venues.reduce((sum, venue) => sum + venuePendingIncome(venue), 0) +
     equipment.reduce((sum, item) => sum + equipmentPendingIncome(item), 0);
+
+  const objective = nextObjective(user, venues, equipment, passiveTotal);
 
   const boostPercent =
     venueIncome.baseHourly > 0
@@ -169,6 +178,11 @@ async function profile(interaction) {
           (venueIncome.staffBoostHourly / venueIncome.baseHourly) * 100,
         )
       : 0;
+
+  const nextStep =
+    passiveTotal > 0
+      ? "Use /collect to claim your income, then reinvest with /upgrade_venue, /hire_venue_staff, /buy_equipment, or /create_show."
+      : "Choose a scene job with /work, upgrade venues, hire venue staff, buy equipment, or create your next show.";
 
   const pending = db
     .prepare(
@@ -208,7 +222,7 @@ async function profile(interaction) {
         name: "💰 WALLET",
         value:
           "```ansi\n" +
-          `Cash:       $${money(user.cash)}\n\n` +
+          `Cash:       ${money(user.cash)}\n\n` +
           `LVL ${level} ${bar} ${xp.toLocaleString()} / ${threshold.toLocaleString()} XP\n` +
           `${levelTitle}` +
           "```",
@@ -219,7 +233,7 @@ async function profile(interaction) {
           "```ansi\n" +
           `Venues: ${venues.length} (${money(venueIncome.hourly)}/hr) ${money(venueIncome.staffBoostHourly) > 0 ? "👥" : ""} +${money(venueIncome.total)}\n` +
           `Equipment: ${equipment.length} (${money(equipmentIncome.hourly)}/hr) +${money(equipmentIncome.total)}\n` +
-          `Pending Total: ${money(passiveTotal)}\n` +
+          `Ready to Collect: ${money(passiveTotal)}\n` +
           "```",
       },
       {
@@ -237,8 +251,7 @@ async function profile(interaction) {
       },
       {
         name: "💡 NEXT STEP",
-        value:
-          "Use `/work`, `/buy_venue`, `/create_show`, `/promote_show`, or `/collect`.",
+        value: nextStep,
       },
     )
     .setFooter({ text: "EDMELEVATED City • Build the scene" });
@@ -247,7 +260,8 @@ async function profile(interaction) {
     new ButtonBuilder()
       .setCustomId("collect_passive")
       .setLabel("💰 Collect Everything")
-      .setStyle(ButtonStyle.Success),
+      .setStyle(ButtonStyle.Success)
+      .setDisabled(Math.floor(passiveTotal) <= 0),
   );
 
   return interaction.reply({ embeds: [embed], components: [row] });
@@ -360,7 +374,7 @@ async function work(interaction) {
     .addFields(
       {
         name: "💵 Cash",
-        value: `+$${money(earned)}`,
+        value: `+${money(earned)}`,
         inline: true,
       },
       {

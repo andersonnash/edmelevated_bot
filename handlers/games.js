@@ -11,7 +11,6 @@ const { addXp, announceLevelUp } = require("../services/xp");
 
 const { addRole } = require("../services/roles");
 const { addCash } = require("../services/economy");
-const { addPendingPayout } = require("../services/economy");
 const { money } = require("../services/formatters");
 
 const db = require("../db");
@@ -144,7 +143,7 @@ async function crateDig(interaction) {
 
   const pull = rewards[Math.floor(Math.random() * rewards.length)];
 
-  addPendingPayout(userId, "Crate Dig", pull.cash);
+  addCash(userId, pull.cash);
 
   addRole(userId, "Scene Explorer");
 
@@ -287,7 +286,7 @@ async function streetTeam(interaction) {
   const reward =
     streetTeamRewards[Math.floor(Math.random() * streetTeamRewards.length)];
 
-  addPendingPayout(userId, "Street Team", reward.cash);
+  addCash(userId, reward.cash);
 
   db.prepare(
     `
@@ -527,7 +526,7 @@ async function handleRaveStoryChoice(interaction) {
 
   activeRaveStories.delete(userId);
 
-  addPendingPayout(userId, "Rave Story", choice.cash);
+  addCash(userId, choice.cash);
 
   db.prepare(
     `

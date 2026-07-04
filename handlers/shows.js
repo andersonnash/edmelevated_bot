@@ -769,7 +769,7 @@ async function collect(interaction) {
 
     transaction();
 
-    return interaction.editReply(`💸 Collected **$${money(passiveTotal)}**`);
+    return interaction.editReply(`💸 Collected **${money(passiveTotal)}**`);
   } catch (error) {
     console.error("Collection error:", error);
     return interaction.editReply("An error occurred while collecting.");
