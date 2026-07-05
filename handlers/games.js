@@ -15,29 +15,56 @@ const { money } = require("../services/formatters");
 
 const db = require("../db");
 
+function roll(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function pickWeighted(items) {
+  const totalWeight = items.reduce((sum, item) => sum + item.weight, 0);
+  let rollValue = Math.random() * totalWeight;
+
+  for (const item of items) {
+    rollValue -= item.weight;
+
+    if (rollValue <= 0) {
+      return item;
+    }
+  }
+
+  return items[items.length - 1];
+}
+
 const rewards = [
   {
     rarity: "Common Track",
+    minCash: 50,
+    maxCash: 125,
     attendance: 10,
-    cash: 50,
+    weight: 55,
     color: 0x94a3b8,
   },
   {
     rarity: "Rare Remix",
+    minCash: 150,
+    maxCash: 300,
     attendance: 25,
-    cash: 150,
+    weight: 30,
     color: 0x60a5fa,
   },
   {
     rarity: "VIP Edit",
+    minCash: 400,
+    maxCash: 600,
     attendance: 60,
-    cash: 300,
+    weight: 12,
     color: 0xa855f7,
   },
   {
     rarity: "Legendary ID",
+    minCash: 750,
+    maxCash: 1000,
     attendance: 150,
-    cash: 1000,
+    weight: 3,
     color: 0xf59e0b,
   },
 ];
@@ -99,7 +126,7 @@ function sleep(ms) {
 
 async function crateDig(interaction) {
   const userId = interaction.user.id;
-  const cooldown = checkCooldown(interaction.user.id, "crate", 360);
+  const cooldown = checkCooldown(interaction.user.id, "crate", 120);
 
   if (cooldown) {
     return interaction.reply({
@@ -141,11 +168,35 @@ async function crateDig(interaction) {
     await sleep(1500);
   }
 
-  const pull = rewards[Math.floor(Math.random() * rewards.length)];
+  const pull = pickWeighted(rewards);
+  const cashEarned = roll(pull.minCash, pull.maxCash);
 
-  addCash(userId, pull.cash);
+  addCash(userId, cashEarned);
 
   addRole(userId, "Scene Explorer");
+
+  const show = db
+    .prepare(
+      `
+    SELECT id, name, simulated_attendees
+    FROM shows
+    WHERE owner_id = ?
+      AND status = 'upcoming'
+    ORDER BY show_date ASC
+    LIMIT 1
+    `,
+    )
+    .get(userId);
+
+  if (show && pull.attendance > 0) {
+    db.prepare(
+      `
+    UPDATE shows
+    SET simulated_attendees = simulated_attendees + ?
+    WHERE id = ?
+    `,
+    ).run(pull.attendance, show.id);
+  }
 
   const finalEmbed = new EmbedBuilder()
     .setColor(pull.color)
@@ -158,17 +209,21 @@ async function crateDig(interaction) {
       },
       {
         name: "👥 Show Bonus",
-        value: `+${pull.attendance} projected attendees`,
+        value: show
+          ? `+${pull.attendance} projected attendees to **${show.name}**`
+          : "No upcoming show to boost.",
         inline: true,
       },
       {
         name: "💵 Found",
-        value: `${money(pull.cash)}`,
+        value: `${money(cashEarned)}`,
         inline: true,
       },
     )
     .setFooter({
-      text: "Future shows may benefit from rare finds.",
+      text: show
+        ? "Rare finds can help build hype for upcoming shows."
+        : "Schedule a show before crate digging to take advantage of show bonuses.",
     });
 
   return interaction.editReply({
@@ -206,41 +261,57 @@ const streetTeamSteps = [
 const streetTeamRewards = [
   {
     result: "Small buzz",
-    cash: 75,
-    xp: 10,
-    reputation: 1,
-    hype: 15,
+    minCash: 80,
+    maxCash: 140,
+    minXp: 10,
+    maxXp: 15,
+    minReputation: 1,
+    maxReputation: 2,
+    hype: 25,
+    weight: 50,
     color: 0x94a3b8,
   },
   {
     result: "Solid street push",
-    cash: 150,
-    xp: 20,
-    reputation: 2,
-    hype: 35,
+    minCash: 140,
+    maxCash: 220,
+    minXp: 15,
+    maxXp: 25,
+    minReputation: 2,
+    maxReputation: 3,
+    hype: 50,
+    weight: 35,
     color: 0x60a5fa,
   },
   {
     result: "The flyer made the rounds",
-    cash: 300,
-    xp: 35,
-    reputation: 4,
+    minCash: 220,
+    maxCash: 300,
+    minXp: 25,
+    maxXp: 40,
+    minReputation: 3,
+    maxReputation: 4,
     hype: 75,
+    weight: 12,
     color: 0xa855f7,
   },
   {
     result: "The whole scene is talking",
-    cash: 750,
-    xp: 60,
-    reputation: 8,
-    hype: 150,
+    minCash: 300,
+    maxCash: 400,
+    minXp: 40,
+    maxXp: 60,
+    minReputation: 4,
+    maxReputation: 5,
+    hype: 125,
+    weight: 3,
     color: 0xf59e0b,
   },
 ];
 
 async function streetTeam(interaction) {
   const userId = interaction.user.id;
-  const cooldown = checkCooldown(interaction.user.id, "street", 1440);
+  const cooldown = checkCooldown(interaction.user.id, "street", 180);
 
   if (cooldown) {
     return interaction.reply({
@@ -283,18 +354,21 @@ async function streetTeam(interaction) {
     await sleep(1500);
   }
 
-  const reward =
-    streetTeamRewards[Math.floor(Math.random() * streetTeamRewards.length)];
+  const reward = pickWeighted(streetTeamRewards);
 
-  addCash(userId, reward.cash);
+  const cashEarned = roll(reward.minCash, reward.maxCash);
+  const xpEarned = roll(reward.minXp, reward.maxXp);
+  const reputationEarned = roll(reward.minReputation, reward.maxReputation);
+
+  addCash(userId, cashEarned);
 
   db.prepare(
     `
-    UPDATE users
-    SET reputation = reputation + ?
-    WHERE discord_id = ?
+  UPDATE users
+  SET reputation = reputation + ?
+  WHERE discord_id = ?
   `,
-  ).run(reward.reputation, userId);
+  ).run(reputationEarned, userId);
 
   addRole(userId, "Scene Explorer");
 
@@ -321,6 +395,9 @@ async function streetTeam(interaction) {
     ).run(reward.hype, show.id);
   }
 
+  const xpUpdate = addXp(userId, xpEarned);
+  await announceLevelUp(interaction, xpUpdate);
+
   const finalEmbed = new EmbedBuilder()
     .setColor(reward.color)
     .setTitle("📣 STREET TEAM COMPLETE")
@@ -332,12 +409,17 @@ async function streetTeam(interaction) {
       },
       {
         name: "💵 Cash",
-        value: `+${money(reward.cash)}`,
+        value: `+${money(cashEarned)}`,
         inline: true,
       },
       {
         name: "⭐ Reputation",
-        value: `+${reward.reputation}`,
+        value: `+${reputationEarned}`,
+        inline: true,
+      },
+      {
+        name: "✨ XP",
+        value: `+${xpEarned}`,
         inline: true,
       },
       {
@@ -367,8 +449,8 @@ const raveStories = [
         label: "Follow the bass",
         emoji: "🕺",
         result: "You found the main room right as the drop hit.",
-        cash: 75,
-        xp: 10,
+        cash: 100,
+        xp: 18,
         reputation: 1,
       },
       {
@@ -376,8 +458,8 @@ const raveStories = [
         label: "Talk to security",
         emoji: "🛂",
         result: "Security respects the confidence and lets you skip the line.",
-        cash: 50,
-        xp: 15,
+        cash: 90,
+        xp: 20,
         reputation: 2,
       },
       {
@@ -385,8 +467,8 @@ const raveStories = [
         label: "Trade kandi",
         emoji: "🌈",
         result: "You made a new scene friend and earned some local respect.",
-        cash: 25,
-        xp: 20,
+        cash: 75,
+        xp: 25,
         reputation: 3,
       },
     ],
@@ -399,8 +481,8 @@ const raveStories = [
         label: "Go immediately",
         emoji: "🚗",
         result: "You arrived early and helped set up the decks.",
-        cash: 100,
-        xp: 15,
+        cash: 125,
+        xp: 20,
         reputation: 2,
       },
       {
@@ -408,8 +490,8 @@ const raveStories = [
         label: "Invite friends",
         emoji: "📲",
         result: "You brought the energy and the afters filled up fast.",
-        cash: 75,
-        xp: 20,
+        cash: 110,
+        xp: 25,
         reputation: 3,
       },
       {
@@ -418,8 +500,8 @@ const raveStories = [
         emoji: "👀",
         result:
           "Good call. The first address got shut down, but you found the real one.",
-        cash: 125,
-        xp: 25,
+        cash: 150,
+        xp: 30,
         reputation: 2,
       },
     ],
@@ -432,8 +514,8 @@ const raveStories = [
         label: "Return it",
         emoji: "🤝",
         result: "The DJ thanks you and puts you on the guest list next time.",
-        cash: 50,
-        xp: 20,
+        cash: 90,
+        xp: 25,
         reputation: 4,
       },
       {
@@ -442,8 +524,8 @@ const raveStories = [
         emoji: "🎧",
         result:
           "It was full of unreleased IDs. You learned something dangerous.",
-        cash: 150,
-        xp: 15,
+        cash: 175,
+        xp: 20,
         reputation: 1,
       },
       {
@@ -451,8 +533,8 @@ const raveStories = [
         label: "Ask around",
         emoji: "🔎",
         result: "You connected with half the lineup trying to find the owner.",
-        cash: 75,
-        xp: 25,
+        cash: 125,
+        xp: 30,
         reputation: 3,
       },
     ],
@@ -462,7 +544,7 @@ const raveStories = [
 async function raveStory(interaction) {
   const story = raveStories[Math.floor(Math.random() * raveStories.length)];
   const userId = interaction.user.id;
-  const cooldown = checkCooldown(interaction.user.id, "story", 720);
+  const cooldown = checkCooldown(interaction.user.id, "story", 90);
 
   if (cooldown) {
     return interaction.reply({
