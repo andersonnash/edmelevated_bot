@@ -81,7 +81,7 @@ function nextObjective(user, venues, equipment, readyToCollect = 0) {
     return (
       "You have income ready to collect.\n\n" +
       `Ready: **${money(readyToCollect)}**\n` +
-      "Claim it, then reinvest into gear, venue staff, or upgrades."
+      "Claim it, then reinvest into gear, venue staff, or venue upgrades."
     );
   }
 
@@ -150,6 +150,9 @@ function nextObjective(user, venues, equipment, readyToCollect = 0) {
 async function profile(interaction) {
   const userId = interaction.user.id;
   const username = interaction.user.username;
+  const avatarUrl = interaction.user.displayAvatarURL({
+    size: 128,
+  });
   const user = getUser(userId);
   const level = user.level || 1;
   const xp = user.xp || 0;
@@ -215,8 +218,12 @@ async function profile(interaction) {
 
   const embed = new EmbedBuilder()
     .setColor(0xffd000)
-    .setTitle("🎧 EDMELEVATED WALLET")
-    .setDescription(`**${username}**`)
+    .setAuthor({
+      name: `${username}'s Scene Profile`,
+      iconURL: avatarUrl,
+    })
+    .setTitle("🎧 EDMELEVATED CITY")
+    .setDescription("Your progress, income, and next move in the city.")
     .addFields(
       {
         name: "💰 WALLET",
