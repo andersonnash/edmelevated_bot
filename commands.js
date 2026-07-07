@@ -1,5 +1,15 @@
 const { REST, Routes, SlashCommandBuilder } = require("discord.js");
 
+const { SHOP_ITEMS } = require("./constants");
+
+const shopTitleChoices = Object.values(SHOP_ITEMS)
+  .filter((item) => item.type === "cosmetic_title")
+  .slice(0, 25)
+  .map((item) => ({
+    name: `${item.name} — $${item.price.toLocaleString()}`,
+    value: item.key,
+  }));
+
 const commands = [
   new SlashCommandBuilder()
     .setName("help")
@@ -411,6 +421,32 @@ const commands = [
       option
         .setName("show")
         .setDescription("Completed show to collect")
+        .setRequired(true)
+        .setAutocomplete(true),
+    ),
+
+  new SlashCommandBuilder()
+    .setName("shop")
+    .setDescription("View cosmetic Scene Titles and other shop items"),
+
+  new SlashCommandBuilder()
+    .setName("buy_item")
+    .setDescription("Buy a cosmetic item from the scene shop")
+    .addStringOption((option) =>
+      option
+        .setName("item")
+        .setDescription("The item you want to buy")
+        .setRequired(true)
+        .addChoices(...shopTitleChoices),
+    ),
+
+  new SlashCommandBuilder()
+    .setName("equip_title")
+    .setDescription("Equip one of your purchased Scene Titles")
+    .addStringOption((option) =>
+      option
+        .setName("title")
+        .setDescription("The Scene Title you want to equip")
         .setRequired(true)
         .setAutocomplete(true),
     ),

@@ -13,6 +13,7 @@ const {
   VENUE_TYPES,
   EQUIPMENT_TYPES,
   WORK_JOBS,
+  SHOP_ITEMS,
 } = require("../constants");
 
 const ALL_ROLES = {
@@ -161,6 +162,10 @@ async function profile(interaction) {
   const threshold = Math.pow(level, 2) * 50;
   const venueIncome = getVenueIncome(userId);
   const equipmentIncome = getEquipmentIncome(userId);
+  const activeTitle = SHOP_ITEMS[user.active_cosmetic_title];
+  const profileColor = activeTitle?.profileColor || 0xffd000;
+  const profileEmoji = activeTitle?.profileEmoji || "🎧";
+  const profileAccent = activeTitle?.profileAccent || "Build the scene";
 
   const venues = db
     .prepare("SELECT * FROM venues WHERE owner_id = ?")
@@ -216,52 +221,75 @@ async function profile(interaction) {
         .join(" ")
     : "None";
 
+  const profileFields = [
+    {
+      name: "💰 WALLET",
+      value:
+        "```ansi\n" +
+        `Cash:       ${money(user.cash)}\n\n` +
+        `LVL ${level} ${bar} ${xp.toLocaleString()} / ${threshold.toLocaleString()} XP\n` +
+        `${levelTitle}` +
+        "```",
+    },
+  ];
+
+  if (activeTitle) {
+    profileFields.push({
+      name: `${profileEmoji} SCENE TITLE`,
+      value:
+        "```ansi\n" +
+        `Title:      ${activeTitle.name}\n` +
+        `Vibe:       ${activeTitle.description}\n` +
+        `Theme:      ${profileAccent}` +
+        "```",
+    });
+  }
+
+  profileFields.push(
+    {
+      name: "🏢 PASSIVE INCOME",
+      value:
+        "```ansi\n" +
+        `Venues: ${venues.length} (${money(venueIncome.hourly)}/hr) ${
+          venueIncome.staffBoostHourly > 0 ? "👥" : ""
+        } +${money(venueIncome.total)}\n` +
+        `Equipment: ${equipment.length} (${money(equipmentIncome.hourly)}/hr) +${money(equipmentIncome.total)}\n` +
+        `Ready to Collect: ${money(passiveTotal)}\n` +
+        "```",
+    },
+    {
+      name: "📊 STATS",
+      value:
+        "```ansi\n" +
+        `Reputation:    ${user.reputation || 0}\n` +
+        `Roles:         ${roleEmojis}\n` +
+        `Lifetime:      ${money(user.lifetime_earned || 0)}\n` +
+        "```",
+    },
+    {
+      name: "🎯 NEXT OBJECTIVE",
+      value: objective,
+    },
+    {
+      name: "💡 NEXT STEP",
+      value: nextStep,
+    },
+  );
+
   const embed = new EmbedBuilder()
-    .setColor(0xffd000)
+    .setColor(profileColor)
     .setAuthor({
       name: `${username}'s Scene Profile`,
       iconURL: avatarUrl,
     })
-    .setTitle("🎧 EDMELEVATED CITY")
+    .setTitle(`${profileEmoji} EDMELEVATED CITY`)
     .setDescription("Your progress, income, and next move in the city.")
-    .addFields(
-      {
-        name: "💰 WALLET",
-        value:
-          "```ansi\n" +
-          `Cash:       ${money(user.cash)}\n\n` +
-          `LVL ${level} ${bar} ${xp.toLocaleString()} / ${threshold.toLocaleString()} XP\n` +
-          `${levelTitle}` +
-          "```",
-      },
-      {
-        name: "🏢 PASSIVE INCOME",
-        value:
-          "```ansi\n" +
-          `Venues: ${venues.length} (${money(venueIncome.hourly)}/hr) ${money(venueIncome.staffBoostHourly) > 0 ? "👥" : ""} +${money(venueIncome.total)}\n` +
-          `Equipment: ${equipment.length} (${money(equipmentIncome.hourly)}/hr) +${money(equipmentIncome.total)}\n` +
-          `Ready to Collect: ${money(passiveTotal)}\n` +
-          "```",
-      },
-      {
-        name: "📊 STATS",
-        value:
-          "```ansi\n" +
-          `Reputation:    ${user.reputation || 0}\n` +
-          `Roles:         ${roleEmojis} \n` +
-          `Lifetime:      ${money(user.lifetime_earned || 0)}\n` +
-          "```",
-      },
-      {
-        name: "🎯 NEXT OBJECTIVE",
-        value: objective,
-      },
-      {
-        name: "💡 NEXT STEP",
-        value: nextStep,
-      },
-    )
-    .setFooter({ text: "EDMELEVATED City • Build the scene" });
+    .addFields(profileFields)
+    .setFooter({
+      text: activeTitle
+        ? `${activeTitle.name} theme equipped • ${profileAccent}`
+        : "EDMELEVATED City • Build the scene",
+    });
 
   const row = new ActionRowBuilder().addComponents(
     new ButtonBuilder()

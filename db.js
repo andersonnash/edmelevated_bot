@@ -175,6 +175,15 @@ CREATE TABLE IF NOT EXISTS dj_profiles (
     hourly_income INTEGER DEFAULT 0,
     last_collected_at TEXT DEFAULT CURRENT_TIMESTAMP
   );
+
+  CREATE TABLE IF NOT EXISTS user_cosmetics (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id TEXT NOT NULL,
+    item_key TEXT NOT NULL,
+    item_type TEXT NOT NULL,
+    purchased_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(user_id, item_key)
+  );
 `);
 
 function addColumnIfMissing(table, column, definition) {
@@ -192,5 +201,6 @@ addColumnIfMissing("venues", "boosted_until", "TEXT");
 addColumnIfMissing("venues", "income_multiplier", "REAL DEFAULT 1");
 addColumnIfMissing("venues", "created_at", "TEXT");
 addColumnIfMissing("venues", "closed_at", "TEXT");
+addColumnIfMissing("users", "active_cosmetic_title", "TEXT");
 
 module.exports = db;
