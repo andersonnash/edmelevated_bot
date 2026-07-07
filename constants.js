@@ -353,6 +353,128 @@ const WORK_JOBS = {
   },
 };
 
+const SHOP_ITEMS = {
+  title_dnb_lifer: {
+    key: "title_dnb_lifer",
+    type: "cosmetic_title",
+    category: "genre",
+    name: "DNB Lifer",
+    description: "Everything sounds better at 174 BPM.",
+    price: 1500,
+    profileColor: 0x22d3ee,
+    profileEmoji: "🥁",
+    profileAccent: "174 BPM / Bassline pressure",
+  },
+
+  title_house_head: {
+    key: "title_house_head",
+    type: "cosmetic_title",
+    category: "genre",
+    name: "House Head",
+    description: "Four on the floor, spiritually and emotionally.",
+    price: 1500,
+    profileColor: 0x22c55e,
+    profileEmoji: "🏠",
+    profileAccent: "Four-on-the-floor energy",
+  },
+
+  title_techno_gremlin: {
+    key: "title_techno_gremlin",
+    type: "cosmetic_title",
+    category: "genre",
+    name: "Techno Gremlin",
+    description: "Dark room. No phones. Questionable sleep schedule.",
+    price: 2000,
+    profileColor: 0x8b5cf6,
+    profileEmoji: "🕳️",
+    profileAccent: "Dark room certified",
+  },
+
+  title_trance_purist: {
+    key: "title_trance_purist",
+    type: "cosmetic_title",
+    category: "genre",
+    name: "Trance Purist",
+    description: "Still chasing the emotional breakdown.",
+    price: 2000,
+    profileColor: 0x38bdf8,
+    profileEmoji: "🌌",
+    profileAccent: "Melodies, lasers, feelings",
+  },
+
+  title_bassline_believer: {
+    key: "title_bassline_believer",
+    type: "cosmetic_title",
+    category: "genre",
+    name: "Bassline Believer",
+    description: "Lives for low-end therapy.",
+    price: 1000,
+    profileColor: 0x06b6d4,
+    profileEmoji: "🔊",
+    profileAccent: "Low-end spiritual practice",
+  },
+
+  title_wub_cartographer: {
+    key: "title_wub_cartographer",
+    type: "cosmetic_title",
+    category: "genre",
+    name: "Wub Cartographer",
+    description: "Can navigate entirely by sub-bass.",
+    price: 2500,
+    profileColor: 0xa855f7,
+    profileEmoji: "🗺️",
+    profileAccent: "Mapping the wublands",
+  },
+
+  title_flow_state: {
+    key: "title_flow_state",
+    type: "cosmetic_title",
+    category: "flow",
+    name: "Flow State",
+    description: "Poi, fans, hoops, and suspiciously good balance.",
+    price: 1500,
+    profileColor: 0xec4899,
+    profileEmoji: "🌀",
+    profileAccent: "Movement is the message",
+  },
+
+  title_fire_circle_regular: {
+    key: "title_fire_circle_regular",
+    type: "cosmetic_title",
+    category: "flow",
+    name: "Fire Circle Regular",
+    description: "Knows where the fuel depot is and why that matters.",
+    price: 2500,
+    profileColor: 0xf97316,
+    profileEmoji: "🔥",
+    profileAccent: "Part dancer, part fire hazard",
+  },
+
+  title_orbit_wizard: {
+    key: "title_orbit_wizard",
+    type: "cosmetic_title",
+    category: "flow",
+    name: "Orbit Wizard",
+    description: "Accidentally became the visual production.",
+    price: 2000,
+    profileColor: 0xeab308,
+    profileEmoji: "🪄",
+    profileAccent: "Light trails and questionable magic",
+  },
+
+  title_glowstick_architect: {
+    key: "title_glowstick_architect",
+    type: "cosmetic_title",
+    category: "flow",
+    name: "Glowstick Architect",
+    description: "Building temporary temples out of light trails.",
+    price: 1500,
+    profileColor: 0x84cc16,
+    profileEmoji: "💚",
+    profileAccent: "Neon engineering department",
+  },
+};
+
 module.exports = {
   OWNER_ID,
   VENUE_TYPES,
@@ -364,5 +486,6 @@ module.exports = {
   ROLES,
   CAREER_ROLES,
   WORK_JOBS,
+  SHOP_ITEMS,
   isOwner,
 };

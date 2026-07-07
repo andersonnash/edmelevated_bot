@@ -9,6 +9,7 @@ const djs = require("./djs");
 const help = require("./help");
 const games = require("./games");
 const equipment = require("./equipment");
+const shop = require("./shop");
 
 const { getUser } = require("../services/roles");
 
@@ -60,6 +61,10 @@ const commandMap = {
 
   test_venue_event: venues.testVenueEvent,
   run_venue_events: venues.runVenueEvents,
+
+  shop: shop.shop,
+  buy_item: shop.buyItem,
+  equip_title: shop.equipTitle,
 };
 
 async function handleCommand(interaction) {

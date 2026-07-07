@@ -1,8 +1,51 @@
 const db = require("../db");
+const { SHOP_ITEMS } = require("../constants");
 
 async function handleAutocomplete(interaction) {
   const userId = interaction.user.id;
   const focused = interaction.options.getFocused();
+  if (
+    interaction.commandName === "equip_title" &&
+    interaction.options.getFocused(true).name === "title"
+  ) {
+    const focusedLower = focused.toLowerCase();
+
+    const ownedRows = db
+      .prepare(
+        `
+      SELECT item_key
+      FROM user_cosmetics
+      WHERE user_id = ?
+        AND item_type = 'cosmetic_title'
+      ORDER BY purchased_at DESC
+      LIMIT 25
+      `,
+      )
+      .all(userId);
+
+    const ownedTitles = ownedRows
+      .map((row) => SHOP_ITEMS[row.item_key])
+      .filter(Boolean)
+      .filter((item) => item.name.toLowerCase().includes(focusedLower));
+
+    const choices = ownedTitles.map((item) => ({
+      name: item.name,
+      value: item.key,
+    }));
+
+    if (
+      !focusedLower ||
+      "unequip scene title".includes(focusedLower) ||
+      "remove scene title".includes(focusedLower)
+    ) {
+      choices.unshift({
+        name: "Unequip Scene Title",
+        value: "none",
+      });
+    }
+
+    return interaction.respond(choices.slice(0, 25));
+  }
   if (
     ["create_show", "upgrade_venue", "hire_venue_staff"].includes(
       interaction.commandName,
