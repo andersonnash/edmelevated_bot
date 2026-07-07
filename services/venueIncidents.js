@@ -48,7 +48,7 @@ const VENUE_BOOSTS = [
     type: "packed_bar",
     emoji: "🍻",
     title: "Packed Bar Night",
-    reason: "The bar stayed busy all night.",
+    reason: "The bar is busier than usual tonight.",
     hoursBoosted: 3,
     incomeMultiplier: 1.35,
   },
@@ -138,10 +138,12 @@ function rollVenueEventForOwner(ownerId) {
 }
 
 function buildVenueEventEmbed(venue, type, event) {
+  const isIncident = type === "incident";
+
   return new EmbedBuilder()
-    .setColor(type === "incident" ? 0xff3355 : 0x22c55e)
+    .setColor(isIncident ? 0xff3355 : 0x22c55e)
     .setTitle(
-      type === "incident"
+      isIncident
         ? `${event.emoji} Venue Incident`
         : `${event.emoji} Venue Boost`,
     )
@@ -153,10 +155,15 @@ function buildVenueEventEmbed(venue, type, event) {
       },
       {
         name: "Effect",
-        value:
-          type === "incident"
-            ? `Closed for **${event.hoursClosed} hours**`
-            : `Income boosted **x${event.incomeMultiplier}** for **${event.hoursBoosted} hours**`,
+        value: isIncident
+          ? `Closed for **${event.hoursClosed} hours**. Passive income from this venue is paused.`
+          : `Income boosted **x${event.incomeMultiplier}** for **${event.hoursBoosted} hours**.`,
+      },
+      {
+        name: "What Now?",
+        value: isIncident
+          ? "Upgrade venue maintenance to reduce future incident chances."
+          : "The owner can use /collect while the boost is active to take advantage of the increased income.",
       },
     );
 }
