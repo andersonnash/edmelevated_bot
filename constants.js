@@ -4,12 +4,18 @@ function isOwner(userId) {
   return userId === OWNER_ID;
 }
 
+const BOT_ADMIN_ID = process.env.BOT_ADMIN_ID || OWNER_ID;
+
+function isBotAdmin(userId) {
+  return userId === BOT_ADMIN_ID;
+}
+
 const VENUE_TYPES = {
   garage_party: {
     name: "Garage Party",
     cost: 2_500,
     repRequired: 0,
-    passiveIncome: 20,
+    passiveIncome: 100,
     baseCapacity: 25,
     staffLimit: 1,
     djLimit: 1,
@@ -21,7 +27,7 @@ const VENUE_TYPES = {
     name: "Granary Warehouse",
     cost: 10_000,
     repRequired: 10,
-    passiveIncome: 85,
+    passiveIncome: 350,
     baseCapacity: 100,
     staffLimit: 3,
     djLimit: 2,
@@ -33,7 +39,7 @@ const VENUE_TYPES = {
     name: "The Sub Room",
     cost: 30_000,
     repRequired: 25,
-    passiveIncome: 250,
+    passiveIncome: 850,
     baseCapacity: 250,
     staffLimit: 6,
     djLimit: 3,
@@ -45,7 +51,7 @@ const VENUE_TYPES = {
     name: "Neon Rooftop",
     cost: 75_000,
     repRequired: 50,
-    passiveIncome: 700,
+    passiveIncome: 1_500,
     baseCapacity: 600,
     staffLimit: 10,
     djLimit: 5,
@@ -57,7 +63,7 @@ const VENUE_TYPES = {
     name: "Desert Frequency",
     cost: 250_000,
     repRequired: 100,
-    passiveIncome: 2_500,
+    passiveIncome: 4_000,
     baseCapacity: 2_500,
     staffLimit: 25,
     djLimit: 12,
@@ -112,25 +118,28 @@ const INSURANCE_TIERS = {
   basic: {
     name: "Basic Coverage",
     cost: 10_000,
+    durationHours: 48,
     incidentReduction: 0.15,
     closureReduction: 0.25,
-    description: "Basic protection against venue incidents.",
+    description: "Basic 48-hour protection against venue incidents.",
   },
 
   commercial: {
     name: "Commercial Coverage",
     cost: 40_000,
+    durationHours: 72,
     incidentReduction: 0.35,
     closureReduction: 0.5,
-    description: "Stronger coverage for established venues.",
+    description: "Stronger temporary coverage for established venues.",
   },
 
   festival: {
     name: "Festival Coverage",
     cost: 150_000,
+    durationHours: 168,
     incidentReduction: 0.6,
     closureReduction: 0.75,
-    description: "Premium protection for major venues.",
+    description: "Premium week-long protection for major venues.",
   },
 };
 
@@ -477,5 +486,7 @@ module.exports = {
   CAREER_ROLES,
   WORK_JOBS,
   SHOP_ITEMS,
+  BOT_ADMIN_ID,
+  isBotAdmin,
   isOwner,
 };

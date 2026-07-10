@@ -1,5 +1,5 @@
 const db = require("../db");
-const { SHOP_ITEMS } = require("../constants");
+const { SHOP_ITEMS, VENUE_TYPES } = require("../constants");
 
 async function handleAutocomplete(interaction) {
   const userId = interaction.user.id;
@@ -47,7 +47,7 @@ async function handleAutocomplete(interaction) {
     return interaction.respond(choices.slice(0, 25));
   }
   if (
-    ["create_show", "upgrade_venue", "hire_venue_staff"].includes(
+    ["create_show", "upgrade_venue", "hire_venue_staff", "venue_insurance"].includes(
       interaction.commandName,
     ) &&
     interaction.options.getFocused(true).name === "venue"
@@ -64,6 +64,28 @@ async function handleAutocomplete(interaction) {
         value: String(v.id),
       })),
     );
+  }
+
+  if (interaction.commandName === "buy_venue") {
+    const focusedValue = interaction.options.getFocused().toLowerCase();
+
+    const choices = Object.entries(VENUE_TYPES)
+      .filter(([key, venue]) => {
+        const searchText = `${key} ${venue.name}`.toLowerCase();
+        return searchText.includes(focusedValue);
+      })
+      .map(([key, venue]) => {
+        const cost = Number(venue.cost || 0).toLocaleString();
+        const income = Number(venue.passiveIncome || 0).toLocaleString();
+
+        return {
+          name: `${venue.name} — Rep Req / ${venue.repRequired} - $${cost} — $${income}/hr`.slice(0, 100),
+          value: key,
+        };
+      })
+      .slice(0, 25);
+
+    return interaction.respond(choices);
   }
 
   if (
@@ -85,7 +107,6 @@ async function handleAutocomplete(interaction) {
   if (
     [
       "buy_ticket",
-      "run_show",
       "force_run_show",
       "promote_show",
       "add_lineup",
@@ -245,10 +266,7 @@ async function handleAutocomplete(interaction) {
       })),
     );
   }
-  if (
-    interaction.commandName === "run_show" ||
-    interaction.commandName === "force_run_show"
-  ) {
+  if (interaction.commandName === "force_run_show") {
     const shows = db
       .prepare(
         `

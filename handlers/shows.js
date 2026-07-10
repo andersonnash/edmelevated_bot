@@ -18,6 +18,7 @@ const { money } = require("../services/formatters");
 const {
   getVenueIncome,
   getEquipmentIncome,
+  getVenueAttendanceBonus,
 } = require("../services/venueEngine");
 
 const {
@@ -45,6 +46,8 @@ const {
 } = require("../services/generators");
 
 const { SHOW_STAFF_ROLES, isOwner } = require("../constants");
+
+const { isBotAdmin } = require("../constants");
 
 async function createShow(interaction) {
   const userId = interaction.user.id;
@@ -207,9 +210,7 @@ async function showLineup(interaction, buttonShowId = null) {
 
   const showId = buttonShowId || interaction.options.getString("show");
 
-  const bypassDate =
-    interaction.commandName === "force_run_show" ||
-    interaction.customId?.startsWith("run_show_");
+  const bypassDate = interaction.commandName === "force_run_show";
 
   const show = db
     .prepare(
@@ -395,6 +396,12 @@ function buildShowPage(userId, status, page = 0) {
   const { djCount, showStaffCount } = getShowCounts(show.id);
   const finalCapacity = venueCapacity(show);
 
+  const baseProjectedWalkins = Number(show.simulated_attendees || 0);
+  const attendanceBonus = getVenueAttendanceBonus(show);
+  const boostedProjectedWalkins = Math.round(
+    baseProjectedWalkins * (1 + attendanceBonus),
+  );
+
   const title =
     status === "upcoming"
       ? `🟢 UPCOMING SHOW (${safePage + 1}/${totalPages})`
@@ -442,12 +449,12 @@ function buildShowPage(userId, status, page = 0) {
       },
       {
         name: "👥 Projected Walk-ins",
-        value: `${show.simulated_attendees || 0}`,
+        value: `${boostedProjectedWalkins}`,
         inline: true,
       },
       {
         name: "📈 Attendance Boost",
-        value: `+${attendanceBonusPercent(show)}% from venue upgrades`,
+        value: `+${Math.round(attendanceBonus * 100)}% from venue upgrades`,
         inline: true,
       },
     )
@@ -680,10 +687,17 @@ function buildCollectShowRow(showId) {
   );
 }
 
-async function runShow(interaction, buttonShowId = null) {
+async function runShow(interaction) {
   const userId = interaction.user.id;
 
-  const showId = buttonShowId || interaction.options?.getString("show");
+  if (!isBotAdmin(userId)) {
+    return interaction.reply({
+      content: "Bot admin only.",
+      ephemeral: true,
+    });
+  }
+
+  const showId = interaction.options?.getString("show");
 
   const bypassDate = interaction.commandName === "force_run_show";
 

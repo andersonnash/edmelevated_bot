@@ -31,6 +31,7 @@ const commandMap = {
   buy_venue: venues.buyVenue,
   my_venues: venues.myVenues,
   upgrade_venue: venues.upgradeVenue,
+  venue_insurance: venues.venueInsurance,
 
   buy_equipment: equipment.buyEquipment,
   my_equipment: equipment.myEquipment,
@@ -38,7 +39,6 @@ const commandMap = {
   create_show: shows.createShow,
   my_shows: shows.myShows,
   buy_ticket: shows.buyTicket,
-  run_show: shows.runShow,
   force_run_show: shows.runShow,
   collect: shows.collect,
   collect_show: shows.collectShow,
@@ -103,16 +103,6 @@ async function handleCommand(interaction) {
       const showId = interaction.customId.replace("show_lineup_", "");
 
       return shows.showLineup(interaction, showId);
-    }
-
-    if (interaction.customId.startsWith("run_show_")) {
-      const showId = interaction.customId.replace("run_show_", "");
-
-      await interaction.deferReply({
-        ephemeral: true,
-      });
-
-      return shows.runShow(interaction, showId);
     }
 
     if (interaction.customId.startsWith("promote_show_")) {

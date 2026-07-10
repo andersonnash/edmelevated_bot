@@ -1,6 +1,7 @@
 const { EmbedBuilder } = require("discord.js");
 const db = require("../db");
 const { postSceneFeed } = require("./sceneFeed");
+const { INSURANCE_TIERS } = require("../constants");
 
 const VENUE_INCIDENTS = [
   {
@@ -62,6 +63,23 @@ const VENUE_BOOSTS = [
   },
 ];
 
+function isActiveUntil(value) {
+  if (!value) return false;
+  return new Date(value.replace(" ", "T") + "Z") > new Date();
+}
+
+function getActiveInsurance(venue) {
+  if (!venue.insurance_tier || venue.insurance_tier === "none") {
+    return null;
+  }
+
+  if (!isActiveUntil(venue.insurance_expires_at)) {
+    return null;
+  }
+
+  return INSURANCE_TIERS[venue.insurance_tier] || null;
+}
+
 function boostVenueForEvent(venue, event) {
   db.prepare(
     `
@@ -77,8 +95,8 @@ function pickRandom(items) {
   return items[Math.floor(Math.random() * items.length)];
 }
 
-function getRandomOpenVenueForOwner(ownerId) {
-  const venues = db
+function getRandomAvailableVenueForOwner(ownerId) {
+  const venue = db
     .prepare(
       `
       SELECT *
@@ -88,21 +106,68 @@ function getRandomOpenVenueForOwner(ownerId) {
           closed_until IS NULL
           OR closed_until <= datetime('now')
         )
+        AND (
+          boosted_until IS NULL
+          OR boosted_until <= datetime('now')
+        )
       ORDER BY RANDOM()
       LIMIT 1
       `,
     )
     .get(ownerId);
 
-  return venues;
+  return venue;
 }
 
 function getIncidentChance(venue) {
-  return 0.1;
+  const baseChance = 0.1;
+  const insurance = getActiveInsurance(venue);
+
+  if (!insurance) {
+    return baseChance;
+  }
+
+  return baseChance * (1 - insurance.incidentReduction);
+}
+
+function buildIncidentEventForVenue(venue) {
+  const insurance = getActiveInsurance(venue);
+  const baseEvent = pickRandom(VENUE_INCIDENTS);
+
+  const reducedHours = insurance
+    ? Math.max(
+        1,
+        Math.ceil(baseEvent.hoursClosed * (1 - insurance.closureReduction)),
+      )
+    : baseEvent.hoursClosed;
+
+  return {
+    ...baseEvent,
+    originalHoursClosed: baseEvent.hoursClosed,
+    hoursClosed: reducedHours,
+    insuranceName: insurance?.name,
+  };
+}
+
+function closeVenueForIncident(venue, incident) {
+  db.prepare(
+    `
+    UPDATE venues
+    SET
+      closed_at = CURRENT_TIMESTAMP,
+      closed_until = datetime('now', ?),
+      closure_reason = ?
+    WHERE id = ?
+    `,
+  ).run(
+    `+${incident.hoursClosed} hours`,
+    `${incident.emoji} ${incident.title}: ${incident.reason}`,
+    venue.id,
+  );
 }
 
 function rollVenueEventForOwner(ownerId) {
-  const venue = getRandomOpenVenueForOwner(ownerId);
+  const venue = getRandomAvailableVenueForOwner(ownerId);
 
   if (!venue) return null;
 
@@ -110,7 +175,7 @@ function rollVenueEventForOwner(ownerId) {
   const incidentChance = getIncidentChance(venue);
 
   if (roll < incidentChance) {
-    const event = pickRandom(VENUE_INCIDENTS);
+    const event = buildIncidentEventForVenue(venue);
     closeVenueForIncident(venue, event);
 
     return {
@@ -138,6 +203,7 @@ function rollVenueEventForOwner(ownerId) {
 
 function buildVenueEventEmbed(venue, type, event) {
   const isIncident = type === "incident";
+  const venueLabel = `${venue.name || "Unknown Venue"} #${venue.id ?? "?"}`;
 
   return new EmbedBuilder()
     .setColor(isIncident ? 0xff3355 : 0x22c55e)
@@ -146,7 +212,7 @@ function buildVenueEventEmbed(venue, type, event) {
         ? `${event.emoji} Venue Incident`
         : `${event.emoji} Venue Boost`,
     )
-    .setDescription(`**${venue.name || "Unknown Venue"}**`)
+    .setDescription(`**${venueLabel}**`)
     .addFields(
       {
         name: event.title || "Venue Event",
@@ -155,13 +221,15 @@ function buildVenueEventEmbed(venue, type, event) {
       {
         name: "Effect",
         value: isIncident
-          ? `Closed for **${event.hoursClosed} hours**. Passive income from this venue is paused.`
+          ? event.insuranceName
+            ? `Closed for **${event.hoursClosed} hours**. Insurance reduced the closure from **${event.originalHoursClosed} hours**.`
+            : `Closed for **${event.hoursClosed} hours**. Passive income from this venue is paused.`
           : `Income boosted **x${event.incomeMultiplier}** for **${event.hoursBoosted} hours**.`,
       },
       {
         name: "What Now?",
         value: isIncident
-          ? "Buy venue insurance from the shop to reduce future incident risk."
+          ? "Use `/venue_insurance` before future incidents to reduce risk and closure time."
           : "The owner can use `/collect` while the boost is active to take advantage of the increased income.",
       },
     );
@@ -189,21 +257,39 @@ async function processVenueEvents(client) {
   return results;
 }
 
-function closeVenueForIncident(venue, incident) {
-  db.prepare(
-    `
-    UPDATE venues
-    SET
-      closed_at = CURRENT_TIMESTAMP,
-      closed_until = datetime('now', ?),
-      closure_reason = ?
-    WHERE id = ?
-    `,
-  ).run(
-    `+${incident.hoursClosed} hours`,
-    `${incident.emoji} ${incident.title}: ${incident.reason}`,
-    venue.id,
-  );
+function forceVenueEventForOwner(ownerId, forcedType = "random") {
+  const venue = getRandomAvailableVenueForOwner(ownerId);
+
+  if (!venue) return null;
+
+  let type = forcedType;
+
+  if (!["incident", "boost"].includes(type)) {
+    type = Math.random() < 0.5 ? "incident" : "boost";
+  }
+
+  if (type === "incident") {
+    const event = buildIncidentEventForVenue(venue);
+    closeVenueForIncident(venue, event);
+
+    return {
+      ownerId,
+      venue,
+      type: "incident",
+      event,
+    };
+  }
+
+  const event = pickRandom(VENUE_BOOSTS);
+
+  boostVenueForEvent(venue, event);
+
+  return {
+    ownerId,
+    venue,
+    type: "boost",
+    event,
+  };
 }
 
 function getVenueOwners() {
@@ -240,4 +326,7 @@ module.exports = {
   buildVenueEventEmbed,
   processVenueEvents,
   getIncidentChance,
+  getRandomAvailableVenueForOwner,
+  forceVenueEventForOwner,
+  buildIncidentEventForVenue,
 };

@@ -1,13 +1,14 @@
 const db = require("../db");
-const { VENUE_TYPES, VENUE_DEPARTMENTS } = require("../constants");
+const { VENUE_TYPES, VENUE_DEPARTMENTS, INSURANCE_TIERS } = require("../constants");
 const { getUser, addRole } = require("../services/roles");
 
 const { money } = require("../services/formatters");
-const { isOwner } = require("../constants");
+const { isOwner, isBotAdmin } = require("../constants");
 const {
   rollVenueEventForOwner,
   buildVenueEventEmbed,
   processVenueEvents,
+  forceVenueEventForOwner,
 } = require("../services/venueIncidents");
 
 const {
@@ -23,6 +24,136 @@ const {
   venueReputation,
   venueCapacity,
 } = require("../services/venueEngine");
+
+async function venueInsurance(interaction) {
+  const userId = interaction.user.id;
+  const venueId = interaction.options.getString("venue");
+  const tierKey = interaction.options.getString("tier");
+  const tier = INSURANCE_TIERS[tierKey];
+
+  if (!tier) {
+    return interaction.reply({
+      content: "That insurance tier does not exist.",
+      ephemeral: true,
+    });
+  }
+
+  const user = db
+    .prepare(
+      `
+      SELECT discord_id, cash
+      FROM users
+      WHERE discord_id = ?
+      `,
+    )
+    .get(userId);
+
+  if (!user) {
+    return interaction.reply({
+      content: "Run `/profile` first so I can create your city profile.",
+      ephemeral: true,
+    });
+  }
+
+  const venue = db
+    .prepare(
+      `
+      SELECT id, name, owner_id, insurance_tier, insurance_expires_at
+      FROM venues
+      WHERE id = ?
+        AND owner_id = ?
+      `,
+    )
+    .get(venueId, userId);
+
+  if (!venue) {
+    return interaction.reply({
+      content: "I couldn't find that venue, or you do not own it.",
+      ephemeral: true,
+    });
+  }
+
+  const alreadyInsured =
+    venue.insurance_expires_at &&
+    new Date(venue.insurance_expires_at.replace(" ", "T") + "Z") > new Date();
+
+  if (alreadyInsured) {
+    return interaction.reply({
+      content:
+        `**${venue.name}** already has active insurance.\n` +
+        `Coverage expires at: **${venue.insurance_expires_at} UTC**`,
+      ephemeral: true,
+    });
+  }
+
+  if ((user.cash || 0) < tier.cost) {
+    return interaction.reply({
+      content:
+        `You need **${money(tier.cost)}** for **${tier.name}**.\n` +
+        `You currently have **${money(user.cash || 0)}**.`,
+      ephemeral: true,
+    });
+  }
+
+  const expiresAt = db
+    .prepare(`SELECT datetime('now', ?) AS expires_at`)
+    .get(`+${tier.durationHours} hours`).expires_at;
+
+  const buyInsurance = db.transaction(() => {
+    db.prepare(
+      `
+      UPDATE users
+      SET cash = cash - ?
+      WHERE discord_id = ?
+      `,
+    ).run(tier.cost, userId);
+
+    db.prepare(
+      `
+      UPDATE venues
+      SET insurance_tier = ?,
+          insurance_expires_at = ?
+      WHERE id = ?
+      `,
+    ).run(tierKey, expiresAt, venue.id);
+  });
+
+  buyInsurance();
+
+  const embed = new EmbedBuilder()
+    .setColor(0x22c55e)
+    .setTitle("🛡️ VENUE INSURANCE ACTIVE")
+    .setDescription(`**${venue.name}** is now covered by **${tier.name}**.`)
+    .addFields(
+      {
+        name: "Coverage",
+        value:
+          "```ansi\n" +
+          `Duration:       ${tier.durationHours} hours\n` +
+          `Incident Risk:  -${Math.round(tier.incidentReduction * 100)}%\n` +
+          `Closure Time:   -${Math.round(tier.closureReduction * 100)}%\n` +
+          "```",
+      },
+      {
+        name: "Cost",
+        value: money(tier.cost),
+        inline: true,
+      },
+      {
+        name: "Expires",
+        value: `${expiresAt} UTC`,
+        inline: true,
+      },
+    )
+    .setFooter({
+      text: "Insurance reduces venue incident risk, but does not fully prevent every incident.",
+    });
+
+  return interaction.reply({
+    embeds: [embed],
+    ephemeral: true,
+  });
+}
 
 async function buyVenue(interaction) {
   const userId = interaction.user.id;
@@ -165,6 +296,37 @@ async function buyVenue(interaction) {
   });
 }
 
+function formatInsuranceStatus(venue) {
+  if (!venue.insurance_tier || venue.insurance_tier === "none") {
+    return null;
+  }
+
+  const tier = INSURANCE_TIERS[venue.insurance_tier];
+
+  if (!tier || !venue.insurance_expires_at) {
+    return null;
+  }
+
+  const expiresAt = new Date(
+    venue.insurance_expires_at.replace(" ", "T") + "Z",
+  );
+
+  if (Number.isNaN(expiresAt.getTime()) || expiresAt <= new Date()) {
+    return null;
+  }
+
+  const expiresUnix = Math.floor(expiresAt.getTime() / 1000);
+  const hoursLeft = Math.ceil((expiresAt - new Date()) / 1000 / 60 / 60);
+
+  return (
+    `**${tier.name}**\n` +
+    `Expires: <t:${expiresUnix}:R>\n` +
+    `Time Left: ~${hoursLeft}h\n` +
+    `Incident Risk: -${Math.round(tier.incidentReduction * 100)}%\n` +
+    `Closure Time: -${Math.round(tier.closureReduction * 100)}%`
+  );
+}
+
 function buildVenuePage(userId, page = 0) {
   const venues = db
     .prepare("SELECT * FROM venues WHERE owner_id = ?")
@@ -261,54 +423,70 @@ function buildVenuePage(userId, page = 0) {
     color = 0xf59e0b; // gold
   }
 
+  const insuranceStatus = formatInsuranceStatus(venue);
+
+  const fields = [
+    {
+      name: "💰 Income",
+      value: `${money(venueHourlyIncome(venue))}/hr`,
+      inline: true,
+    },
+    {
+      name: "💵 Pending",
+      value: money(venuePendingIncome(venue)),
+      inline: true,
+    },
+    {
+      name: "🕒 Owned",
+      value: displayTime,
+      inline: true,
+    },
+    {
+      name: "🏟 Capacity",
+      value: `${venueCapacity(venue)}`,
+      inline: true,
+    },
+    {
+      name: "👷 Staff Slots",
+      value: `${venueStaffCount || 0}/${venue.staff_limit}`,
+      inline: true,
+    },
+    {
+      name: "🎧 DJ Slots",
+      value: `${venue.dj_limit}`,
+      inline: true,
+    },
+    {
+      name: "⭐ Venue Reputation",
+      value: `${venueReputation(venue)}`,
+      inline: true,
+    },
+  ];
+
+  if (insuranceStatus) {
+    fields.push({
+      name: "🛡️ Insurance",
+      value: insuranceStatus,
+      inline: false,
+    });
+  }
+
+  fields.push({
+    name: "📈 Empire Income",
+    value:
+      `Venues Owned: **${venues.length}**\n` +
+      `Total Income: **${money(totalHourly)}/hr**\n` +
+      `Total Uncollected: **${money(totalPending)}**`,
+    inline: false,
+  });
+
   const embed = new EmbedBuilder()
     .setColor(color)
     .setTitle(`🏟 YOUR VENUES (${safePage + 1}/${totalPages})`)
-    .setDescription(`**${venue.name}**\n\n**${venueStatusText(venue)}**`)
-    .addFields(
-      {
-        name: "💰 Income",
-        value: `${money(venueHourlyIncome(venue))}/hr`,
-        inline: true,
-      },
-      {
-        name: "💵 Pending",
-        value: money(venuePendingIncome(venue)),
-        inline: true,
-      },
-      {
-        name: "🕒 Owned",
-        value: displayTime,
-        inline: true,
-      },
-      {
-        name: "🏟 Capacity",
-        value: `${venueCapacity(venue)}`,
-        inline: true,
-      },
-      {
-        name: "👷 Staff Slots",
-        value: `${venueStaffCount || 0}/${venue.staff_limit}`,
-        inline: true,
-      },
-      {
-        name: "🎧 DJ Slots",
-        value: `${venue.dj_limit}`,
-        inline: true,
-      },
-      {
-        name: "⭐ Venue Reputation",
-        value: `${venueReputation(venue)}`,
-        inline: true,
-      },
-      {
-        name: "📈 Empire Income",
-        value:
-          `Venues Owned: **${venues.length}**\n` +
-          `Total Income: **${money(totalHourly)}/hr**\n` +
-          `Total Uncollected: **${money(totalPending)}**`,
-      },
+    .setDescription(
+      `**${venue.name}** #${venue.id}\n\n**${venueStatusText(venue)}**`,
     )
+    .addFields(fields)
     .setFooter({
       text: "Use /collect to collect all passive income.",
     });
@@ -361,18 +539,20 @@ async function handleVenuePage(interaction) {
 async function testVenueEvent(interaction) {
   const userId = interaction.user.id;
 
-  if (!isOwner(userId)) {
+  if (!isBotAdmin(userId)) {
     return interaction.reply({
-      content: "Owner only.",
+      content: "Bot admin only.",
       ephemeral: true,
     });
   }
 
-  const result = rollVenueEventForOwner(userId);
+  const forcedType = interaction.options.getString("type") || "random";
+  const result = forceVenueEventForOwner(userId, forcedType);
 
   if (!result) {
     return interaction.reply({
-      content: "No venue event triggered.",
+      content:
+        "No eligible venue found. Venues with active closures or boosts cannot receive another event.",
       ephemeral: true,
     });
   }
@@ -386,19 +566,19 @@ async function testVenueEvent(interaction) {
     embeds: [embed],
   });
 
-  return interaction.reply({
+    return interaction.reply({
     embeds: [embed],
-    content: "Venue event triggered. Check your DMs.",
-    ephemeral: false,
+    content: `Forced test venue ${result.type}.`,
+    ephemeral: true,
   });
 }
 
 async function runVenueEvents(interaction) {
   const userId = interaction.user.id;
 
-  if (!isOwner(userId)) {
+  if (!isBotAdmin(userId)) {
     return interaction.reply({
-      content: "Owner only.",
+      content: "Bot admin only.",
       ephemeral: true,
     });
   }
@@ -407,7 +587,7 @@ async function runVenueEvents(interaction) {
 
   if (results.length === 0) {
     return interaction.reply({
-      content: "No venue events occurred.",
+      content: "No venue events triggered during this check.",
       ephemeral: true,
     });
   }
@@ -537,4 +717,5 @@ module.exports = {
   handleVenuePage,
   testVenueEvent,
   runVenueEvents,
+  venueInsurance,
 };

@@ -1,4 +1,9 @@
-const { REST, Routes, SlashCommandBuilder } = require("discord.js");
+const {
+  REST,
+  Routes,
+  SlashCommandBuilder,
+  PermissionFlagsBits,
+} = require("discord.js");
 
 const { SHOP_ITEMS } = require("./constants");
 
@@ -143,7 +148,8 @@ const commands = [
 
   new SlashCommandBuilder()
     .setName("force_run_show")
-    .setDescription("DEV: Run a show immediately")
+    .setDescription("Admin only: force-run a scheduled show")
+    .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
     .addStringOption((option) =>
       option
         .setName("show")
@@ -204,28 +210,7 @@ const commands = [
         .setName("type")
         .setDescription("Venue type")
         .setRequired(true)
-        .addChoices(
-          {
-            name: "Garage Party - $2,500 - Rep 0",
-            value: "garage_party",
-          },
-          {
-            name: "Granary Warehouse - $10,000 - Rep 10",
-            value: "warehouse",
-          },
-          {
-            name: "The Sub Room - $30,000 - Rep 25",
-            value: "underground_club",
-          },
-          {
-            name: "Neon Rooftop - $75,000 - Rep 50",
-            value: "downtown_venue",
-          },
-          {
-            name: "Desert Frequency - $250,000 - Rep 100",
-            value: "festival_grounds",
-          },
-        ),
+        .setAutocomplete(true)
     ),
 
   new SlashCommandBuilder()
@@ -259,6 +244,37 @@ const commands = [
           {
             name: "🎛 Production — +15% attendance/level — starts $5,000",
             value: "production",
+          },
+        ),
+    ),
+
+  new SlashCommandBuilder()
+    .setName("venue_insurance")
+    .setDescription("Buy temporary insurance coverage for one of your venues")
+    .addStringOption((option) =>
+      option
+        .setName("venue")
+        .setDescription("The venue you want to insure")
+        .setRequired(true)
+        .setAutocomplete(true),
+    )
+    .addStringOption((option) =>
+      option
+        .setName("tier")
+        .setDescription("The insurance coverage tier")
+        .setRequired(true)
+        .addChoices(
+          {
+            name: "Basic Coverage — $10,000 — 48h",
+            value: "basic",
+          },
+          {
+            name: "Commercial Coverage — $40,000 — 72h",
+            value: "commercial",
+          },
+          {
+            name: "Festival Coverage — $150,000 — 7 days",
+            value: "festival",
           },
         ),
     ),
@@ -388,27 +404,38 @@ const commands = [
     ),
 
   new SlashCommandBuilder()
-    .setName("run_show")
-    .setDescription("Run a show after its date")
-    .addStringOption((option) =>
-      option
-        .setName("show")
-        .setDescription("Choose one of your shows")
-        .setRequired(true)
-        .setAutocomplete(true),
-    ),
-
-  new SlashCommandBuilder()
     .setName("collect")
     .setDescription("Collect unclaimed passive income"),
 
   new SlashCommandBuilder()
     .setName("test_venue_event")
-    .setDescription("Owner only: test a random venue event"),
+    .setDescription("Admin only: force test venue events")
+    .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+    .addStringOption((option) =>
+      option
+        .setName("type")
+        .setDescription("The type of venue event to force")
+        .setRequired(false)
+        .addChoices(
+          {
+            name: "Random",
+            value: "random",
+          },
+          {
+            name: "Incident",
+            value: "incident",
+          },
+          {
+            name: "Boost",
+            value: "boost",
+          },
+        ),
+    ),
 
   new SlashCommandBuilder()
     .setName("run_venue_events")
-    .setDescription("Owner only: run the daily venue event check"),
+    .setDescription("Admin only: force-run a venue event")
+    .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
 
   new SlashCommandBuilder()
     .setName("collect_show")

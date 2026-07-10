@@ -77,9 +77,15 @@ function startShowScheduler(client) {
     }
   });
 
-  cron.schedule("0 12 * * *", async () => {
-    await processVenueEvents(client);
-  });
+  cron.schedule(
+    "0 0,6,12,18 * * *",
+    async () => {
+      await processVenueEvents(client);
+    },
+    {
+      timezone: "America/Denver",
+    },
+  );
 }
 
 module.exports = {
