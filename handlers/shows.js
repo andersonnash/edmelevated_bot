@@ -141,7 +141,8 @@ async function createShow(interaction) {
       },
       {
         name: "🚀 Next Steps",
-        value: "Use `/promote_show`, `/add_lineup`, `/street_team`",
+        value:
+          "Use the buttons below to promote the show, view the lineup, or hire staff.",
       },
     )
     .setFooter({
@@ -877,12 +878,9 @@ async function collectShow(interaction, buttonShowId = null) {
   }
 }
 
-async function promoteShow(interaction) {
+async function promoteShowById(interaction, showId) {
   const userId = interaction.user.id;
-
   const username = interaction.user.username;
-
-  const showId = interaction.options.getString("show");
 
   const show = db
     .prepare(
@@ -890,30 +888,18 @@ async function promoteShow(interaction) {
       SELECT *
       FROM shows
       WHERE id = ?
-      AND owner_id = ?
-      AND status = 'upcoming'
-    `,
+        AND owner_id = ?
+        AND status = 'upcoming'
+      `,
     )
     .get(showId, userId);
 
   if (!show) {
-    return interaction.editReply({
-      content: "You can only promote your upcoming shows.",
+    return interaction.reply({
+      content: "You can only promote your own upcoming shows.",
       ephemeral: true,
     });
   }
-
-  const promoLines = [
-    "posted the flyer everywhere",
-    "released a teaser clip",
-    "started a Discord campaign",
-    "passed out kandi downtown",
-    "made the group chat explode",
-    "leaked the lineup accidentally",
-    "hung posters around the city",
-  ];
-
-  const promoText = promoLines[Math.floor(Math.random() * promoLines.length)];
 
   const promoOptions = [
     {
@@ -939,45 +925,59 @@ async function promoteShow(interaction) {
   ];
 
   const promo = promoOptions[Math.floor(Math.random() * promoOptions.length)];
-
   const user = getUser(userId);
 
-  if (user.cash < promo.cost) {
+  if (!user) {
     return interaction.reply({
-      content:
-        `You need **$${promo.cost}** for this promotion.\n` +
-        `Your cash: ${money(user.cash)}`,
+      content: "Run `/profile` first so I can create your city profile.",
       ephemeral: true,
     });
   }
 
-  db.prepare("UPDATE users SET cash = cash - ? WHERE discord_id = ?").run(
-    promo.cost,
-    userId,
-  );
+  if ((user.cash || 0) < promo.cost) {
+    return interaction.reply({
+      content:
+        `You need **${money(promo.cost)}** for this promotion.\n` +
+        `Your cash: **${money(user.cash || 0)}**`,
+      ephemeral: true,
+    });
+  }
 
-  db.prepare(
-    `
-    INSERT INTO show_promotions (
-      show_id,
-      promoter_id,
-      promoter_username,
-      promo_text,
-      hype_gain
-    )
-    VALUES (?, ?, ?, ?, ?)
-  `,
-  ).run(show.id, userId, username, promo.text, promo.hype);
+  const promoteTransaction = db.transaction(() => {
+    db.prepare(
+      `
+      UPDATE users
+      SET cash = cash - ?
+      WHERE discord_id = ?
+      `,
+    ).run(promo.cost, userId);
 
-  db.prepare(
-    `
-    UPDATE shows
-    SET simulated_attendees = simulated_attendees + ?
-    WHERE id = ?
-  `,
-  ).run(promo.hype, show.id);
+    db.prepare(
+      `
+      INSERT INTO show_promotions (
+        show_id,
+        promoter_id,
+        promoter_username,
+        promo_text,
+        hype_gain
+      )
+      VALUES (?, ?, ?, ?, ?)
+      `,
+    ).run(show.id, userId, username, promo.text, promo.hype);
 
-  const projectedAfterPromotion = show.simulated_attendees + promo.hype;
+    db.prepare(
+      `
+      UPDATE shows
+      SET simulated_attendees = simulated_attendees + ?
+      WHERE id = ?
+      `,
+    ).run(promo.hype, show.id);
+  });
+
+  promoteTransaction();
+
+  const projectedAfterPromotion =
+    Number(show.simulated_attendees || 0) + promo.hype;
 
   const xpUpdate = addXp(userId, 25);
   await announceLevelUp(interaction, xpUpdate);
@@ -1004,22 +1004,33 @@ async function promoteShow(interaction) {
       },
       {
         name: "👥 Projected Walk-ins",
-        value: `${show.simulated_attendees} → ${projectedAfterPromotion}`,
+        value: `${show.simulated_attendees || 0} → ${projectedAfterPromotion}`,
         inline: true,
       },
       {
         name: "💸 Promo Cost",
-        value: `$${promo.cost}`,
+        value: money(promo.cost),
+        inline: true,
+      },
+      {
+        name: "💰 Remaining Cash",
+        value: money((user.cash || 0) - promo.cost),
         inline: true,
       },
     )
     .setFooter({
-      text: "EDMELEVATED City • Promotion matters",
+      text: "Promotion increases projected walk-ins for this show.",
     });
 
   return interaction.reply({
     embeds: [embed],
+    ephemeral: interaction.isButton?.() ? true : false,
   });
+}
+
+async function promoteShow(interaction) {
+  const showId = interaction.options.getString("show");
+  return promoteShowById(interaction, showId);
 }
 
 module.exports = {
@@ -1029,6 +1040,7 @@ module.exports = {
   runShow,
   collect,
   promoteShow,
+  promoteShowById,
   showLineup,
   announceLevelUp,
   handleShowPage,

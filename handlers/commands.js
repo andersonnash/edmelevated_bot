@@ -105,10 +105,8 @@ async function handleCommand(interaction) {
     }
 
     if (interaction.customId.startsWith("promote_show_")) {
-      return interaction.reply({
-        content: "Use `/promote_show` and select this show from the list.",
-        ephemeral: true,
-      });
+      const showId = interaction.customId.replace("promote_show_", "");
+      return shows.promoteShowById(interaction, showId);
     }
 
     if (interaction.customId.startsWith("hire_show_")) {
