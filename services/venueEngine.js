@@ -81,7 +81,7 @@ function venueHourlyIncome(venue) {
     : 1;
 
   const barLevel = venue.bar_level || 0;
-  const barMultiplier = 1 + barLevel * 0.1;
+  const barMultiplier = 1 + barLevel * 0.15;
 
   return Math.floor(
     baseIncome * barMultiplier * staffMultiplier * eventMultiplier,
@@ -92,7 +92,7 @@ function venueCapacity(venue) {
   const baseCapacity = venue.base_capacity || 0;
   const securityLevel = venue.security_level || 0;
 
-  const securityBonus = 1 + securityLevel * 0.05;
+  const securityBonus = 1 + securityLevel * 0.2;
 
   return Math.floor(baseCapacity * securityBonus);
 }
@@ -101,7 +101,7 @@ function venueAttendanceBonus(venue) {
   const productionLevel = venue.production_level || 0;
   const barLevel = venue.bar_level || 0;
 
-  return productionLevel * 0.05 + barLevel * 0.02;
+  return productionLevel * 0.1 + barLevel * 0.02;
 }
 
 function equipmentHourlyIncome(item) {
