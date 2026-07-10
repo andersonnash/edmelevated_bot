@@ -18,18 +18,13 @@ const { money } = require("../services/formatters");
 const {
   getVenueIncome,
   getEquipmentIncome,
-  getVenueAttendanceBonus,
+  venueCapacity,
 } = require("../services/venueEngine");
 
 const {
   calculateProjectedWalkins,
   attendanceBonusPercent,
 } = require("../services/showForecast");
-
-const {
-  venueCapacity,
-  venueAttendanceBonus,
-} = require("../services/venueEngine");
 
 const {
   EmbedBuilder,
@@ -397,10 +392,11 @@ function buildShowPage(userId, status, page = 0) {
   const finalCapacity = venueCapacity(show);
 
   const baseProjectedWalkins = Number(show.simulated_attendees || 0);
-  const attendanceBonus = getVenueAttendanceBonus(show);
-  const boostedProjectedWalkins = Math.round(
-    baseProjectedWalkins * (1 + attendanceBonus),
-  );
+  const projectedWalkins = calculateProjectedWalkins({
+    baseWalkins: baseProjectedWalkins,
+    venue: show,
+  });
+  const attendanceBoostPercent = attendanceBonusPercent(show);
 
   const title =
     status === "upcoming"
@@ -449,12 +445,12 @@ function buildShowPage(userId, status, page = 0) {
       },
       {
         name: "👥 Projected Walk-ins",
-        value: `${boostedProjectedWalkins}`,
+        value: `${projectedWalkins}`,
         inline: true,
       },
       {
         name: "📈 Attendance Boost",
-        value: `+${Math.round(attendanceBonus * 100)}% from venue upgrades`,
+        value: `+${attendanceBoostPercent}% from venue upgrades`,
         inline: true,
       },
     )

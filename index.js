@@ -10,10 +10,6 @@ const handleCommand = require("./handlers/commands");
 
 const { startShowScheduler } = require("./services/showScheduler");
 
-const {
-  startPassiveIncomeScheduler,
-} = require("./services/passiveIncomeScheduler");
-
 const client = new Client({
   intents: [GatewayIntentBits.Guilds],
 });
