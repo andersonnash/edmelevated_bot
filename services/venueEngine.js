@@ -229,6 +229,12 @@ function resetEquipmentCollection(userId) {
   ).run(userId);
 }
 
+function getVenueAttendanceBonus(venue) {
+  const productionLevel = Number(venue?.production_level || 0);
+
+  return productionLevel * 0.1;
+}
+
 module.exports = {
   hoursSince,
   hoursBetween,
@@ -245,4 +251,5 @@ module.exports = {
   resetEquipmentCollection,
   equipmentMinuteIncome,
   nowString,
+  getVenueAttendanceBonus,
 };

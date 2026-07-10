@@ -277,7 +277,7 @@ async function myJobs(interaction) {
         ON shows.id = show_staff.show_id
       WHERE show_staff.hired_user_id = ?
       ORDER BY shows.show_date ASC
-    `,
+      `,
     )
     .all(userId);
 
@@ -288,18 +288,44 @@ async function myJobs(interaction) {
     });
   }
 
-  const output = jobs
-    .map(
-      (job) =>
-        `🎛️ **${SHOW_STAFF_ROLES[job.role].label}**\n` +
-        `Show: ${job.show_name}\n` +
-        `Date: ${job.show_date}\n` +
-        `Pay: $${job.pay}\n` +
-        `Status: ${job.status}`,
-    )
-    .join("\n\n");
+  const statusEmoji = {
+    pending: "⏳",
+    accepted: "✅",
+    declined: "❌",
+    completed: "🏁",
+    paid: "💸",
+  };
 
-  return interaction.reply(output);
+  const embed = new EmbedBuilder()
+    .setColor(0x8b5cf6)
+    .setTitle("🎛️ My Show Jobs")
+    .setDescription("Your upcoming and recent staff gigs in the city.")
+    .addFields(
+      jobs.slice(0, 25).map((job) => {
+        const role = SHOW_STAFF_ROLES[job.role];
+
+        return {
+          name: `${role?.emoji || "🎛️"} ${role?.label || job.role}`,
+          value:
+            `**Show:** ${job.show_name}\n` +
+            `**Date:** ${job.show_date}\n` +
+            `**Pay:** $${job.pay.toLocaleString()}\n` +
+            `**Status:** ${statusEmoji[job.status] || "•"} ${job.status}`,
+          inline: false,
+        };
+      }),
+    )
+    .setFooter({
+      text:
+        jobs.length > 25
+          ? `Showing 25 of ${jobs.length} jobs`
+          : `${jobs.length} job${jobs.length === 1 ? "" : "s"} found`,
+    });
+
+  return interaction.reply({
+    embeds: [embed],
+    ephemeral: true,
+  });
 }
 
 module.exports = {

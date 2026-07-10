@@ -202,5 +202,6 @@ addColumnIfMissing("venues", "income_multiplier", "REAL DEFAULT 1");
 addColumnIfMissing("venues", "created_at", "TEXT");
 addColumnIfMissing("venues", "closed_at", "TEXT");
 addColumnIfMissing("users", "active_cosmetic_title", "TEXT");
+addColumnIfMissing("venues", "insurance_expires_at", "TEXT");
 
 module.exports = db;
