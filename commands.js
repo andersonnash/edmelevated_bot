@@ -249,15 +249,15 @@ const commands = [
         .setRequired(true)
         .addChoices(
           {
-            name: "🍺 Bar — +10% income/level — starts $1,000",
+            name: "🍺 Bar — +15% income/level — starts $1,000",
             value: "bar",
           },
           {
-            name: "🚪 Security — +5% capacity/level — starts $2,500",
+            name: "🚪 Security — +20% capacity/level — starts $2,500",
             value: "security",
           },
           {
-            name: "🎛 Production — +5% attendance/level — starts $5,000",
+            name: "🎛 Production — +15% attendance/level — starts $5,000",
             value: "production",
           },
         ),
