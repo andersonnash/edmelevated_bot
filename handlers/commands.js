@@ -110,10 +110,7 @@ async function handleCommand(interaction) {
     }
 
     if (interaction.customId.startsWith("hire_show_")) {
-      return interaction.reply({
-        content: "Use `/hire_staff` and select this show from the list.",
-        ephemeral: true,
-      });
+      return staff.handleHireStaffButton(interaction);
     }
 
     if (interaction.customId.startsWith("shop_")) {
@@ -122,6 +119,17 @@ async function handleCommand(interaction) {
 
     return interaction.reply({
       content: "Unknown button.",
+      ephemeral: true,
+    });
+  }
+
+  if (interaction.isUserSelectMenu()) {
+    if (interaction.customId.startsWith("hire_staff_user:")) {
+      return staff.handleHireStaffUserSelect(interaction);
+    }
+
+    return interaction.reply({
+      content: "Unknown selection menu.",
       ephemeral: true,
     });
   }
