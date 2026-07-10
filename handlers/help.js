@@ -125,7 +125,7 @@ function categoryEmbed(category) {
       .setColor(0x38bdf8)
       .setTitle("🏟 Venues Commands")
       .setDescription(
-        "Buy venues, upgrade departments, hire permanent staff, host shows, and build passive income.",
+        "Buy venues, upgrade departments, add venue insurance, hire permanent staff, host shows, and build passive income.",
       )
       .addFields(
         {
@@ -142,7 +142,6 @@ function categoryEmbed(category) {
             "🍺 **Bar** — increases passive income\n" +
             "🚪 **Security** — increases venue capacity\n" +
             "🎛 **Production** — boosts show attendance\n" +
-            "🧹 **Maintenance** — reduces future incident impact\n\n" +
             "Each upgrade costs more as the department level increases.",
         },
         {
@@ -167,7 +166,7 @@ function categoryEmbed(category) {
         {
           name: "/upgrade_venue",
           value:
-            "Upgrade Bar, Security, Production, or Maintenance for one of your venues.",
+            "Upgrade Bar, Security or Production for one of your venues.",
         },
         {
           name: "/hire_venue_staff",

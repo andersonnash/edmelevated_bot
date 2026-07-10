@@ -308,8 +308,7 @@ function getUserShows(userId) {
         venues.dj_limit,
         venues.bar_level,
         venues.security_level,
-        venues.production_level,
-        venues.maintenance_level
+        venues.production_level
       FROM shows
       LEFT JOIN venues ON venues.id = shows.venue_id
       WHERE shows.owner_id = ?

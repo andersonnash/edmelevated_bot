@@ -260,10 +260,6 @@ const commands = [
             name: "🎛 Production — +5% attendance/level — starts $5,000",
             value: "production",
           },
-          {
-            name: "🧹 Maintenance — -10% incident impact/level — starts $3,000",
-            value: "maintenance",
-          },
         ),
     ),
 

@@ -118,8 +118,7 @@ function nextObjective(user, venues, equipment, readyToCollect = 0) {
     (venue) =>
       (venue.bar_level || 0) > 0 ||
       (venue.security_level || 0) > 0 ||
-      (venue.production_level || 0) > 0 ||
-      (venue.maintenance_level || 0) > 0,
+      (venue.production_level || 0) > 0,
   );
 
   if (!hasVenueUpgrade) {

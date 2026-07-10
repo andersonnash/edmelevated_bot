@@ -96,10 +96,9 @@ async function buyVenue(interaction) {
     bar_level,
     security_level,
     production_level,
-    maintenance_level,
     created_at
   )
-  VALUES (?, ?, ?, 1, ?, ?, ?, CURRENT_TIMESTAMP, 'none', 0, 0, 0, 0, CURRENT_TIMESTAMP)
+  VALUES (?, ?, ?, 1, ?, ?, ?, CURRENT_TIMESTAMP, 'none', 0, 0, 0, CURRENT_TIMESTAMP)
   `,
   ).run(
     userId,
