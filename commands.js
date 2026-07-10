@@ -210,7 +210,7 @@ const commands = [
         .setName("type")
         .setDescription("Venue type")
         .setRequired(true)
-        .setAutocomplete(true)
+        .setAutocomplete(true),
     ),
 
   new SlashCommandBuilder()
@@ -454,7 +454,7 @@ const commands = [
 
   new SlashCommandBuilder()
     .setName("buy_item")
-    .setDescription("Buy a cosmetic item from the scene shop")
+    .setDescription("Buy or equip a cosmetic Scene Title from the scene shop")
     .addStringOption((option) =>
       option
         .setName("item")

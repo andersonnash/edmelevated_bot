@@ -119,6 +119,10 @@ async function handleCommand(interaction) {
       });
     }
 
+    if (interaction.customId.startsWith("shop_")) {
+      return shop.handleShopButton(interaction);
+    }
+
     return interaction.reply({
       content: "Unknown button.",
       ephemeral: true,
