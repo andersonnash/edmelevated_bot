@@ -14,6 +14,7 @@ const {
   EQUIPMENT_TYPES,
   WORK_JOBS,
   SHOP_ITEMS,
+  VENUE_DEPARTMENTS,
 } = require("../constants");
 
 const ALL_ROLES = {
@@ -122,18 +123,22 @@ function nextObjective(user, venues, equipment, readyToCollect = 0) {
   );
 
   if (!hasVenueUpgrade) {
-    if (cash < 5000) {
+    const barUpgrade = VENUE_DEPARTMENTS.bar;
+    const barUpgradeCost = barUpgrade.baseCost;
+    const barBenefit = barUpgrade.benefitPerLevel;
+
+    if (cash < barUpgradeCost) {
       return (
         "Save for your first venue upgrade.\n\n" +
-        `Recommended: **🍺 Bar Lv1** (${money(5000)})\n` +
-        `Progress: ${money(cash)} / ${money(5000)}`
+        `Recommended: **${barUpgrade.emoji} ${barUpgrade.name} Lv1** (${money(barUpgradeCost)})\n` +
+        `Progress: ${money(cash)} / ${money(barUpgradeCost)}`
       );
     }
 
     return (
       "Upgrade your venue.\n\n" +
-      "Recommended: **🍺 Bar Lv1**\n" +
-      "Benefit: +10% passive income and +2% attendance."
+      `Recommended: **${barUpgrade.emoji} ${barUpgrade.name} Lv1**\n` +
+      `Benefit: +${barBenefit}% passive income.`
     );
   }
 

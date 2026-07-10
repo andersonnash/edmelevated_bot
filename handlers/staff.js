@@ -8,8 +8,6 @@ const {
   ButtonStyle,
 } = require("discord.js");
 
-const { venueHourlyIncome } = require("../services/venueEngine");
-
 const { getUser } = require("../services/roles");
 
 async function hireStaff(interaction) {
@@ -50,21 +48,11 @@ async function hireStaff(interaction) {
     SELECT COUNT(*) AS count
     FROM show_staff
     WHERE show_id = ?
-  `,
-    )
-    .get(show.id).count;
-
-  const currentStaff = db
-    .prepare(
-      `
-      SELECT COUNT(*) AS count
-      FROM show_staff
-      WHERE show_id = ?
     `,
     )
     .get(show.id).count;
 
-  if (currentStaff >= show.staff_limit) {
+  if (staffCount >= show.staff_limit) {
     return interaction.reply({
       content: `This venue only allows ${show.staff_limit} staff members.`,
       ephemeral: true,
@@ -213,10 +201,6 @@ async function hireVenueStaff(interaction) {
   VALUES (?, ?, 'active', ?, CURRENT_TIMESTAMP)
 `,
   ).run(venueId, role, npcUsername);
-
-  const newIncome = venueHourlyIncome(venueId);
-  const oldIncome =
-    newIncome - venue.base_passive_income * roleData.incomeBoost;
 
   const embed = new EmbedBuilder()
     .setColor(0xffd000)

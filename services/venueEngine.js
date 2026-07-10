@@ -98,10 +98,10 @@ function venueCapacity(venue) {
 }
 
 function venueAttendanceBonus(venue) {
-  const productionLevel = venue.production_level || 0;
-  const barLevel = venue.bar_level || 0;
+  const productionLevel = Number(venue?.production_level || 0);
+  const productionDepartment = VENUE_DEPARTMENTS.production;
 
-  return productionLevel * 0.1 + barLevel * 0.02;
+  return productionLevel * (productionDepartment.benefitPerLevel / 100);
 }
 
 function equipmentHourlyIncome(item) {
@@ -229,12 +229,6 @@ function resetEquipmentCollection(userId) {
   ).run(userId);
 }
 
-function getVenueAttendanceBonus(venue) {
-  const productionLevel = Number(venue?.production_level || 0);
-
-  return productionLevel * 0.1;
-}
-
 module.exports = {
   hoursSince,
   hoursBetween,
@@ -251,5 +245,4 @@ module.exports = {
   resetEquipmentCollection,
   equipmentMinuteIncome,
   nowString,
-  getVenueAttendanceBonus,
 };

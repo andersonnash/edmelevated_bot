@@ -1,4 +1,10 @@
-const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ButtonInteraction } = require("discord.js");
+const {
+  EmbedBuilder,
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+} = require("discord.js");
+
 const { SHOP_ITEMS } = require("../constants");
 const { money } = require("../services/formatters");
 const db = require("../db");
@@ -382,11 +388,6 @@ async function buyOrEquipItemByKey(interaction, itemKey) {
   });
 }
 
-async function buyItem(interaction) {
-  const itemKey = interaction.options.getString("item");
-  return buyOrEquipItemByKey(interaction, itemKey);
-}
-
 async function handleShopButton(interaction) {
   if (interaction.customId === "shop_home") {
     const user = getShopUser(interaction.user.id);
@@ -499,7 +500,6 @@ async function equipTitle(interaction) {
 
 module.exports = {
   shop,
-  buyItem,
   equipTitle,
   handleShopButton,
 };
