@@ -31,6 +31,10 @@ client.on("interactionCreate", async (interaction) => {
   if (interaction.isButton()) {
     return handleCommand(interaction);
   }
+
+  if (interaction.isUserSelectMenu()) {
+    return handleCommand(interaction);
+  }
 });
 
 registerCommands().then(() => {

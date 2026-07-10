@@ -143,7 +143,17 @@ const INSURANCE_TIERS = {
   },
 };
 
+const SHOW_STAFF_PAYOUT = 150;
+const SHOW_STAFF_VENUE_BOOST_PER_STAFF = 0.05;
+const SHOW_STAFF_VENUE_BOOST_CAP = 0.25;
+
 const SHOW_STAFF_ROLES = {
+  staff: {
+    label: "Show Staff",
+    emoji: "👷",
+    description: "Boosts venue passive income until the show runs.",
+  },
+
   bartender: { label: "Bartender", minPay: 150, bonus: 10 },
   security: { label: "Security", minPay: 200, bonus: 10 },
   vj: { label: "VJ", minPay: 175, bonus: 15 },
@@ -477,7 +487,6 @@ const SHOP_ITEMS = {
 module.exports = {
   OWNER_ID,
   VENUE_TYPES,
-  SHOW_STAFF_ROLES,
   EQUIPMENT_TYPES,
   INSURANCE_TIERS,
   VENUE_DEPARTMENTS,
@@ -487,6 +496,10 @@ module.exports = {
   WORK_JOBS,
   SHOP_ITEMS,
   BOT_ADMIN_ID,
+  SHOW_STAFF_ROLES,
+  SHOW_STAFF_PAYOUT,
+  SHOW_STAFF_VENUE_BOOST_PER_STAFF,
+  SHOW_STAFF_VENUE_BOOST_CAP,
   isBotAdmin,
   isOwner,
 };

@@ -4,6 +4,8 @@ const {
   EQUIPMENT_TYPES,
   VENUE_DEPARTMENTS,
   VENUE_STAFF_ROLES,
+  SHOW_STAFF_VENUE_BOOST_PER_STAFF,
+  SHOW_STAFF_VENUE_BOOST_CAP,
 } = require("../constants");
 
 function venueReputation(venue) {
@@ -67,6 +69,27 @@ function getVenueIncomeMultiplier(venueId) {
   return 1 + totalBoost;
 }
 
+function getActiveShowStaffBoost(venueId) {
+  const row = db
+    .prepare(
+      `
+      SELECT COUNT(show_staff.id) AS count
+      FROM show_staff
+      JOIN shows
+        ON shows.id = show_staff.show_id
+      WHERE shows.venue_id = ?
+        AND shows.status = 'upcoming'
+        AND show_staff.status = 'assigned'
+      `,
+    )
+    .get(venueId);
+
+  const staffCount = row?.count || 0;
+  const rawBoost = staffCount * SHOW_STAFF_VENUE_BOOST_PER_STAFF;
+
+  return Math.min(rawBoost, SHOW_STAFF_VENUE_BOOST_CAP);
+}
+
 function venueHourlyIncome(venue) {
   const baseIncome = VENUE_TYPES[venue.type]?.passiveIncome || 0;
 
@@ -76,6 +99,9 @@ function venueHourlyIncome(venue) {
 
   const staffMultiplier = getVenueIncomeMultiplier(venue.id);
 
+  const showStaffBoost = getActiveShowStaffBoost(venue.id);
+  const showStaffMultiplier = 1 + showStaffBoost;
+
   const eventMultiplier = isActiveUntil(venue.boosted_until)
     ? venue.income_multiplier || 1
     : 1;
@@ -84,7 +110,11 @@ function venueHourlyIncome(venue) {
   const barMultiplier = 1 + barLevel * 0.15;
 
   return Math.floor(
-    baseIncome * barMultiplier * staffMultiplier * eventMultiplier,
+    baseIncome *
+      barMultiplier *
+      staffMultiplier *
+      showStaffMultiplier *
+      eventMultiplier,
   );
 }
 
@@ -245,4 +275,5 @@ module.exports = {
   resetEquipmentCollection,
   equipmentMinuteIncome,
   nowString,
+  getActiveShowStaffBoost,
 };

@@ -146,6 +146,15 @@ async function runShowById(showId) {
 
     db.prepare(
       `
+      UPDATE show_staff
+      SET status = 'completed'
+      WHERE show_id = ?
+      AND status = 'assigned'
+     `,
+    ).run(show.show_id);
+
+    db.prepare(
+      `
       INSERT INTO show_payouts (
         show_id,
         user_id,

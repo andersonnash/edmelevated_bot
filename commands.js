@@ -308,32 +308,19 @@ const commands = [
 
   new SlashCommandBuilder()
     .setName("hire_staff")
-    .setDescription("Hire another user for your show")
+    .setDescription("Hire another user as show staff")
     .addStringOption((option) =>
       option
         .setName("show")
-        .setDescription("Choose one of your shows")
+        .setDescription("Choose one of your upcoming shows")
         .setRequired(true)
         .setAutocomplete(true),
     )
     .addUserOption((option) =>
-      option.setName("user").setDescription("User to hire").setRequired(true),
-    )
-    .addStringOption((option) =>
       option
-        .setName("role")
-        .setDescription("Staff role")
-        .setRequired(true)
-        .addChoices(
-          { name: "Bartender", value: "bartender" },
-          { name: "Security", value: "security" },
-          { name: "VJ", value: "vj" },
-          { name: "Promoter", value: "promoter" },
-          { name: "General Staff", value: "general_staff" },
-        ),
-    )
-    .addIntegerOption((option) =>
-      option.setName("pay").setDescription("Pay amount").setRequired(true),
+        .setName("user")
+        .setDescription("User to hire as show staff")
+        .setRequired(true),
     ),
 
   new SlashCommandBuilder()
