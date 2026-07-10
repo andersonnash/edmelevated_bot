@@ -199,16 +199,6 @@ const VENUE_DEPARTMENTS = {
     reputationPerLevel: 3,
     effect: "Boosts show attendance",
   },
-
-  maintenance: {
-    name: "Maintenance",
-    emoji: "🧹",
-    column: "maintenance_level",
-    baseCost: 3_000,
-    benefitPerLevel: 10,
-    reputationPerLevel: 1,
-    effect: "Reduces future incident impact",
-  },
 };
 
 const ROLES = {

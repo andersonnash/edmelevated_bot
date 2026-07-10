@@ -24,7 +24,6 @@ async function runShowById(showId) {
         venues.bar_level,
         venues.security_level,
         venues.production_level,
-        venues.maintenance_level,
         venues.lights_level,
         venues.sound_level,
         venues.dj_equipment_level,

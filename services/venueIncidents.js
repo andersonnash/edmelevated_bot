@@ -98,8 +98,7 @@ function getRandomOpenVenueForOwner(ownerId) {
 }
 
 function getIncidentChance(venue) {
-  const maintenanceLevel = venue.maintenance_level || 0;
-  return Math.max(0.02, 0.1 - maintenanceLevel * 0.015);
+  return 0.1;
 }
 
 function rollVenueEventForOwner(ownerId) {
@@ -162,8 +161,8 @@ function buildVenueEventEmbed(venue, type, event) {
       {
         name: "What Now?",
         value: isIncident
-          ? "Upgrade venue maintenance to reduce future incident chances."
-          : "The owner can use /collect while the boost is active to take advantage of the increased income.",
+          ? "Buy venue insurance from the shop to reduce future incident risk."
+          : "The owner can use `/collect` while the boost is active to take advantage of the increased income.",
       },
     );
 }

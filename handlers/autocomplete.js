@@ -54,13 +54,13 @@ async function handleAutocomplete(interaction) {
   ) {
     const venues = db
       .prepare(
-        `SELECT id, name, bar_level, security_level, production_level, maintenance_level FROM venues WHERE owner_id = ? AND name LIKE ? LIMIT 25`,
+        `SELECT id, name, bar_level, security_level, production_level FROM venues WHERE owner_id = ? AND name LIKE ? LIMIT 25`,
       )
       .all(userId, `%${focused}%`);
 
     return interaction.respond(
       venues.map((v) => ({
-        name: `${v.name} #${v.id} — Bar ${v.bar_level} / Sec ${v.security_level} / Prod ${v.production_level} / Maint ${v.maintenance_level}`,
+        name: `${v.name} #${v.id} — Bar ${v.bar_level} / Sec ${v.security_level} / Prod ${v.production_level}`,
         value: String(v.id),
       })),
     );
