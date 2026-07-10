@@ -63,7 +63,6 @@ const commandMap = {
   run_venue_events: venues.runVenueEvents,
 
   shop: shop.shop,
-  buy_item: shop.buyItem,
   equip_title: shop.equipTitle,
 };
 

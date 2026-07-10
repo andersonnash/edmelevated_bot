@@ -5,16 +5,6 @@ const {
   PermissionFlagsBits,
 } = require("discord.js");
 
-const { SHOP_ITEMS } = require("./constants");
-
-const shopTitleChoices = Object.values(SHOP_ITEMS)
-  .filter((item) => item.type === "cosmetic_title")
-  .slice(0, 25)
-  .map((item) => ({
-    name: `${item.name} — $${item.price.toLocaleString()}`,
-    value: item.key,
-  }));
-
 const commands = [
   new SlashCommandBuilder()
     .setName("help")
@@ -451,17 +441,6 @@ const commands = [
   new SlashCommandBuilder()
     .setName("shop")
     .setDescription("View cosmetic Scene Titles and other shop items"),
-
-  new SlashCommandBuilder()
-    .setName("buy_item")
-    .setDescription("Buy or equip a cosmetic Scene Title from the scene shop")
-    .addStringOption((option) =>
-      option
-        .setName("item")
-        .setDescription("The item you want to buy")
-        .setRequired(true)
-        .addChoices(...shopTitleChoices),
-    ),
 
   new SlashCommandBuilder()
     .setName("equip_title")
