@@ -377,6 +377,40 @@ async function hireVenueStaff(interaction) {
   return interaction.reply({ embeds: [embed] });
 }
 
+function formatJobPayout(job) {
+  const payout = `$${Number(job.pay || 0).toLocaleString()}`;
+
+  if (job.status === "assigned") {
+    return `${payout} when the show runs`;
+  }
+
+  if (job.status === "completed") {
+    return `${payout} pending owner settlement`;
+  }
+
+  if (job.status === "paid") {
+    return `${payout} paid`;
+  }
+
+  return payout;
+}
+
+function formatJobStatus(job) {
+  if (job.status === "assigned") {
+    return "Assigned — show has not run yet";
+  }
+
+  if (job.status === "completed") {
+    return "Completed — waiting for owner to collect show profits";
+  }
+
+  if (job.status === "paid") {
+    return "Paid — show has been settled";
+  }
+
+  return job.status;
+}
+
 async function myJobs(interaction) {
   const userId = interaction.user.id;
 
@@ -431,9 +465,13 @@ async function myJobs(interaction) {
             `**Show:** ${job.show_name}\n` +
             `**Venue:** ${job.venue_name}\n` +
             `**Date:** ${job.show_date}\n` +
-            `**Payout:** $${Number(job.pay || 0).toLocaleString()} when the show runs\n` +
-            `**Status:** ${statusEmoji[job.status] || "•"} ${job.status}\n` +
-            `**Effect:** Boosting venue passive income until showtime.`,
+            `**Payout:** ${formatJobPayout(job)}\n` +
+            `**Status:** ${statusEmoji[job.status] || "•"} ${formatJobStatus(job)}\n` +
+            `**Effect:** ${
+              job.status === "assigned"
+                ? "Boosting venue passive income until showtime."
+                : "Staff work has been completed for this show."
+            }`,
           inline: false,
         };
       }),

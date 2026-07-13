@@ -40,7 +40,12 @@ const {
   todayString,
 } = require("../services/generators");
 
-const { SHOW_STAFF_ROLES, isOwner } = require("../constants");
+const {
+  SHOW_STAFF_ROLES,
+  SHOW_STAFF_VENUE_BOOST_PER_STAFF,
+  SHOW_STAFF_VENUE_BOOST_CAP,
+  isOwner,
+} = require("../constants");
 
 const { isBotAdmin } = require("../constants");
 
@@ -315,6 +320,13 @@ function getUserShows(userId) {
     .all(userId);
 }
 
+function getShowStaffBoostPercent(showStaffCount) {
+  const rawBoost = showStaffCount * SHOW_STAFF_VENUE_BOOST_PER_STAFF;
+  const cappedBoost = Math.min(rawBoost, SHOW_STAFF_VENUE_BOOST_CAP);
+
+  return Math.round(cappedBoost * 100);
+}
+
 function getShowCounts(showId) {
   const djs = db
     .prepare("SELECT COUNT(*) AS count FROM show_lineup WHERE show_id = ?")
@@ -390,6 +402,7 @@ function buildShowPage(userId, status, page = 0) {
   const show = shows[safePage];
 
   const { djCount, showStaffCount } = getShowCounts(show.id);
+  const showStaffBoostPercent = getShowStaffBoostPercent(showStaffCount);
   const finalCapacity = venueCapacity(show);
 
   const baseProjectedWalkins = Number(show.simulated_attendees || 0);
@@ -436,7 +449,11 @@ function buildShowPage(userId, status, page = 0) {
       },
       {
         name: "👷 Show Staff",
-        value: `${showStaffCount}/${show.staff_limit || 0}`,
+        value:
+          status === "upcoming"
+            ? `${showStaffCount}/${show.staff_limit || 0} hired\n` +
+              `Venue Income Boost: +${showStaffBoostPercent}% until showtime`
+            : `${showStaffCount}/${show.staff_limit || 0} hired`,
         inline: true,
       },
       {
