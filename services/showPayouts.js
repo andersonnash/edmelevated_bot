@@ -56,6 +56,15 @@ function settleShowPayouts(showId) {
         AND paid = 0
       `,
     ).run(showId);
+
+    db.prepare(
+      `
+      UPDATE show_staff
+      SET status = 'paid'
+      WHERE show_id = ?
+        AND status = 'completed'
+    `,
+    ).run(showId);
   });
 
   transaction();

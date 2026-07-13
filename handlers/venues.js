@@ -17,12 +17,14 @@ const {
   ButtonBuilder,
   ButtonStyle,
 } = require("discord.js");
+
 const {
   hoursSince,
   venueHourlyIncome,
   venuePendingIncome,
   venueReputation,
   venueCapacity,
+  getActiveShowStaffBoost,
 } = require("../services/venueEngine");
 
 async function venueInsurance(interaction) {
@@ -296,6 +298,24 @@ async function buyVenue(interaction) {
   });
 }
 
+function getActiveShowStaffCountForVenue(venueId) {
+  const row = db
+    .prepare(
+      `
+      SELECT COUNT(show_staff.id) AS count
+      FROM show_staff
+      JOIN shows
+        ON shows.id = show_staff.show_id
+      WHERE shows.venue_id = ?
+        AND shows.status = 'upcoming'
+        AND show_staff.status = 'assigned'
+      `,
+    )
+    .get(venueId);
+
+  return row?.count || 0;
+}
+
 function formatInsuranceStatus(venue) {
   if (!venue.insurance_tier || venue.insurance_tier === "none") {
     return null;
@@ -424,6 +444,9 @@ function buildVenuePage(userId, page = 0) {
   }
 
   const insuranceStatus = formatInsuranceStatus(venue);
+  const activeShowStaffCount = getActiveShowStaffCountForVenue(venue.id);
+  const activeShowStaffBoost = getActiveShowStaffBoost(venue.id);
+  const activeShowStaffBoostPercent = Math.round(activeShowStaffBoost * 100);
 
   const fields = [
     {
@@ -462,6 +485,17 @@ function buildVenuePage(userId, page = 0) {
       inline: true,
     },
   ];
+
+  if (activeShowStaffCount > 0) {
+    fields.push({
+      name: "👷 Active Show Staff Boost",
+      value:
+        `${activeShowStaffCount} staff helping upcoming shows\n` +
+        `Income Boost: **+${activeShowStaffBoostPercent}%**\n` +
+        "Ends when those shows run.",
+      inline: false,
+    });
+  }
 
   if (insuranceStatus) {
     fields.push({
