@@ -3,6 +3,7 @@ const {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
+  MessageFlags,
 } = require("discord.js");
 
 const db = require("../db");
@@ -48,9 +49,32 @@ async function register(interaction) {
   const existing = getUser(userId);
 
   if (existing) {
+    const alreadyRegisteredEmbed = new EmbedBuilder()
+      .setColor(0x8b5cf6)
+      .setTitle("🎧 CITY ACCESS ALREADY ACTIVE")
+      .setDescription(
+        `**${username}**, you already have an EDMELEVATED City profile.`,
+      )
+      .addFields(
+        {
+          name: "🧭 Next Step",
+          value: "Use `/profile` to view your city dashboard.",
+          inline: false,
+        },
+        {
+          name: "🏙 Current Status",
+          value: "Your scene pass is active. Keep building.",
+          inline: false,
+        },
+      )
+      .setThumbnail(interaction.user.displayAvatarURL({ size: 128 }))
+      .setFooter({
+        text: "EDMELEVATED City • Work jobs. Buy gear. Throw shows. Build the scene.",
+      });
+
     return interaction.reply({
-      content: "You’re already registered.",
-      ephemeral: true,
+      embeds: [alreadyRegisteredEmbed],
+      flags: MessageFlags.Ephemeral,
     });
   }
 
@@ -70,9 +94,50 @@ async function register(interaction) {
 
   addRole(userId, "Raver");
 
-  return interaction.reply(
-    `Welcome to the EDMELEVATED city game, ${username}. You start with $${money(startingCash)}.`,
-  );
+  const welcomeEmbed = new EmbedBuilder()
+    .setColor(0x22d3ee)
+    .setTitle("🎧 EDMELEVATED CITY ACCESS GRANTED")
+    .setDescription(
+      `Welcome to the city, **${username}**.\n\n` +
+        "Your scene profile has been created. You are starting from the ground floor with one goal:\n\n" +
+        "**Build the scene.**",
+    )
+    .setThumbnail(interaction.user.displayAvatarURL({ size: 128 }))
+    .addFields(
+      {
+        name: "💵 Starter Cash",
+        value: `**${money(startingCash)}**`,
+        inline: true,
+      },
+      {
+        name: "🌟 Starting Role",
+        value: "**Raver**",
+        inline: true,
+      },
+      {
+        name: "📍 Reputation",
+        value: "**0**",
+        inline: true,
+      },
+      {
+        name: "🎯 First Objective",
+        value:
+          "Buy your first piece of equipment with `/buy_equipment` to start earning passive income.",
+        inline: false,
+      },
+      {
+        name: "🧭 Next Step",
+        value: "Run `/profile` to view your dashboard and next objective.",
+        inline: false,
+      },
+    )
+    .setFooter({
+      text: "EDMELEVATED City • Work jobs. Buy gear. Throw shows. Build the scene.",
+    });
+
+  return interaction.reply({
+    embeds: [welcomeEmbed],
+  });
 }
 
 function nextObjective(user, venues, equipment, readyToCollect = 0) {
@@ -334,11 +399,11 @@ async function roles(interaction) {
     .addFields(
       {
         name: "Unlocked Roles",
-        value: `Current Roles: ${currentRoles}\n`
+        value: `Current Roles: ${currentRoles}\n`,
       },
       {
         name: "Role Progression",
-        value:`Role Progression: ${progression}\n`
+        value: `Role Progression: ${progression}\n`,
       },
     )
     .setFooter({
