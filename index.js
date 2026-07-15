@@ -21,7 +21,14 @@ client.once("clientReady", () => {
 
 client.on("interactionCreate", async (interaction) => {
   if (interaction.isAutocomplete()) {
-    return handleAutocomplete(interaction);
+    return handleAutocomplete(interaction).catch((error) => {
+      if (error?.code === 10062) {
+        console.warn("Autocomplete interaction expired before response.");
+        return;
+      }
+
+      console.error("Autocomplete failed:", error);
+    });
   }
 
   if (interaction.isChatInputCommand()) {
