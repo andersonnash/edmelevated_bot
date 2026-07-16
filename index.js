@@ -1,6 +1,6 @@
 require("dotenv").config();
 
-const { Client, GatewayIntentBits } = require("discord.js");
+const { Client, GatewayIntentBits, MessageFlags } = require("discord.js");
 
 const { registerCommands } = require("./commands");
 
@@ -14,12 +14,42 @@ const client = new Client({
   intents: [GatewayIntentBits.Guilds],
 });
 
+const allowedChannelIds = new Set(
+  (process.env.ALLOWED_CHANNEL_IDS || "")
+    .split(",")
+    .map((id) => id.trim())
+    .filter(Boolean),
+);
+
+function isAllowedChannel(interaction) {
+  if (!allowedChannelIds.size) return true;
+
+  return allowedChannelIds.has(interaction.channelId);
+}
+
+async function blockDisallowedChannel(interaction) {
+  if (interaction.isAutocomplete()) {
+    return interaction.respond([]).catch(() => {});
+  }
+
+  return interaction
+    .reply({
+      content: "This demo bot is only available in the tester channels.",
+      flags: MessageFlags.Ephemeral,
+    })
+    .catch(() => {});
+}
+
 client.once("clientReady", () => {
   startShowScheduler(client);
   console.log(`Logged in as ${client.user.tag}`);
 });
 
 client.on("interactionCreate", async (interaction) => {
+  if (!isAllowedChannel(interaction)) {
+    return blockDisallowedChannel(interaction);
+  }
+
   if (interaction.isAutocomplete()) {
     return handleAutocomplete(interaction).catch((error) => {
       if (error?.code === 10062) {
