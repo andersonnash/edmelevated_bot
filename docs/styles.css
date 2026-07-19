@@ -272,6 +272,116 @@ details p {
   margin-top: 0.6rem;
 }
 
+.scene-map {
+  display: grid;
+  grid-template-columns: 0.9fr 1.4fr;
+  gap: 1rem;
+  align-items: stretch;
+}
+
+.district-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.district-card {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.15rem 0.75rem;
+  align-items: center;
+  text-align: left;
+  width: 100%;
+  border: 1px solid var(--border);
+  background: linear-gradient(180deg, var(--panel-light), var(--panel));
+  color: var(--text);
+  border-radius: 18px;
+  padding: 1rem;
+  cursor: pointer;
+}
+
+.district-card span {
+  grid-row: span 2;
+  font-size: 1.7rem;
+}
+
+.district-card strong {
+  font-size: 1rem;
+}
+
+.district-card small {
+  color: var(--muted);
+}
+
+.district-card:hover,
+.district-card.active {
+  border-color: rgba(192, 132, 252, 0.65);
+  background:
+    radial-gradient(circle at top left, rgba(139, 92, 246, 0.28), transparent 40%),
+    linear-gradient(180deg, var(--panel-light), var(--panel));
+}
+
+.district-detail {
+  min-height: 100%;
+  background:
+    radial-gradient(circle at top right, rgba(192, 132, 252, 0.18), transparent 35%),
+    linear-gradient(180deg, var(--panel-light), var(--panel));
+  border: 1px solid var(--border);
+  border-radius: 28px;
+  padding: 1.5rem;
+  box-shadow: var(--shadow);
+}
+
+.district-label {
+  display: inline-flex;
+  margin: 0 0 1rem;
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+  color: var(--purple-light);
+  background: rgba(139, 92, 246, 0.16);
+  border: 1px solid rgba(192, 132, 252, 0.22);
+  font-size: 0.8rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.district-detail h3 {
+  font-size: clamp(1.8rem, 4vw, 3rem);
+  letter-spacing: -0.05em;
+  margin-bottom: 1rem;
+}
+
+.district-detail>p:not(.district-label) {
+  color: var(--muted);
+  font-size: 1.08rem;
+}
+
+.district-meta {
+  display: grid;
+  gap: 0.8rem;
+  margin-top: 1.5rem;
+}
+
+.district-meta div {
+  border-top: 1px solid var(--border);
+  padding-top: 0.8rem;
+}
+
+.district-meta span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.25rem;
+}
+
+.district-meta strong {
+  display: block;
+  font-size: 1rem;
+}
+
 .faq {
   display: grid;
   gap: 0.8rem;
@@ -310,7 +420,8 @@ summary {
   .steps,
   .loop,
   .grid.two,
-  .command-grid {
+  .command-grid
+  .scene-map {
     grid-template-columns: 1fr;
   }
 }

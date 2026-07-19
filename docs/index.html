@@ -30,6 +30,7 @@
       <div class="hero-actions">
         <a href="#start" class="button primary">How to Start</a>
         <a href="#commands" class="button secondary">View Commands</a>
+        <a href="#city" class="button secondary">City</a>
       </div>
     </section>
   </header>
@@ -103,6 +104,79 @@
         <div>Create Shows</div>
         <div>Promote Events</div>
         <div>Reinvest</div>
+      </div>
+    </section>
+
+    <section id="city" class="section">
+      <div class="section-heading">
+        <p class="eyebrow">Explore the City</p>
+        <h2>The scene has districts.</h2>
+        <p>
+          EDMELEVATED City is not just a command list. Each venue tier represents
+          a different part of the underground scene.
+        </p>
+      </div>
+    
+      <div class="scene-map">
+        <div class="district-list" aria-label="City districts">
+          <button class="district-card active" data-district="garage" type="button">
+            <span>🏚</span>
+            <strong>Garage District</strong>
+            <small>DIY beginnings</small>
+          </button>
+    
+          <button class="district-card" data-district="warehouse" type="button">
+            <span>🏭</span>
+            <strong>Warehouse Row</strong>
+            <small>Underground pressure</small>
+          </button>
+    
+          <button class="district-card" data-district="subroom" type="button">
+            <span>🕳</span>
+            <strong>The Sub Room</strong>
+            <small>Basement loyalty</small>
+          </button>
+    
+          <button class="district-card" data-district="rooftop" type="button">
+            <span>🌃</span>
+            <strong>Neon Rooftop</strong>
+            <small>City-view chaos</small>
+          </button>
+    
+          <button class="district-card" data-district="desert" type="button">
+            <span>🏜</span>
+            <strong>Desert Frequency</strong>
+            <small>Final boss energy</small>
+          </button>
+        </div>
+    
+        <article class="district-detail" aria-live="polite">
+          <p class="district-label" id="districtTier">Starter Venue</p>
+          <h3 id="districtName">🏚 Garage District</h3>
+          <p id="districtDescription">
+            Every legend starts somewhere slightly unsafe, underfunded, and full of
+            extension cords. The Garage District is where broke ravers become promoters.
+          </p>
+    
+          <div class="district-meta">
+            <div>
+              <span>Associated Venue</span>
+              <strong id="districtVenue">Garage Party</strong>
+            </div>
+            <div>
+              <span>Scene Rumor</span>
+              <strong id="districtRumor">
+                “If the cops do not show up, was it even a garage party?”
+              </strong>
+            </div>
+            <div>
+              <span>Gameplay Hint</span>
+              <strong id="districtHint">
+                Start here after earning cash and buying your first gear.
+              </strong>
+            </div>
+          </div>
+        </article>
       </div>
     </section>
 
@@ -248,6 +322,7 @@
   <footer class="footer">
     <p>EDMELEVATED City is an early Discord bot playtest. Feedback, bugs, and balance notes are welcome.</p>
   </footer>
+  <script src="scripts.js"></script>
 </body>
 
 </html>
