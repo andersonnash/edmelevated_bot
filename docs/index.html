@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EDMELEVATED City</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+  <header class="hero">
+    <nav class="nav">
+      <div class="logo">EDMELEVATED City</div>
+      <div class="nav-links">
+        <a href="#start">Start</a>
+        <a href="#loop">Game Loop</a>
+        <a href="#commands">Commands</a>
+        <a href="#faq">FAQ</a>
+      </div>
+    </nav>
+
+    <section class="hero-content">
+      <p class="eyebrow">Discord EDM Scene Simulator</p>
+      <h1>Build your name in the underground scene.</h1>
+      <p class="hero-text">
+        Work jobs, buy gear, take DJ bookings, throw shows, hire staff,
+        upgrade venues, and grow from broke opener to city legend.
+      </p>
+      <div class="hero-actions">
+        <a href="#start" class="button primary">How to Start</a>
+        <a href="#commands" class="button secondary">View Commands</a>
+      </div>
+    </section>
+  </header>
+
+  <main>
+    <section id="start" class="section">
+      <div class="section-heading">
+        <p class="eyebrow">New Players</p>
+        <h2>Start here</h2>
+        <p>
+          The fastest way to understand the game is to follow this early path.
+          Use <code>/profile</code> any time you feel lost.
+        </p>
+      </div>
+
+      <div class="steps">
+        <div class="step">
+          <span>1</span>
+          <h3>Run <code>/profile</code></h3>
+          <p>See your cash, XP, reputation, income, and next objective.</p>
+        </div>
+
+        <div class="step">
+          <span>2</span>
+          <h3>Earn starter cash</h3>
+          <p>Use <code>/work</code>, <code>/crate_dig</code>, or <code>/rave_story</code>.</p>
+        </div>
+
+        <div class="step">
+          <span>3</span>
+          <h3>Buy your first gear</h3>
+          <p>Use <code>/buy_equipment</code> to start earning passive income.</p>
+        </div>
+
+        <div class="step">
+          <span>4</span>
+          <h3>Take a DJ booking</h3>
+          <p>Use <code>/bookings</code> to unlock your DJ profile and raise your booking fee.</p>
+        </div>
+
+        <div class="step">
+          <span>5</span>
+          <h3>Buy a venue</h3>
+          <p>Save up for your first event space with <code>/buy_venue</code>.</p>
+        </div>
+
+        <div class="step">
+          <span>6</span>
+          <h3>Throw your first show</h3>
+          <p>Create, promote, staff, and collect profits from your event.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="loop" class="section dark">
+      <div class="section-heading">
+        <p class="eyebrow">Core Loop</p>
+        <h2>How the game works</h2>
+      </div>
+
+      <div class="loop">
+        <div>Earn Cash</div>
+        <div>Buy Gear</div>
+        <div>Take Bookings</div>
+        <div>Collect Income</div>
+        <div>Buy Venues</div>
+        <div>Create Shows</div>
+        <div>Promote Events</div>
+        <div>Reinvest</div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="grid two">
+        <div class="card">
+          <h2>🎧 DJ Career</h2>
+          <p>
+            After buying gear, players can use <code>/bookings</code> to take DJ opportunities.
+            Bookings reward cash, XP, scene reputation, and DJ reputation.
+          </p>
+          <p>
+            Your first booking creates your DJ profile. As your DJ reputation and bookings grow,
+            your booking fee increases.
+          </p>
+        </div>
+
+        <div class="card">
+          <h2>🏙 Venues & Shows</h2>
+          <p>
+            Venues generate passive income and let you create shows. Shows can be promoted,
+            staffed, and built around other DJs.
+          </p>
+          <p>
+            Completed shows pay out when the owner uses <code>/collect_show</code>.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section id="commands" class="section">
+      <div class="section-heading">
+        <p class="eyebrow">Command Guide</p>
+        <h2>Main commands</h2>
+      </div>
+
+      <div class="command-grid">
+        <div class="command-card">
+          <h3>Starter Commands</h3>
+          <ul>
+            <li><code>/profile</code> — View your progress and next objective.</li>
+            <li><code>/work</code> — Earn reliable starter cash.</li>
+            <li><code>/crate_dig</code> — Dig for rewards and possible show demand.</li>
+            <li><code>/rave_story</code> — Play short choice-based scene events.</li>
+          </ul>
+        </div>
+
+        <div class="command-card">
+          <h3>Equipment</h3>
+          <ul>
+            <li><code>/buy_equipment</code> — Buy gear that earns passive income.</li>
+            <li><code>/my_equipment</code> — View your owned gear and income.</li>
+            <li><code>/collect</code> — Collect passive income from gear and venues.</li>
+          </ul>
+        </div>
+
+        <div class="command-card">
+          <h3>DJ Career</h3>
+          <ul>
+            <li><code>/bookings</code> — Take DJ career opportunities.</li>
+            <li><code>/dj_profile</code> — View DJ reputation, bookings, and booking fee.</li>
+            <li><code>/top_djs</code> — View the top DJs in the city.</li>
+          </ul>
+        </div>
+
+        <div class="command-card">
+          <h3>Shows</h3>
+          <ul>
+            <li><code>/create_show</code> — Create a show at one of your venues.</li>
+            <li><code>/my_shows</code> — View and manage your shows.</li>
+            <li><code>/promote_show</code> — Spend cash to increase walk-ins.</li>
+            <li><code>/collect_show</code> — Collect profits from completed shows.</li>
+          </ul>
+        </div>
+
+        <div class="command-card">
+          <h3>Lineups & Staff</h3>
+          <ul>
+            <li><code>/add_lineup</code> — Add another user as a DJ.</li>
+            <li><code>/show_lineup</code> — View DJs and staff on a show.</li>
+            <li><code>/hire_staff</code> — Hire temporary show staff.</li>
+            <li><code>/my_jobs</code> — View shows where you were hired.</li>
+          </ul>
+        </div>
+
+        <div class="command-card">
+          <h3>Venues</h3>
+          <ul>
+            <li><code>/buy_venue</code> — Buy your first event space.</li>
+            <li><code>/my_venues</code> — View venues, upgrades, staff, and income.</li>
+            <li><code>/upgrade_venue</code> — Upgrade Bar, Security, or Production.</li>
+            <li><code>/hire_venue_staff</code> — Hire permanent venue staff.</li>
+            <li><code>/venue_insurance</code> — Reduce venue incident risk.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="faq" class="section dark">
+      <div class="section-heading">
+        <p class="eyebrow">FAQ</p>
+        <h2>Common questions</h2>
+      </div>
+
+      <div class="faq">
+        <details>
+          <summary>Why can’t I take a booking?</summary>
+          <p>You need to own equipment first. Buy starter gear with <code>/buy_equipment</code>.</p>
+        </details>
+
+        <details>
+          <summary>Why can’t I create a show?</summary>
+          <p>You need to own a venue before you can create shows.</p>
+        </details>
+
+        <details>
+          <summary>How do I earn passive income?</summary>
+          <p>Buy equipment and venues, then use <code>/collect</code> when income is ready.</p>
+        </details>
+
+        <details>
+          <summary>How do DJs get paid?</summary>
+          <p>DJs build value through bookings and lineups. Show payouts are settled when the owner collects a completed
+            show.</p>
+        </details>
+
+        <details>
+          <summary>Is the game finished?</summary>
+          <p>No. This is an early playtest. Balance, rewards, cooldowns, and commands may change.</p>
+        </details>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>EDMELEVATED City is an early Discord bot playtest. Feedback, bugs, and balance notes are welcome.</p>
+  </footer>
+</body>
+
+</html>
