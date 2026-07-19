@@ -21,12 +21,13 @@ function mainHelpEmbed() {
           "`/work` — Reliable starter cash.\n" +
           "`/crate_dig` — Quick random rewards and possible show demand.\n" +
           "`/rave_story` — Short choice-based scene events.\n" +
-          "`/buy_equipment` — Buy gear to start earning passive income.",
+          "`/buy_equipment` — Buy gear to start earning passive income.\n" +
+          "`/bookings` — Take DJ gigs after buying gear, unlock your DJ profile, and raise your booking fee.",
       },
       {
         name: "🏙 Core Game Loop",
         value:
-          "Earn cash → buy equipment → collect passive income → buy venues → create shows → promote shows → add DJs + staff → collect show profits → reinvest.",
+          "Earn cash → buy equipment → take DJ bookings → collect passive income → buy venues → create shows → promote shows → add DJs + staff → collect show profits → reinvest.",
       },
       {
         name: "🎵 Shows",
@@ -223,9 +224,14 @@ function categoryEmbed(category) {
       .setColor(0xa78bfa)
       .setTitle("🎧 DJs & Lineup Commands")
       .setDescription(
-        "Add DJs to shows, view lineups, and track who is building a name in the scene.",
+        "Take DJ bookings, add DJs to shows, view lineups, and track who is building a name in the scene.",
       )
       .addFields(
+        {
+          name: "`/bookings`",
+          value:
+            "Take DJ career opportunities after buying gear. Your first booking creates your DJ profile, gives rewards, and raises your booking fee.",
+        },
         {
           name: "`/add_lineup`",
           value:
@@ -238,7 +244,7 @@ function categoryEmbed(category) {
         {
           name: "`/dj_profile`",
           value:
-            "View another user's DJ profile, reputation, level, and scene progress.",
+            "View another user's DJ reputation, level, bookings, and booking fee.",
         },
         {
           name: "`/top_djs`",
@@ -247,8 +253,8 @@ function categoryEmbed(category) {
         {
           name: "How DJs fit into shows",
           value:
-            "DJs help make shows feel social instead of solo.\n" +
-            "Use `/add_lineup` before showtime to build a lineup around your event.",
+            "DJs can build their own career through `/bookings` after buying gear.\n" +
+            "Promoters can use `/add_lineup` before showtime to build a lineup around an event.",
         },
       ),
 
