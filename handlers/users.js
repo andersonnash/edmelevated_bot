@@ -16,6 +16,7 @@ const {
   WORK_JOBS,
   SHOP_ITEMS,
   VENUE_DEPARTMENTS,
+  DJ_BOOKINGS,
 } = require("../constants");
 
 const ALL_ROLES = {
@@ -140,23 +141,49 @@ async function register(interaction) {
   });
 }
 
+function hasCompletedBooking(userId, bookingKey) {
+  return !!db
+    .prepare(
+      `
+      SELECT 1
+      FROM user_bookings
+      WHERE user_id = ?
+        AND booking_key = ?
+    `,
+    )
+    .get(userId, bookingKey);
+}
+
 function nextObjective(user, venues, equipment, readyToCollect = 0) {
   const cash = user.cash || 0;
   const reputation = user.reputation || 0;
+  const completedOpenDecks = hasCompletedBooking(
+    user.discord_id,
+    DJ_BOOKINGS.openDecks.key,
+  );
+
+  if (!equipment.length) {
+    return (
+      "Buy your first DJ controller.\n\n" +
+      `Recommended: **Pioneer DDJ-FLX4** (${money(500)})\n` +
+      "Why: starts your passive rental income and unlocks DJ bookings."
+    );
+  }
+
+  if (!completedOpenDecks) {
+    return (
+      "Take your first DJ booking.\n\n" +
+      "Recommended: **Open Decks Guest Slot**\n" +
+      "Why: creates your DJ profile, gives cash/XP/rep, and raises your booking fee.\n\n" +
+      "Use `/bookings` to get started."
+    );
+  }
 
   if (readyToCollect > 0) {
     return (
       "You have income ready to collect.\n\n" +
       `Ready: **${money(readyToCollect)}**\n` +
       "Claim it, then reinvest into gear, venue staff, or venue upgrades."
-    );
-  }
-
-  if (!equipment.length) {
-    return (
-      "Buy your first DJ controller.\n\n" +
-      `Recommended: **Pioneer DDJ-FLX4** (${money(500)})\n` +
-      "Why: starts your passive rental income."
     );
   }
 
