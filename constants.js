@@ -484,6 +484,162 @@ const SHOP_ITEMS = {
   },
 };
 
+const DJ_BOOKINGS = {
+  openDecks: {
+    key: "open_decks_guest_slot",
+    name: "Open Decks Guest Slot",
+    baseReward: {
+      cash: 250,
+      xp: 25,
+      reputation: 2,
+      djReputation: 3,
+    },
+    genres: {
+      house: {
+        label: "House",
+        openers: [
+          {
+            key: "rooftop_edit",
+            label: "A glittery rooftop house edit",
+            bonus: { cash: 75, xp: 5, reputation: 1, djReputation: 1 },
+            result:
+              "The room warms up fast. It is safe, clean, and people start moving before they realize it.",
+          },
+          {
+            key: "classic_groove",
+            label: "A classic piano groove",
+            bonus: { cash: 50, xp: 8, reputation: 2, djReputation: 1 },
+            result:
+              "A few older heads immediately clock the selection. Someone near the back yells, “Okay, I see you.”",
+          },
+          {
+            key: "late_night",
+            label: "A smooth late-night vocal cut",
+            bonus: { cash: 35, xp: 10, reputation: 2, djReputation: 2 },
+            result:
+              "It is a little emotional for an opener, but it works. The room leans in instead of tuning out.",
+          },
+        ],
+      },
+
+      dnb: {
+        label: "Drum & Bass",
+        openers: [
+          {
+            key: "liquid_roller",
+            label: "A deep liquid roller",
+            bonus: { cash: 35, xp: 12, reputation: 2, djReputation: 2 },
+            result:
+              "The dancers do not explode immediately, but the heads notice. A few people ask who is playing.",
+          },
+          {
+            key: "neuro_weapon",
+            label: "A filthy neurofunk weapon",
+            bonus: { cash: 20, xp: 15, reputation: 3, djReputation: 2 },
+            result:
+              "It is aggressive for the room, but the energy spikes. The front row gets ugly in the best way.",
+          },
+          {
+            key: "jungle_flip",
+            label: "A classic jungle flip",
+            bonus: { cash: 45, xp: 10, reputation: 3, djReputation: 2 },
+            result:
+              "The breakbeat catches people off guard. A few ravers start moving like they have been waiting for this.",
+          },
+          {
+            key: "emotional_vocal",
+            label: "An unreleased emotional vocal tune",
+            bonus: { cash: 15, xp: 18, reputation: 4, djReputation: 3 },
+            result:
+              "Risky choice. It does not hit everyone, but the people it hits remember your name.",
+          },
+        ],
+      },
+
+      dubstep: {
+        label: "Dubstep",
+        openers: [
+          {
+            key: "deep_wub",
+            label: "A deep 140 wub",
+            bonus: { cash: 45, xp: 8, reputation: 2, djReputation: 1 },
+            result:
+              "The subs do most of the talking. The room settles into a dark little pocket.",
+          },
+          {
+            key: "festival_riddim",
+            label: "A reckless festival riddim plate",
+            bonus: { cash: 70, xp: 6, reputation: 1, djReputation: 1 },
+            result:
+              "Subtle? Absolutely not. Effective? Unfortunately, yes. The crowd wakes up instantly.",
+          },
+          {
+            key: "melodic_drop",
+            label: "A melodic bass anthem",
+            bonus: { cash: 55, xp: 8, reputation: 2, djReputation: 2 },
+            result:
+              "Big feelings, big drop, easy crowd connection. Someone is definitely filming this on a cracked phone.",
+          },
+        ],
+      },
+
+      techno: {
+        label: "Techno",
+        openers: [
+          {
+            key: "warehouse_stomper",
+            label: "A warehouse stomper",
+            bonus: { cash: 35, xp: 10, reputation: 2, djReputation: 2 },
+            result:
+              "No tricks. Just pressure. The room locks into the groove and stays there.",
+          },
+          {
+            key: "acid_tool",
+            label: "A nasty acid tool",
+            bonus: { cash: 25, xp: 14, reputation: 3, djReputation: 2 },
+            result:
+              "The acid line bends the room sideways. It is not for everyone, which is exactly why it works.",
+          },
+          {
+            key: "hypnotic_groove",
+            label: "A hypnotic rolling groove",
+            bonus: { cash: 40, xp: 10, reputation: 2, djReputation: 2 },
+            result:
+              "The set starts patient and confident. People slowly stop talking and start moving.",
+          },
+        ],
+      },
+
+      experimental: {
+        label: "Experimental Bass",
+        openers: [
+          {
+            key: "halftime_oddity",
+            label: "A weird halftime creature",
+            bonus: { cash: 10, xp: 18, reputation: 3, djReputation: 3 },
+            result:
+              "Half the room looks confused. The other half looks like they just found their new favorite problem.",
+          },
+          {
+            key: "leftfield_bass",
+            label: "A left-field bass ritual",
+            bonus: { cash: 15, xp: 16, reputation: 4, djReputation: 3 },
+            result:
+              "This is not the safe choice. But the right people notice, and those people talk.",
+          },
+          {
+            key: "unreleased_glitch",
+            label: "An unreleased glitchy problem",
+            bonus: { cash: 5, xp: 20, reputation: 5, djReputation: 3 },
+            result:
+              "It almost falls apart twice. Somehow that makes it better. The booth suddenly has visitors.",
+          },
+        ],
+      },
+    },
+  },
+};
+
 module.exports = {
   OWNER_ID,
   VENUE_TYPES,
@@ -500,6 +656,7 @@ module.exports = {
   SHOW_STAFF_PAYOUT,
   SHOW_STAFF_VENUE_BOOST_PER_STAFF,
   SHOW_STAFF_VENUE_BOOST_CAP,
+  DJ_BOOKINGS,
   isBotAdmin,
   isOwner,
 };

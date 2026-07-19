@@ -10,6 +10,7 @@ const help = require("./help");
 const games = require("./games");
 const equipment = require("./equipment");
 const shop = require("./shop");
+const bookings = require("./bookings")
 
 const { getUser } = require("../services/roles");
 
@@ -27,6 +28,8 @@ const commandMap = {
   leaderboard: users.leaderboard,
   dj_profile: djs.djProfile,
   top_djs: djs.topDjs,
+
+  bookings: bookings.bookings,
 
   buy_venue: venues.buyVenue,
   my_venues: venues.myVenues,
@@ -115,6 +118,10 @@ async function handleCommand(interaction) {
 
     if (interaction.customId.startsWith("shop_")) {
       return shop.handleShopButton(interaction);
+    }
+
+    if (interaction.customId.startsWith("bookings_")) {
+      return bookings.handleBookingButton(interaction);
     }
 
     return interaction.reply({

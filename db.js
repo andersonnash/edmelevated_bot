@@ -166,6 +166,20 @@ CREATE TABLE IF NOT EXISTS dj_profiles (
   base_fee INTEGER DEFAULT 100
 );
 
+  CREATE TABLE IF NOT EXISTS user_bookings (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id TEXT NOT NULL,
+    booking_key TEXT NOT NULL,
+    genre TEXT,
+    opener_key TEXT,
+    cash_reward INTEGER DEFAULT 0,
+    xp_reward INTEGER DEFAULT 0,
+    reputation_reward INTEGER DEFAULT 0,
+    dj_reputation_reward INTEGER DEFAULT 0,
+    completed_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(user_id, booking_key)
+  );
+
   CREATE TABLE IF NOT EXISTS user_equipment (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id TEXT NOT NULL,
