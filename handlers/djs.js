@@ -1,7 +1,6 @@
 const { EmbedBuilder } = require("discord.js");
 
 const db = require("../db");
-
 const { money } = require("../services/formatters");
 
 const {
@@ -26,7 +25,7 @@ async function djProfile(interaction) {
   if (!profile) {
     return interaction.reply({
       content:
-        "This user does not have a DJ profile yet. Add them to a lineup first.",
+        "This user does not have a DJ profile yet. They can create one by buying gear and completing a `/bookings` opportunity, or by getting added to a show lineup.",
       ephemeral: true,
     });
   }
@@ -37,33 +36,34 @@ async function djProfile(interaction) {
 
   const embed = new EmbedBuilder()
     .setColor(0xff00cc)
-    .setTitle(`🎧 ${profile.username}`)
+    .setTitle(`🎧 ${profile.username}'s DJ Profile`)
     .setDescription(`**${title}**\n🎧 DJ Level **${level}**`)
     .addFields(
       {
         name: "⭐ DJ Reputation",
-        value: "```ansi\n" + `Reputation: ${profile.dj_reputation}` + "```",
+        value: "```ansi\n" + `${profile.dj_reputation}` + "```",
         inline: true,
       },
       {
-        name: "🎟 Bookings",
-        value: "```ansi\n" + `Bookings: ${profile.bookings}` + "```",
+        name: "🎟 Completed Bookings",
+        value: "```ansi\n" + `${profile.bookings}` + "```",
         inline: true,
       },
       {
         name: "💵 Booking Fee",
-        value: "```ansi\n" + `Booking Fee: ${money(bookingFee)}` + "```",
+        value: "```ansi\n" + `${money(bookingFee)}` + "```",
         inline: true,
       },
       {
-        name: "📈 How DJ Rep Works",
+        name: "📈 How to Grow",
         value:
-          "DJs gain reputation when they play shows.\n" +
-          "Higher DJ reputation increases booking fees and status.",
+          "Build DJ reputation through `/bookings` and show lineups.\n" +
+          "Higher DJ reputation and completed bookings increase your booking fee and status.\n\n" +
+          "**Tip:** Buy gear, take bookings, then get added to shows.",
       },
     )
     .setFooter({
-      text: "Player roles live in /roles. DJ career lives here.",
+      text: "Use /bookings to build your DJ career. Use /roles to view player roles.",
     });
 
   return interaction.reply({
@@ -75,28 +75,43 @@ async function topDjs(interaction) {
   const djs = db
     .prepare(
       `
-SELECT *
-FROM dj_profiles
-ORDER BY
-dj_reputation DESC
-LIMIT 10
-`,
+      SELECT *
+      FROM dj_profiles
+      ORDER BY dj_reputation DESC
+      LIMIT 10
+    `,
     )
     .all();
 
   const embed = new EmbedBuilder()
-
     .setColor(0xffd000)
+    .setTitle("🏆 Top DJs")
+    .setDescription(
+      "Ranked by DJ reputation. Build your career through `/bookings` and show lineups.",
+    );
 
-    .setTitle("🏆 TOP DJs");
-
-  djs.forEach((dj, index) =>
+  if (!djs.length) {
     embed.addFields({
-      name: `${index + 1}. ${dj.username}`,
+      name: "No DJs yet",
+      value:
+        "Nobody has built a DJ profile yet. Buy gear and complete a `/bookings` opportunity to get started.",
+    });
+  } else {
+    djs.forEach((dj, index) => {
+      const level = getDjLevel(dj.dj_reputation);
+      const title = getDjTitle(level);
+      const bookingFee = calculateDjBookingFee(dj);
 
-      value: `Rep: ${dj.dj_reputation}\nBookings: ${dj.bookings}\nFee: $${calculateDjBookingFee(dj)}`,
-    }),
-  );
+      embed.addFields({
+        name: `${index + 1}. ${dj.username} — ${title}`,
+        value:
+          `DJ Level: **${level}**\n` +
+          `Reputation: **${dj.dj_reputation}**\n` +
+          `Bookings: **${dj.bookings}**\n` +
+          `Booking Fee: **${money(bookingFee)}**`,
+      });
+    });
+  }
 
   return interaction.reply({
     embeds: [embed],
