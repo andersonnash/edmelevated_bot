@@ -441,6 +441,10 @@ const commands = [
     ),
 
   new SlashCommandBuilder()
+    .setName("bookings")
+    .setDescription("View DJ career booking opportunities"),
+
+  new SlashCommandBuilder()
     .setName("leaderboard")
     .setDescription("View top scene members"),
 ].map((command) => command.toJSON());
