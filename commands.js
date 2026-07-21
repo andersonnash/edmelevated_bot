@@ -459,8 +459,6 @@ async function registerCommands() {
     ),
     { body: commands },
   );
-
-  console.log("Slash commands registered.");
 }
 
 module.exports = { registerCommands };

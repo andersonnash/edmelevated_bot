@@ -67,7 +67,7 @@ function startShowScheduler(client) {
         .setFooter({
           text:
             result.netProfit >= 0
-              ? "Use /collect to claim your profit"
+              ? "Use /collect_show to claim your profit"
               : "You took a loss on this one",
         });
 

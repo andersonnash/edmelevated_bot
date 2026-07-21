@@ -145,9 +145,6 @@ async function handleCommand(interaction) {
 
   const handler = commandMap[interaction.commandName];
 
-  console.log("COMMAND:", interaction.commandName);
-  console.log("HANDLER EXISTS:", Boolean(handler));
-
   if (!handler) {
     return interaction.reply({
       content: `Command /${interaction.commandName} is not wired up yet.`,
