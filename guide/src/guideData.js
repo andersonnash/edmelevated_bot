@@ -414,32 +414,46 @@ export const guideSections = [
   },
 
   {
-    id: "incidents",
+    id: "venue-events",
     category: "Venues",
-    title: "Venue Incidents & Insurance",
+    title: "Venue Events & Insurance",
     summary:
-      "The city is not always kind to venue owners. Insurance helps reduce the damage.",
+      "Venues can run into problems, but not every city event is bad. Sometimes the chaos works in your favor.",
     commands: ["/venue_insurance", "/my_venues"],
     sections: [
       {
-        heading: "Venue incidents",
+        heading: "What venue events are",
         text: [
-          "Venues can run into problems. That is part of owning spaces in a chaotic underground city.",
-          "Incidents are meant to add risk and texture to venue ownership so the game does not become completely predictable.",
+          "Owning venues means dealing with the city around them. Sometimes that means problems. Sometimes it means unexpected momentum.",
+          "Venue events are random things that can happen to your venues over time. They are meant to make venue ownership feel alive instead of completely predictable.",
+        ],
+      },
+      {
+        heading: "Negative venue events",
+        text: [
+          "Some events can hurt your venue. A venue might lose income, run into trouble, or be temporarily closed.",
+          "This adds risk to owning spaces. Bigger progression should feel exciting, but it should not feel completely safe.",
+        ],
+      },
+      {
+        heading: "Positive venue events",
+        text: [
+          "Not every event is bad. Sometimes a venue gets a lucky break, extra attention, a boost, or some kind of scene momentum.",
+          "Positive events are there to make the city feel less like a punishment machine and more like a chaotic scene where good surprises can happen too.",
         ],
       },
       {
         heading: "Insurance",
         text: [
           "Use /venue_insurance to buy coverage for a venue.",
-          "Insurance helps reduce venue incident risk and closure time.",
+          "Insurance is mainly there to protect you from the rougher side of venue ownership. It can reduce incident risk and closure time when things go wrong.",
         ],
       },
       {
         heading: "Why this exists",
         text: [
-          "Owning venues should feel powerful, but not effortless.",
-          "Insurance gives players a way to prepare instead of just getting wrecked by random city nonsense.",
+          "Venues should feel powerful, but not effortless.",
+          "The goal is to make owning spaces feel like managing a real part of the city: sometimes messy, sometimes lucky, sometimes expensive, and occasionally very worth it.",
         ],
       },
     ],

@@ -160,6 +160,10 @@ h3 {
   padding: 5rem 1.5rem;
 }
 
+.section-action {
+  margin-top: 2rem;
+}
+
 .section.dark {
   max-width: none;
   padding-left: max(1.5rem, calc((100vw - 1120px) / 2 + 1.5rem));
@@ -247,6 +251,30 @@ details p {
 .card h2 {
   font-size: 2rem;
   margin-bottom: 1rem;
+}
+
+.guide-callout {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 2rem;
+  background:
+    radial-gradient(circle at top right, rgba(192, 132, 252, 0.18), transparent 35%),
+    linear-gradient(180deg, var(--panel-light), var(--panel));
+  border: 1px solid var(--border);
+  border-radius: 28px;
+  padding: clamp(1.5rem, 4vw, 2.5rem);
+  box-shadow: var(--shadow);
+}
+
+.guide-callout h2 {
+  margin-bottom: 1rem;
+}
+
+.guide-callout p:not(.eyebrow) {
+  color: var(--muted);
+  max-width: 720px;
+  font-size: 1.08rem;
 }
 
 .command-grid {
@@ -488,6 +516,11 @@ summary {
   .system-arrow {
     transform: rotate(90deg);
     padding: 0.25rem 0;
+  }
+
+  .guide-callout {
+    align-items: flex-start;
+    flex-direction: column;
   }
 
 }

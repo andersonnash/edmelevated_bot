@@ -13,12 +13,13 @@
     <nav class="nav">
       <div class="logo">EDMELEVATED City</div>
       <div class="nav-links">
-        <a href="#start">Start</a>
-        <a href="#loop">Game Loop</a>
-        <a href="#city">City</a>
-        <a href="#systems">Systems</a>
-        <a href="#commands">Commands</a>
-        <a href="#faq">FAQ</a>
+        <div class="nav-links">
+          <a href="#start">Start</a>
+          <a href="#loop">Game Loop</a>
+          <a href="#city">City</a>
+          <a href="#systems">Systems</a>
+          <a href="guide/">Guide</a>
+        </div>
       </div>
     </nav>
 
@@ -30,8 +31,8 @@
         upgrade venues, and grow from broke opener to city legend.
       </p>
       <div class="hero-actions">
-        <a href="#start" class="button primary">How to Start</a>
-        <a href="#city" class="button secondary">City</a>
+        <a href="guide/" class="button primary">Read the Full Player Guide</a>
+        <a href="#start" class="button secondary">How to Start</a>
       </div>
     </section>
   </header>
@@ -105,6 +106,10 @@
         <div>Create Shows</div>
         <div>Promote Events</div>
         <div>Reinvest</div>
+      </div>
+
+      <div class="section-action">
+        <a href="guide/" class="button primary">See How the Systems Work</a>
       </div>
     </section>
 
@@ -181,189 +186,20 @@
       </div>
     </section>
 
-    <section id="systems" class="section dark">
-      <div class="section-heading">
-        <p class="eyebrow">Systems Guide</p>
-        <h2>How the city connects.</h2>
-        <p>
-          EDMELEVATED City is built around connected systems. Gear opens the door,
-          bookings build your DJ name, venues let you throw shows, and reputation
-          unlocks bigger opportunities.
-        </p>
-      </div>
-    
-      <div class="systems-map">
-        <div class="system-card">
-          <div class="system-icon">🎛</div>
-          <h3>Equipment</h3>
-          <p>Buy gear to start earning passive income and unlock DJ bookings.</p>
-          <div class="system-links">
-            <span>/buy_equipment</span>
-            <span>/my_equipment</span>
-            <span>/collect</span>
-          </div>
-        </div>
-    
-        <div class="system-arrow">→</div>
-    
-        <div class="system-card">
-          <div class="system-icon">🎧</div>
-          <h3>DJ Bookings</h3>
-          <p>Take opportunities that reward cash, XP, scene rep, and DJ reputation.</p>
-          <div class="system-links">
-            <span>/bookings</span>
-            <span>/dj_profile</span>
-            <span>/top_djs</span>
-          </div>
-        </div>
-    
-        <div class="system-arrow">→</div>
-    
-        <div class="system-card">
-          <div class="system-icon">💵</div>
-          <h3>Booking Fee</h3>
-          <p>As your DJ reputation and completed bookings grow, your fee rises.</p>
-          <div class="system-links">
-            <span>DJ Rep</span>
-            <span>Bookings</span>
-            <span>Status</span>
-          </div>
-        </div>
-      </div>
-    
-      <div class="systems-map second-row">
-        <div class="system-card">
-          <div class="system-icon">🏟</div>
-          <h3>Venues</h3>
-          <p>Buy venues to generate income, host shows, and expand your scene footprint.</p>
-          <div class="system-links">
-            <span>/buy_venue</span>
-            <span>/my_venues</span>
-            <span>/upgrade_venue</span>
-          </div>
-        </div>
-    
-        <div class="system-arrow">→</div>
-    
-        <div class="system-card">
-          <div class="system-icon">🎵</div>
-          <h3>Shows</h3>
-          <p>Create events, promote them, add DJs, hire staff, and collect profits.</p>
-          <div class="system-links">
-            <span>/create_show</span>
-            <span>/promote_show</span>
-            <span>/collect_show</span>
-          </div>
-        </div>
-    
-        <div class="system-arrow">→</div>
-    
-        <div class="system-card">
-          <div class="system-icon">📈</div>
-          <h3>Reputation</h3>
-          <p>Reputation unlocks better venues, bigger rooms, and stronger progression.</p>
-          <div class="system-links">
-            <span>Venue Unlocks</span>
-            <span>Bigger Shows</span>
-            <span>Expansion</span>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="section">
-      <div class="grid two">
-        <div class="card">
-          <h2>🎧 DJ Career</h2>
+    <section id="guide" class="section">
+      <div class="guide-callout">
+        <div>
+          <p class="eyebrow">Player Guide</p>
+          <h2>Want the full city manual?</h2>
           <p>
-            After buying gear, players can use <code>/bookings</code> to take DJ opportunities.
-            Bookings reward cash, XP, scene reputation, and DJ reputation.
-          </p>
-          <p>
-            Your first booking creates your DJ profile. As your DJ reputation and bookings grow,
-            your booking fee increases.
+            The quick start gets you moving. The full guide explains how the whole
+            city works: equipment, DJ bookings, venues, shows, payouts, reputation,
+            insurance, and what to do when you are staring at your profile wondering
+            what the hell to do next.
           </p>
         </div>
-
-        <div class="card">
-          <h2>🏙 Venues & Shows</h2>
-          <p>
-            Venues generate passive income and let you create shows. Shows can be promoted,
-            staffed, and built around other DJs.
-          </p>
-          <p>
-            Completed shows pay out when the owner uses <code>/collect_show</code>.
-          </p>
-        </div>
-      </div>
-    </section>
-
-    <section id="commands" class="section">
-      <div class="section-heading">
-        <p class="eyebrow">Command Guide</p>
-        <h2>Main commands</h2>
-      </div>
-
-      <div class="command-grid">
-        <div class="command-card">
-          <h3>Starter Commands</h3>
-          <ul>
-            <li><code>/profile</code> — View your progress and next objective.</li>
-            <li><code>/help</code> — Open the in-Discord command guide.</li>
-            <li><code>/work</code> — Earn reliable starter cash.</li>
-            <li><code>/crate_dig</code> — Dig for rewards and possible show demand.</li>
-            <li><code>/rave_story</code> — Play short choice-based scene events.</li>
-          </ul>
-        </div>
-
-        <div class="command-card">
-          <h3>Equipment</h3>
-          <ul>
-            <li><code>/buy_equipment</code> — Buy gear that earns passive income.</li>
-            <li><code>/my_equipment</code> — View your owned gear and income.</li>
-            <li><code>/collect</code> — Collect passive income from gear and venues.</li>
-          </ul>
-        </div>
-
-        <div class="command-card">
-          <h3>DJ Career</h3>
-          <ul>
-            <li><code>/bookings</code> — Take DJ career opportunities.</li>
-            <li><code>/dj_profile</code> — View DJ reputation, bookings, and booking fee.</li>
-            <li><code>/top_djs</code> — View the top DJs in the city.</li>
-          </ul>
-        </div>
-
-        <div class="command-card">
-          <h3>Shows</h3>
-          <ul>
-            <li><code>/create_show</code> — Create a show at one of your venues.</li>
-            <li><code>/my_shows</code> — View and manage your shows.</li>
-            <li><code>/promote_show</code> — Spend cash to increase walk-ins.</li>
-            <li><code>/collect_show</code> — Collect profits from completed shows.</li>
-          </ul>
-        </div>
-
-        <div class="command-card">
-          <h3>Lineups & Staff</h3>
-          <ul>
-            <li><code>/add_lineup</code> — Add another user as a DJ.</li>
-            <li><code>/show_lineup</code> — View DJs and staff on a show.</li>
-            <li><code>/hire_staff</code> — Hire temporary show staff.</li>
-            <li><code>/my_jobs</code> — View shows where you were hired.</li>
-          </ul>
-        </div>
-
-        <div class="command-card">
-          <h3>Venues</h3>
-          <ul>
-            <li><code>/buy_venue</code> — Buy your first event space.</li>
-            <li><code>/my_venues</code> — View venues, upgrades, staff, and income.</li>
-            <li><code>/upgrade_venue</code> — Upgrade Bar, Security, or Production.</li>
-            <li><code>/hire_venue_staff</code> — Hire permanent venue staff.</li>
-            <li><code>/venue_insurance</code> — Reduce venue incident risk.</li>
-          </ul>
-        </div>
+    
+        <a href="guide/" class="button primary">Open the Full Guide</a>
       </div>
     </section>
 
