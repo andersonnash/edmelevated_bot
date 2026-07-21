@@ -60,8 +60,22 @@ function startShowScheduler(client) {
               `**Net Profit:** $${result.netProfit}`,
           },
           {
+            name: "⭐ Show Rating",
+            value:
+              `**Overall:** ${result.rating.stars}/5 ★ (${result.rating.overallScore}/100)\n` +
+              `**Attendance:** ${result.rating.attendance}/100\n` +
+              `**Profitability:** ${result.rating.profitability}/100\n` +
+              `**Production:** ${result.rating.production}/100\n` +
+              `**Lineup:** ${result.rating.lineup}/100\n` +
+              `**Staffing:** ${result.rating.staffing}/100\n\n` +
+              `*“${result.rating.reaction}”*`,
+          },
+          {
             name: "⭐ Rewards",
-            value: `**Reputation:** +${result.reputationGain}\n`,
+            value:
+              `**Base Reputation:** +${result.baseReputationGain}\n` +
+              `**Rating Bonus:** +${result.rating.reputationBonus}\n` +
+              `**Total Reputation:** +${result.reputationGain}`,
           },
         )
         .setFooter({

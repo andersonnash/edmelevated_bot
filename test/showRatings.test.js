@@ -5,6 +5,7 @@ const {
   coverageScore,
   profitabilityScore,
   ratingReputationBonus,
+  calculatePromoterStats,
 } = require("../services/showRatings");
 
 function test(name, fn) {
@@ -61,4 +62,29 @@ test("caps scores and assigns reputation bonuses by rating tier", () => {
   assert.equal(ratingReputationBonus(60), 2);
   assert.equal(ratingReputationBonus(75), 5);
   assert.equal(ratingReputationBonus(90), 10);
+});
+
+test("calculates promoter averages and successful-show streaks", () => {
+  const stats = calculatePromoterStats([
+    { overall_score: 80, reputation_bonus: 5 },
+    { overall_score: 90, reputation_bonus: 10 },
+    { overall_score: 60, reputation_bonus: 2 },
+    { overall_score: 75, reputation_bonus: 5 },
+    { overall_score: 85, reputation_bonus: 5 },
+  ]);
+
+  assert.deepEqual(stats, {
+    totalRatedShows: 5,
+    averageScore: 78,
+    averageStars: 3.9,
+    bestScore: 90,
+    bestStars: 4.5,
+    currentStreak: 2,
+    bestStreak: 2,
+    totalReputationBonus: 27,
+  });
+});
+
+test("returns an empty promoter record when no shows are rated", () => {
+  assert.equal(calculatePromoterStats([]).totalRatedShows, 0);
 });

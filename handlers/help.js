@@ -91,7 +91,7 @@ function categoryEmbed(category) {
         {
           name: "`/my_shows`",
           value:
-            "View your upcoming and completed shows. Use the buttons to promote, view lineup, hire staff, or collect completed show payouts.",
+            "View upcoming shows and saved ratings for completed shows. Use the buttons to promote, view lineup, hire staff, or collect payouts.",
         },
         {
           name: "`/promote_show`",

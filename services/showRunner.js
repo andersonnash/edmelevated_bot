@@ -119,6 +119,37 @@ async function runShowById(showId) {
   const reputationGain = baseReputationGain + rating.reputationBonus;
 
   const transaction = db.transaction(() => {
+    db.prepare(
+      `
+      INSERT INTO show_ratings (
+        show_id,
+        owner_id,
+        attendance_score,
+        profitability_score,
+        production_score,
+        lineup_score,
+        staffing_score,
+        overall_score,
+        star_rating,
+        reputation_bonus,
+        crowd_reaction
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `,
+    ).run(
+      show.show_id,
+      show.owner_id,
+      rating.attendance,
+      rating.profitability,
+      rating.production,
+      rating.lineup,
+      rating.staffing,
+      rating.overallScore,
+      rating.stars,
+      rating.reputationBonus,
+      rating.reaction,
+    );
+
     for (const dj of lineup) {
       db.prepare(
         `

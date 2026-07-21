@@ -4,7 +4,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "check": "node --check index.js && node --check commands.js && node --check handlers/shows.js && node --check services/showMath.js && node --check services/showForecast.js && node --check services/showRatings.js && node --check services/showRunner.js",
+    "check": "node --check index.js && node --check commands.js && node --check handlers/shows.js && node --check handlers/users.js && node --check services/showMath.js && node --check services/showForecast.js && node --check services/showRatings.js && node --check services/showRatingHistory.js && node --check services/showRunner.js && node --check services/showScheduler.js",
     "test": "node test/showForecast.test.js && node test/showRatings.test.js",
     "demo:start": "DOTENV_CONFIG_PATH=.env.demo node -r dotenv/config index.js"
   },
