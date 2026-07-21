@@ -14,7 +14,18 @@ function attendanceBonusPercent(venue) {
   return Math.floor(venueAttendanceBonus(venue) * 100);
 }
 
+function isProjectedSoldOut({ baseWalkins, venue, ticketCount = 0 }) {
+  const projectedWalkins = calculateProjectedWalkins({
+    baseWalkins,
+    venue,
+    ticketCount,
+  });
+
+  return ticketCount + projectedWalkins >= venueCapacity(venue);
+}
+
 module.exports = {
   calculateProjectedWalkins,
   attendanceBonusPercent,
+  isProjectedSoldOut,
 };

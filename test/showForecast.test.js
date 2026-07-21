@@ -1,6 +1,9 @@
 const assert = require("node:assert/strict");
 
-const { calculateProjectedWalkins } = require("../services/showForecast");
+const {
+  calculateProjectedWalkins,
+  isProjectedSoldOut,
+} = require("../services/showForecast");
 
 function test(name, fn) {
   try {
@@ -37,5 +40,18 @@ test("walk-ins never exceed remaining capacity or fall below zero", () => {
   assert.equal(
     calculateProjectedWalkins({ baseWalkins: -20, venue, ticketCount: 0 }),
     0,
+  );
+});
+
+test("detects when tickets and projected walk-ins fill the venue", () => {
+  const venue = { base_capacity: 25, production_level: 0 };
+
+  assert.equal(
+    isProjectedSoldOut({ baseWalkins: 24, venue, ticketCount: 1 }),
+    true,
+  );
+  assert.equal(
+    isProjectedSoldOut({ baseWalkins: 23, venue, ticketCount: 1 }),
+    false,
   );
 });
