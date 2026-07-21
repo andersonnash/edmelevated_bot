@@ -42,6 +42,7 @@ const {
 } = require("../services/venueEngine");
 
 const { checkCooldown } = require("../services/cooldowns");
+const { getPromoterRatingStats } = require("../services/showRatingHistory");
 
 async function register(interaction) {
   const userId = interaction.user.id;
@@ -275,6 +276,7 @@ async function profile(interaction) {
     equipment.reduce((sum, item) => sum + equipmentPendingIncome(item), 0);
 
   const objective = nextObjective(user, venues, equipment, passiveTotal);
+  const promoterStats = getPromoterRatingStats(userId);
 
   const boostPercent =
     venueIncome.baseHourly > 0
@@ -337,6 +339,20 @@ async function profile(interaction) {
         `Title:      ${activeTitle.name}\n` +
         `Vibe:       ${activeTitle.description}\n` +
         `Theme:      ${profileAccent}` +
+        "```",
+    });
+  }
+
+  if (promoterStats.totalRatedShows > 0) {
+    profileFields.push({
+      name: "⭐ PROMOTER RECORD",
+      value:
+        "```ansi\n" +
+        `Rated Shows:  ${promoterStats.totalRatedShows}\n` +
+        `Average:      ${promoterStats.averageStars}/5 (${promoterStats.averageScore}/100)\n` +
+        `Best:         ${promoterStats.bestStars}/5 (${promoterStats.bestScore}/100)\n` +
+        `Strong Streak:${String(promoterStats.currentStreak).padStart(3)} (Best: ${promoterStats.bestStreak})\n` +
+        `Rating Rep:   +${promoterStats.totalReputationBonus}` +
         "```",
     });
   }

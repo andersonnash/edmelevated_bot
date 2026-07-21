@@ -86,6 +86,55 @@ function calculateShowRating({
   };
 }
 
+function calculatePromoterStats(ratings) {
+  if (!ratings.length) {
+    return {
+      totalRatedShows: 0,
+      averageScore: 0,
+      averageStars: 0,
+      bestScore: 0,
+      bestStars: 0,
+      currentStreak: 0,
+      bestStreak: 0,
+      totalReputationBonus: 0,
+    };
+  }
+
+  let currentRun = 0;
+  let bestStreak = 0;
+
+  for (const rating of ratings) {
+    if (Number(rating.overall_score) >= 75) {
+      currentRun += 1;
+      bestStreak = Math.max(bestStreak, currentRun);
+    } else {
+      currentRun = 0;
+    }
+  }
+
+  const totalScore = ratings.reduce(
+    (sum, rating) => sum + Number(rating.overall_score || 0),
+    0,
+  );
+  const bestScore = Math.max(
+    ...ratings.map((rating) => Number(rating.overall_score || 0)),
+  );
+
+  return {
+    totalRatedShows: ratings.length,
+    averageScore: Math.round(totalScore / ratings.length),
+    averageStars: Number((totalScore / ratings.length / 20).toFixed(1)),
+    bestScore,
+    bestStars: Number((bestScore / 20).toFixed(1)),
+    currentStreak: currentRun,
+    bestStreak,
+    totalReputationBonus: ratings.reduce(
+      (sum, rating) => sum + Number(rating.reputation_bonus || 0),
+      0,
+    ),
+  };
+}
+
 module.exports = {
   calculateShowRating,
   coverageScore,
@@ -93,4 +142,5 @@ module.exports = {
   productionScore,
   crowdReaction,
   ratingReputationBonus,
+  calculatePromoterStats,
 };

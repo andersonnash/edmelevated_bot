@@ -104,6 +104,25 @@ CREATE TABLE IF NOT EXISTS show_payouts (
   created_at TEXT DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE IF NOT EXISTS show_ratings (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  show_id INTEGER NOT NULL UNIQUE,
+  owner_id TEXT NOT NULL,
+  attendance_score INTEGER NOT NULL,
+  profitability_score INTEGER NOT NULL,
+  production_score INTEGER NOT NULL,
+  lineup_score INTEGER NOT NULL,
+  staffing_score INTEGER NOT NULL,
+  overall_score INTEGER NOT NULL,
+  star_rating REAL NOT NULL,
+  reputation_bonus INTEGER NOT NULL DEFAULT 0,
+  crowd_reaction TEXT NOT NULL,
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_show_ratings_owner
+ON show_ratings(owner_id, created_at);
+
 CREATE TABLE IF NOT EXISTS ticket_contests (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   show_id INTEGER,

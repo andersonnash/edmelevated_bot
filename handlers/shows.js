@@ -336,9 +336,18 @@ function getUserShows(userId) {
         venues.dj_limit,
         venues.bar_level,
         venues.security_level,
-        venues.production_level
+        venues.production_level,
+        show_ratings.attendance_score AS rating_attendance,
+        show_ratings.profitability_score AS rating_profitability,
+        show_ratings.production_score AS rating_production,
+        show_ratings.lineup_score AS rating_lineup,
+        show_ratings.staffing_score AS rating_staffing,
+        show_ratings.overall_score AS rating_overall,
+        show_ratings.star_rating AS rating_stars,
+        show_ratings.crowd_reaction AS rating_reaction
       FROM shows
       LEFT JOIN venues ON venues.id = shows.venue_id
+      LEFT JOIN show_ratings ON show_ratings.show_id = shows.id
       WHERE shows.owner_id = ?
       ORDER BY shows.show_date ASC
     `,
@@ -517,6 +526,18 @@ function buildShowPage(userId, status, page = 0) {
           ? "Build your lineup, hire staff, and promote before show day."
           : "Use /collect to collect completed show payouts.",
     });
+
+  if (status === "completed" && show.rating_overall != null) {
+    embed.addFields({
+      name: "⭐ Saved Show Rating",
+      value:
+        `**Overall:** ${show.rating_stars}/5 ★ (${show.rating_overall}/100)\n` +
+        `Attendance ${show.rating_attendance} • Profit ${show.rating_profitability} • ` +
+        `Production ${show.rating_production}\n` +
+        `Lineup ${show.rating_lineup} • Staffing ${show.rating_staffing}\n` +
+        `*“${show.rating_reaction}”*`,
+    });
+  }
 
   const row = new ActionRowBuilder().addComponents(
     new ButtonBuilder()

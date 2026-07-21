@@ -253,6 +253,7 @@ export const guideSections = [
           "You do not manually start the show. The bot handles the show result behind the scenes.",
           "The show report scores attendance, profitability, production, lineup coverage, and staffing coverage, then combines them into an overall five-star rating.",
           "Well-rounded shows earn a reputation bonus, so filling the room is important but is not the only measure of success.",
+          "Ratings are saved with completed shows. Your profile tracks your average, best rating, and streak of shows scoring 75 or higher.",
           "That means /create_show schedules the event, but the payout does not happen immediately.",
         ],
       },
