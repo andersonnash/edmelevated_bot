@@ -231,7 +231,7 @@ function categoryEmbed(category) {
         {
           name: "`/bookings`",
           value:
-            "Take DJ career opportunities after buying gear. Your first booking creates your DJ profile, gives rewards, and raises your booking fee.",
+            "Career bookings are one-time milestones unlocked by DJ reputation and repeatable-gig experience. Every booking has its own choices. Repeatable gigs share a 6-hour cooldown and 3-per-UTC-day limit.",
         },
         {
           name: "`/add_lineup`",
