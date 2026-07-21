@@ -251,6 +251,8 @@ export const guideSections = [
         text: [
           "Shows run automatically when their assigned show time arrives.",
           "You do not manually start the show. The bot handles the show result behind the scenes.",
+          "The show report scores attendance, profitability, production, lineup coverage, and staffing coverage, then combines them into an overall five-star rating.",
+          "Well-rounded shows earn a reputation bonus, so filling the room is important but is not the only measure of success.",
           "That means /create_show schedules the event, but the payout does not happen immediately.",
         ],
       },

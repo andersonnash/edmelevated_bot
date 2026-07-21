@@ -4,6 +4,7 @@ const { addDjReputation, calculateDjBookingFee } = require("./djs");
 const { addCash } = require("./economy");
 const { venueCapacity } = require("./venueEngine");
 const { calculateProjectedWalkins } = require("./showForecast");
+const { calculateShowRating } = require("./showRatings");
 
 async function runShowById(showId) {
   const show = db
@@ -23,6 +24,8 @@ async function runShowById(showId) {
         shows.simulated_attendees,
         venues.name AS venue_name,
         venues.base_capacity,
+        venues.staff_limit,
+        venues.dj_limit,
         venues.bar_level,
         venues.security_level,
         venues.production_level,
@@ -100,10 +103,20 @@ async function runShowById(showId) {
   const netProfit =
     totalRevenue + bonusRevenue - staffCost - lineupCost - operatingCost;
 
-  const reputationGain = Math.max(
+  const rating = calculateShowRating({
+    show: { ...show, capacity: finalCapacity },
+    totalAttendance,
+    totalRevenue: totalRevenue + bonusRevenue,
+    netProfit,
+    djCount: lineup.length,
+    staffCount: staff.length,
+  });
+
+  const baseReputationGain = Math.max(
     1,
     Math.floor(totalAttendance / 2) + (event.reputation || 0),
   );
+  const reputationGain = baseReputationGain + rating.reputationBonus;
 
   const transaction = db.transaction(() => {
     for (const dj of lineup) {
@@ -204,6 +217,8 @@ async function runShowById(showId) {
     operatingCost,
     bonusRevenue,
     netProfit,
+    rating,
+    baseReputationGain,
     reputationGain,
     payouts: {
       owner: netProfit,

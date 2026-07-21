@@ -678,6 +678,8 @@ function buildRunShowEmbed(result) {
     operatingCost,
     bonusRevenue,
     netProfit,
+    rating,
+    baseReputationGain,
     reputationGain,
   } = result;
 
@@ -725,6 +727,17 @@ function buildRunShowEmbed(result) {
           `**Net Profit:** ${money(netProfit)}`,
       },
       {
+        name: "⭐ Show Rating",
+        value:
+          `**Overall:** ${rating.stars}/5 ★ (${rating.overallScore}/100)\n` +
+          `**Attendance:** ${rating.attendance}/100\n` +
+          `**Profitability:** ${rating.profitability}/100\n` +
+          `**Production:** ${rating.production}/100\n` +
+          `**Lineup:** ${rating.lineup}/100\n` +
+          `**Staffing:** ${rating.staffing}/100\n\n` +
+          `*“${rating.reaction}”*`,
+      },
+      {
         name: "👷 Staff Earnings",
         value: staffSummary,
       },
@@ -734,7 +747,10 @@ function buildRunShowEmbed(result) {
       },
       {
         name: "⭐ Rewards",
-        value: `**Reputation:** +${reputationGain}\n`,
+        value:
+          `**Base Reputation:** +${baseReputationGain}\n` +
+          `**Rating Bonus:** +${rating.reputationBonus}\n` +
+          `**Total Reputation:** +${reputationGain}`,
       },
     )
     .setFooter({
