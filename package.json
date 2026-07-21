@@ -4,13 +4,17 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "check": "node -c index.js && node -c commands.js",
+    "check": "node --check index.js && node --check commands.js && node --check handlers/shows.js && node --check services/showMath.js && node --check services/showForecast.js && node --check services/showRunner.js",
+    "test": "node test/showForecast.test.js",
     "demo:start": "DOTENV_CONFIG_PATH=.env.demo node -r dotenv/config index.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
+  "engines": {
+    "node": ">=20"
+  },
   "dependencies": {
     "better-sqlite3": "^12.11.1",
     "discord.js": "^14.26.4",
