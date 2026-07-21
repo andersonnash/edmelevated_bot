@@ -85,7 +85,8 @@ function categoryEmbed(category) {
       .addFields(
         {
           name: "`/create_show`",
-          value: "Create a scheduled show at one of your venues.",
+          value:
+            "Create a scheduled show with your choice of genre, ticket price, and optional custom name.",
         },
         {
           name: "`/my_shows`",

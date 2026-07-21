@@ -14,6 +14,7 @@ async function runShowById(showId) {
         shows.owner_id,
         shows.venue_id,
         shows.name,
+        shows.genre,
         shows.show_date,
         shows.ticket_price,
         shows.status,

@@ -217,5 +217,6 @@ addColumnIfMissing("venues", "created_at", "TEXT");
 addColumnIfMissing("venues", "closed_at", "TEXT");
 addColumnIfMissing("users", "active_cosmetic_title", "TEXT");
 addColumnIfMissing("venues", "insurance_expires_at", "TEXT");
+addColumnIfMissing("shows", "genre", "TEXT DEFAULT 'mixed'");
 
 module.exports = db;

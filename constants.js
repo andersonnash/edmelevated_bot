@@ -147,6 +147,15 @@ const SHOW_STAFF_PAYOUT = 150;
 const SHOW_STAFF_VENUE_BOOST_PER_STAFF = 0.05;
 const SHOW_STAFF_VENUE_BOOST_CAP = 0.25;
 
+const SHOW_GENRES = {
+  house: "House",
+  techno: "Techno",
+  dnb: "Drum & Bass",
+  dubstep: "Dubstep",
+  trance: "Trance",
+  experimental_bass: "Experimental Bass",
+};
+
 const SHOW_STAFF_ROLES = {
   staff: {
     label: "Show Staff",
@@ -656,6 +665,7 @@ module.exports = {
   SHOW_STAFF_PAYOUT,
   SHOW_STAFF_VENUE_BOOST_PER_STAFF,
   SHOW_STAFF_VENUE_BOOST_CAP,
+  SHOW_GENRES,
   DJ_BOOKINGS,
   isBotAdmin,
   isOwner,

@@ -25,6 +25,8 @@ const {
   calculateProjectedWalkins,
   attendanceBonusPercent,
   generateInitialWalkins,
+  ticketPriceDemandLabel,
+  applyTicketPriceDemand,
   isProjectedSoldOut,
 } = require("../services/showForecast");
 
@@ -46,6 +48,7 @@ const {
   SHOW_STAFF_ROLES,
   SHOW_STAFF_VENUE_BOOST_PER_STAFF,
   SHOW_STAFF_VENUE_BOOST_CAP,
+  SHOW_GENRES,
   isOwner,
 } = require("../constants");
 
@@ -55,6 +58,9 @@ async function createShow(interaction) {
   const userId = interaction.user.id;
 
   const venueId = interaction.options.getString("venue");
+  const genre = interaction.options.getString("genre");
+  const ticketPrice = interaction.options.getInteger("ticket_price");
+  const customName = interaction.options.getString("name")?.trim();
 
   const venue = db
     .prepare(
@@ -75,8 +81,10 @@ async function createShow(interaction) {
   }
 
   const event = randomShowData();
+  const showName = customName || event.name;
 
-  const baseWalkins = generateInitialWalkins(venue);
+  const initialWalkins = generateInitialWalkins(venue);
+  const baseWalkins = applyTicketPriceDemand(initialWalkins, ticketPrice);
 
   const projectedWalkins = calculateProjectedWalkins({
     baseWalkins,
@@ -90,20 +98,22 @@ async function createShow(interaction) {
       owner_id,
       venue_id,
       name,
+      genre,
       show_date,
       ticket_price,
       simulated_attendees,
       status
     )
-    VALUES (?, ?, ?, ?, ?, ?, 'upcoming')
+    VALUES (?, ?, ?, ?, ?, ?, ?, 'upcoming')
   `,
     )
     .run(
       userId,
       venue.id,
-      event.name,
+      showName,
+      genre,
       event.date,
-      event.price,
+      ticketPrice,
       baseWalkins,
     );
 
@@ -123,11 +133,16 @@ async function createShow(interaction) {
   const embed = new EmbedBuilder()
     .setColor(0x8b5cf6)
     .setTitle("🎧 SHOW CREATED")
-    .setDescription(`**${event.name}**`)
+    .setDescription(`**${showName}**`)
     .addFields(
       {
         name: "📍 Venue",
         value: venue.name,
+        inline: true,
+      },
+      {
+        name: "🎵 Genre",
+        value: SHOW_GENRES[genre],
         inline: true,
       },
       {
@@ -137,13 +152,14 @@ async function createShow(interaction) {
       },
       {
         name: "🎟️ Ticket Price",
-        value: `$${event.price}`,
+        value: `$${ticketPrice}`,
         inline: true,
       },
       {
         name: "👥 Forecast",
         value:
           `Projected Walk-ins: **${projectedWalkins}**\n` +
+          `Price Effect: **${ticketPriceDemandLabel(ticketPrice)}**\n` +
           `Venue Boost: **+${attendanceBonusPercent(venue)}%**`,
       },
       {
@@ -180,11 +196,16 @@ async function createShow(interaction) {
     {
       color: 0x8b5cf6,
       title: "🎧 New Show Created",
-      description: `**${interaction.user.username}** created **${event.name}**`,
+      description: `**${interaction.user.username}** created **${showName}**`,
       fields: [
         {
           name: "Venue",
           value: venue.name,
+          inline: true,
+        },
+        {
+          name: "Genre",
+          value: SHOW_GENRES[genre],
           inline: true,
         },
         {
@@ -194,7 +215,7 @@ async function createShow(interaction) {
         },
         {
           name: "Tickets",
-          value: `$${event.price}`,
+          value: `$${ticketPrice}`,
           inline: true,
         },
       ],
@@ -262,7 +283,7 @@ async function showLineup(interaction, buttonShowId = null) {
   const embed = new EmbedBuilder()
     .setColor(0xff00cc)
     .setTitle(`🎧 ${show.name}`)
-    .setDescription(`${show.venue_name}`);
+    .setDescription(`${show.venue_name} • ${SHOW_GENRES[show.genre] || "Mixed"}`);
 
   embed.addFields({
     name: `🎚️ Lineup (${lineup.length})`,
@@ -285,7 +306,10 @@ async function showLineup(interaction, buttonShowId = null) {
   embed.addFields({
     name: "📊 Summary",
 
-    value: `Tickets: ${show.tickets_sold}\n` + `Price: $${show.ticket_price}`,
+    value:
+      `Genre: ${SHOW_GENRES[show.genre] || "Mixed"}\n` +
+      `Tickets: ${show.tickets_sold}\n` +
+      `Price: $${show.ticket_price}`,
   });
 
   if (interaction.deferred || interaction.replied) {
@@ -436,13 +460,20 @@ function buildShowPage(userId, status, page = 0) {
         inline: true,
       },
       {
+        name: "🎵 Genre",
+        value: SHOW_GENRES[show.genre] || "Mixed",
+        inline: true,
+      },
+      {
         name: "📅 Date",
         value: show.show_date || "No date set",
         inline: true,
       },
       {
         name: "🎟 Ticket Price",
-        value: money(show.ticket_price || 0),
+        value:
+          `${money(show.ticket_price || 0)}\n` +
+          `${ticketPriceDemandLabel(show.ticket_price || 0)}`,
         inline: true,
       },
       {
@@ -672,6 +703,7 @@ function buildRunShowEmbed(result) {
         name: "📍 Event",
         value:
           `**Venue:** ${show.venue_name}\n` +
+          `**Genre:** ${SHOW_GENRES[show.genre] || "Mixed"}\n` +
           `**Dynamic Event:** ${event.title}`,
       },
       {
