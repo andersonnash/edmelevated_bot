@@ -24,6 +24,7 @@ const {
 const {
   calculateProjectedWalkins,
   attendanceBonusPercent,
+  isProjectedSoldOut,
 } = require("../services/showForecast");
 
 const {
@@ -937,6 +938,28 @@ async function promoteShowById(interaction, showId) {
     });
   }
 
+  const venue = db.prepare("SELECT * FROM venues WHERE id = ?").get(show.venue_id);
+  const ticketCount = db
+    .prepare("SELECT COUNT(*) AS count FROM show_tickets WHERE show_id = ?")
+    .get(show.id).count;
+  const baseWalkins = Number(show.simulated_attendees || 0);
+  const projectedBeforePromotion = calculateProjectedWalkins({
+    baseWalkins,
+    venue,
+    ticketCount,
+  });
+
+  if (isProjectedSoldOut({ baseWalkins, venue, ticketCount })) {
+    return interaction.reply({
+      content:
+        `🎟️ **${show.name}** is already projected to sell out.\n` +
+        `Capacity: **${venueCapacity(venue)}** • Tickets: **${ticketCount}** • ` +
+        `Projected walk-ins: **${projectedBeforePromotion}**\n` +
+        "No promotion was purchased and no cash was spent.",
+      ephemeral: true,
+    });
+  }
+
   const promoOptions = [
     {
       text: "posted flyers around downtown",
@@ -1012,17 +1035,8 @@ async function promoteShowById(interaction, showId) {
 
   promoteTransaction();
 
-  const venue = db.prepare("SELECT * FROM venues WHERE id = ?").get(show.venue_id);
-  const ticketCount = db
-    .prepare("SELECT COUNT(*) AS count FROM show_tickets WHERE show_id = ?")
-    .get(show.id).count;
-  const projectedBeforePromotion = calculateProjectedWalkins({
-    baseWalkins: Number(show.simulated_attendees || 0),
-    venue,
-    ticketCount,
-  });
   const projectedAfterPromotion = calculateProjectedWalkins({
-    baseWalkins: Number(show.simulated_attendees || 0) + promo.hype,
+    baseWalkins: baseWalkins + promo.hype,
     venue,
     ticketCount,
   });
