@@ -410,66 +410,6 @@ details p {
   font-size: 1rem;
 }
 
-.systems-map {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr auto 1fr;
-  gap: 1rem;
-  align-items: stretch;
-}
-
-.systems-map.second-row {
-  margin-top: 1rem;
-}
-
-.system-card {
-  background: linear-gradient(180deg, var(--panel-light), var(--panel));
-  border: 1px solid var(--border);
-  border-radius: 24px;
-  padding: 1.4rem;
-  box-shadow: var(--shadow);
-}
-
-.system-icon {
-  font-size: 2rem;
-  margin-bottom: 0.8rem;
-}
-
-.system-card h3 {
-  font-size: 1.3rem;
-  margin-bottom: 0.7rem;
-}
-
-.system-card p {
-  color: var(--muted);
-  margin: 0 0 1rem;
-}
-
-.system-links {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
-}
-
-.system-links span {
-  display: inline-flex;
-  border-radius: 999px;
-  padding: 0.3rem 0.55rem;
-  background: rgba(139, 92, 246, 0.16);
-  border: 1px solid rgba(192, 132, 252, 0.22);
-  color: #eadcff;
-  font-size: 0.78rem;
-  font-weight: 800;
-}
-
-.system-arrow {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--purple-light);
-  font-size: 2rem;
-  font-weight: 900;
-}
-
 .faq {
   display: grid;
   gap: 0.8rem;
@@ -508,14 +448,9 @@ summary {
   .steps,
   .loop,
   .grid.two,
-  .command-grid
+  .command-grid,
   .scene-map {
     grid-template-columns: 1fr;
-  }
-
-  .system-arrow {
-    transform: rotate(90deg);
-    padding: 0.25rem 0;
   }
 
   .guide-callout {

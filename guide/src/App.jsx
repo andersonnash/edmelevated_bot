@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { guideSections } from "./guideData";
 
 const categories = [
@@ -38,6 +38,18 @@ function App() {
       return matchesCategory && matchesSearch;
     });
   }, [activeCategory, search]);
+
+  useEffect(() => {
+    if (!filteredSections.length) return;
+
+    const activeIsVisible = filteredSections.some(
+      (section) => section.id === activeSectionId,
+    );
+
+    if (!activeIsVisible) {
+      setActiveSectionId(filteredSections[0].id);
+    }
+  }, [activeSectionId, filteredSections]);
 
   const activeSection =
     guideSections.find((section) => section.id === activeSectionId) ||
