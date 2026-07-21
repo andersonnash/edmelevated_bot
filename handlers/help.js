@@ -118,7 +118,7 @@ function categoryEmbed(category) {
         {
           name: "`/collect_show`",
           value:
-            "Owner collects profits from a completed show and settles DJ and staff payouts.",
+            "Collect profits and settle payouts. Completed show reports rate attendance, profit, production, lineup, and staffing.",
         },
       ),
 
