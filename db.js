@@ -199,6 +199,24 @@ CREATE TABLE IF NOT EXISTS dj_profiles (
     UNIQUE(user_id, booking_key)
   );
 
+  CREATE TABLE IF NOT EXISTS booking_runs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id TEXT NOT NULL,
+    booking_key TEXT NOT NULL,
+    booking_kind TEXT NOT NULL,
+    genre TEXT,
+    approach TEXT,
+    cash_reward INTEGER DEFAULT 0,
+    xp_reward INTEGER DEFAULT 0,
+    reputation_reward INTEGER DEFAULT 0,
+    dj_reputation_reward INTEGER DEFAULT 0,
+    show_bonus INTEGER DEFAULT 0,
+    completed_at TEXT DEFAULT CURRENT_TIMESTAMP
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_booking_runs_user_time
+  ON booking_runs(user_id, completed_at);
+
   CREATE TABLE IF NOT EXISTS user_equipment (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id TEXT NOT NULL,

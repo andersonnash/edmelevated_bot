@@ -649,6 +649,140 @@ const DJ_BOOKINGS = {
   },
 };
 
+const DJ_BOOKING_MILESTONES = [
+  {
+    key: "private_party",
+    name: "Private Party",
+    prerequisite: "open_decks_guest_slot",
+    repeatableRunsRequired: 2,
+    djReputationRequired: 15,
+    cash: 400,
+    xp: 35,
+    reputation: 3,
+    djReputation: 5,
+    showBonus: 5,
+    scenario:
+      "The host wants recognizable music, but the dance floor keeps asking for something heavier.",
+    choices: [
+      { key: "take_requests", label: "Take Requests", cashMultiplier: 1.15, xpBonus: 3, reputationBonus: 2, djReputationBonus: 1, showBonusBonus: 0, result: "You worked the requests into the set and won over the whole party." },
+      { key: "go_underground", label: "Go Underground", cashMultiplier: 0.95, xpBonus: 12, reputationBonus: 0, djReputationBonus: 4, showBonusBonus: 2, result: "You ignored the safe route and turned the party into a tiny underground night." },
+      { key: "blend_both", label: "Blend Both", cashMultiplier: 1.05, xpBonus: 8, reputationBonus: 1, djReputationBonus: 3, showBonusBonus: 1, result: "You folded the requests into your sound without losing the room." },
+    ],
+  },
+  {
+    key: "local_club_support",
+    name: "Local Club Support",
+    prerequisite: "private_party",
+    repeatableRunsRequired: 4,
+    djReputationRequired: 35,
+    cash: 600,
+    xp: 50,
+    reputation: 5,
+    djReputation: 8,
+    showBonus: 8,
+    scenario:
+      "The headliner is running late, and the promoter asks you to extend your opening set.",
+    choices: [
+      { key: "build_slowly", label: "Build Slowly", cashMultiplier: 1.05, xpBonus: 5, reputationBonus: 2, djReputationBonus: 3, showBonusBonus: 2, result: "You protected the room's energy and handed the headliner a perfect floor." },
+      { key: "claim_spotlight", label: "Claim the Spotlight", cashMultiplier: 1.2, xpBonus: 12, reputationBonus: 0, djReputationBonus: 2, showBonusBonus: 0, result: "You treated the extra time like a headline slot and made yourself impossible to ignore." },
+      { key: "surprise_b2b", label: "Start a Surprise B2B", cashMultiplier: 1, xpBonus: 8, reputationBonus: 1, djReputationBonus: 4, showBonusBonus: 4, result: "A local DJ joined you, and the unexpected back-to-back became the story of the night." },
+    ],
+  },
+  {
+    key: "warehouse_closer",
+    name: "Warehouse Closing Slot",
+    prerequisite: "local_club_support",
+    repeatableRunsRequired: 8,
+    djReputationRequired: 70,
+    cash: 850,
+    xp: 70,
+    reputation: 7,
+    djReputation: 12,
+    showBonus: 12,
+    scenario:
+      "The official set time is over, but the warehouse is still full and nobody wants to leave.",
+    choices: [
+      { key: "end_on_time", label: "End on Time", cashMultiplier: 1.1, xpBonus: 5, reputationBonus: 3, djReputationBonus: 4, showBonusBonus: 1, result: "You protected the promoter, closed cleanly, and earned serious trust." },
+      { key: "play_past_curfew", label: "Play Past Curfew", cashMultiplier: 1.25, xpBonus: 15, reputationBonus: 0, djReputationBonus: 2, showBonusBonus: 3, result: "You kept the warehouse moving until the lights came on." },
+      { key: "unreleased_closer", label: "Drop an Unreleased Closer", cashMultiplier: 1, xpBonus: 12, reputationBonus: 2, djReputationBonus: 5, showBonusBonus: 5, result: "You ended on an unknown track and disappeared before anyone could identify it." },
+    ],
+  },
+];
+
+const DJ_REPEATABLE_BOOKINGS = [
+  {
+    key: "community_night",
+    name: "Community Night",
+    genre: "career",
+    unlockBooking: "open_decks_guest_slot",
+    cash: 250,
+    xp: 25,
+    reputation: 2,
+    djReputation: 3,
+    showBonus: 5,
+    scenario: "The regulars have heard everything, and they are waiting to see whether you brought something memorable.",
+    choices: [
+      { key: "forgotten_classic", label: "Dig Out a Classic", cashMultiplier: 1.1, xpBonus: 4, reputationBonus: 2, djReputationBonus: 2, showBonusBonus: 1, result: "A forgotten classic pulls the regulars onto the floor immediately." },
+      { key: "new_edit", label: "Test a New Edit", cashMultiplier: 1, xpBonus: 10, reputationBonus: 0, djReputationBonus: 4, showBonusBonus: 2, result: "The new edit is rough around the edges, but the room remembers it." },
+      { key: "local_guest", label: "Bring Up a Local Guest", cashMultiplier: 0.95, xpBonus: 6, reputationBonus: 2, djReputationBonus: 3, showBonusBonus: 4, result: "Sharing the booth turns a routine night into a community moment." },
+    ],
+  },
+  {
+    key: "afterparty_set",
+    name: "Afterparty Set",
+    genre: "career",
+    unlockBooking: "private_party",
+    cash: 325,
+    xp: 30,
+    reputation: 3,
+    djReputation: 4,
+    showBonus: 7,
+    scenario: "The main-event crowd arrives at once, but the afterparty sound system is barely holding together.",
+    choices: [
+      { key: "protect_system", label: "Protect the System", cashMultiplier: 1.05, xpBonus: 4, reputationBonus: 2, djReputationBonus: 3, showBonusBonus: 1, result: "You pulled back the low end and kept the party alive without blowing the system." },
+      { key: "push_redline", label: "Push It to the Redline", cashMultiplier: 1.2, xpBonus: 12, reputationBonus: 0, djReputationBonus: 2, showBonusBonus: 3, result: "The rig survives somehow, and the room talks about the set for days." },
+      { key: "go_deeper", label: "Go Deep and Late", cashMultiplier: 1, xpBonus: 8, reputationBonus: 1, djReputationBonus: 4, showBonusBonus: 2, result: "You changed direction and built the kind of deep set that only works after 3 a.m." },
+    ],
+  },
+  {
+    key: "club_support",
+    name: "Club Support Slot",
+    genre: "career",
+    unlockBooking: "local_club_support",
+    cash: 400,
+    xp: 35,
+    reputation: 3,
+    djReputation: 5,
+    showBonus: 8,
+    scenario: "The headliner's sound is far outside your specialty, and your final track must connect the two sets.",
+    choices: [
+      { key: "seamless_handoff", label: "Create a Seamless Handoff", cashMultiplier: 1.05, xpBonus: 5, reputationBonus: 2, djReputationBonus: 3, showBonusBonus: 2, result: "Your last track makes the handoff feel planned down to the second." },
+      { key: "own_specialty", label: "Own Your Specialty", cashMultiplier: 1.1, xpBonus: 10, reputationBonus: 0, djReputationBonus: 4, showBonusBonus: 1, result: "You refuse to dilute your sound and leave a clear signature on the night." },
+      { key: "headliner_track", label: "Play Their Track", cashMultiplier: 1, xpBonus: 6, reputationBonus: 2, djReputationBonus: 2, showBonusBonus: 4, result: "The headliner hears the transition from backstage and gives you the nod." },
+    ],
+  },
+  {
+    key: "genre_showcase",
+    name: "Underground Genre Showcase",
+    genre: "career",
+    unlockBooking: "warehouse_closer",
+    cash: 600,
+    xp: 50,
+    reputation: 4,
+    djReputation: 7,
+    showBonus: 12,
+    scenario: "This crowd knows the genre deeply and will notice every selection, transition, and shortcut.",
+    choices: [
+      { key: "purist_set", label: "Play a Purist Set", cashMultiplier: 1.05, xpBonus: 5, reputationBonus: 3, djReputationBonus: 4, showBonusBonus: 2, result: "The heads recognize every detail and reward you for respecting the sound." },
+      { key: "cross_genres", label: "Cross Genre Boundaries", cashMultiplier: 1.1, xpBonus: 12, reputationBonus: 0, djReputationBonus: 4, showBonusBonus: 3, result: "The experiment divides opinion, but nobody calls it forgettable." },
+      { key: "unreleased_set", label: "Play Mostly Unreleased Music", cashMultiplier: 1, xpBonus: 10, reputationBonus: 2, djReputationBonus: 5, showBonusBonus: 5, result: "The crowd spends the entire set trying to identify tracks that do not exist online." },
+    ],
+  },
+];
+
+const REPEATABLE_BOOKING_COOLDOWN_HOURS = 6;
+const REPEATABLE_BOOKING_DAILY_LIMIT = 3;
+
 module.exports = {
   OWNER_ID,
   VENUE_TYPES,
@@ -667,6 +801,10 @@ module.exports = {
   SHOW_STAFF_VENUE_BOOST_CAP,
   SHOW_GENRES,
   DJ_BOOKINGS,
+  DJ_BOOKING_MILESTONES,
+  DJ_REPEATABLE_BOOKINGS,
+  REPEATABLE_BOOKING_COOLDOWN_HOURS,
+  REPEATABLE_BOOKING_DAILY_LIMIT,
   isBotAdmin,
   isOwner,
 };

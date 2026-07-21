@@ -106,6 +106,8 @@ export const guideSections = [
           "Once you own equipment, run /bookings.",
           "The first available opportunity is Open Decks Guest Slot.",
           "You choose a genre, choose how you want to open your set, and complete the booking for rewards.",
+          "Open Decks leads into Private Party, Local Club Support, and Warehouse Closing Slot milestones.",
+          "Each booking presents a situation and three choices written specifically for that gig.",
         ],
       },
       {
@@ -117,10 +119,22 @@ export const guideSections = [
         ],
       },
       {
-        heading: "Version one",
+        heading: "One-time versus repeatable",
         text: [
-          "Right now, bookings are still early. Open Decks Guest Slot is the first version of the system.",
-          "More booking opportunities can be added later, but the foundation is now there: gear leads to bookings, bookings build your DJ name, and your DJ profile tracks the climb.",
+          "Career milestones are completed once, do not use a cooldown, and advance the path toward the next career booking.",
+          "The next milestone does not unlock immediately: it requires a certain number of completed repeatable gigs and enough DJ reputation.",
+          "Repeatable DJ gigs are separate buttons that remain available after they unlock.",
+          "Repeatable gigs unlock as you clear milestones, scale their cash with DJ reputation, and can add demand to your next owned show.",
+          "All repeatable gigs share one cooldown: you can complete one every six hours and no more than three per UTC day.",
+        ],
+      },
+      {
+        heading: "Career requirements",
+        text: [
+          "Open Decks unlocks Community Night. Complete 2 repeatable gigs and reach 15 DJ reputation to unlock Private Party.",
+          "Private Party unlocks Afterparty Set. Complete 4 repeatable gigs total and reach 35 DJ reputation to unlock Local Club Support.",
+          "Local Club Support unlocks Club Support Slot. Complete 8 repeatable gigs total and reach 70 DJ reputation to unlock Warehouse Closing Slot.",
+          "Warehouse Closing Slot unlocks Underground Genre Showcase as the final repeatable tier.",
         ],
       },
     ],
