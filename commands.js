@@ -4,6 +4,7 @@ const {
   SlashCommandBuilder,
   PermissionFlagsBits,
 } = require("discord.js");
+const { SHOW_GENRES } = require("./constants");
 
 const commands = [
   new SlashCommandBuilder()
@@ -271,13 +272,40 @@ const commands = [
 
   new SlashCommandBuilder()
     .setName("create_show")
-    .setDescription("Generate and schedule a random show at one of your venues")
+    .setDescription("Create and schedule a show at one of your venues")
     .addStringOption((option) =>
       option
         .setName("venue")
         .setDescription("Choose one of your venues")
         .setRequired(true)
         .setAutocomplete(true),
+    )
+    .addStringOption((option) =>
+      option
+        .setName("genre")
+        .setDescription("Choose the show's genre")
+        .setRequired(true)
+        .addChoices(
+          ...Object.entries(SHOW_GENRES).map(([value, name]) => ({
+            name,
+            value,
+          })),
+        ),
+    )
+    .addIntegerOption((option) =>
+      option
+        .setName("ticket_price")
+        .setDescription("Set the ticket price ($10–$75)")
+        .setRequired(true)
+        .setMinValue(10)
+        .setMaxValue(75),
+    )
+    .addStringOption((option) =>
+      option
+        .setName("name")
+        .setDescription("Optional custom show name")
+        .setRequired(false)
+        .setMaxLength(60),
     ),
 
   new SlashCommandBuilder()

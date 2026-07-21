@@ -231,7 +231,8 @@ export const guideSections = [
       {
         heading: "Building a show",
         text: [
-          "Use /create_show to create a show at one of your venues.",
+          "Use /create_show to choose a venue, genre, ticket price, and optional custom name.",
+          "Lower ticket prices increase initial demand. Higher prices reduce demand but earn more per attendee.",
           "When the show is created, the bot automatically assigns it a future show date and time.",
           "You are not picking the exact date yourself. You are creating the event, and the city puts it on the calendar.",
         ],

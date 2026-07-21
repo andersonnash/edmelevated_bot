@@ -38,6 +38,27 @@ function generateInitialWalkins(venue, random = Math.random) {
   );
 }
 
+function ticketPriceDemandModifier(ticketPrice) {
+  if (ticketPrice <= 20) return 1.2;
+  if (ticketPrice <= 30) return 1.1;
+  if (ticketPrice <= 40) return 1;
+  if (ticketPrice <= 50) return 0.85;
+  return 0.7;
+}
+
+function ticketPriceDemandLabel(ticketPrice) {
+  const percent = Math.round((ticketPriceDemandModifier(ticketPrice) - 1) * 100);
+  if (percent === 0) return "No change";
+  return `${percent > 0 ? "+" : ""}${percent}% demand`;
+}
+
+function applyTicketPriceDemand(baseWalkins, ticketPrice) {
+  return Math.max(
+    1,
+    Math.floor(baseWalkins * ticketPriceDemandModifier(ticketPrice)),
+  );
+}
+
 function isProjectedSoldOut({ baseWalkins, venue, ticketCount = 0 }) {
   const projectedWalkins = calculateProjectedWalkins({
     baseWalkins,
@@ -52,5 +73,8 @@ module.exports = {
   calculateProjectedWalkins,
   attendanceBonusPercent,
   generateInitialWalkins,
+  ticketPriceDemandModifier,
+  ticketPriceDemandLabel,
+  applyTicketPriceDemand,
   isProjectedSoldOut,
 };
