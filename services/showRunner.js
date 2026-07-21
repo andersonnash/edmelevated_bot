@@ -2,7 +2,8 @@ const db = require("../db");
 const { randomShowEvent } = require("./generators");
 const { addDjReputation, calculateDjBookingFee } = require("./djs");
 const { addCash } = require("./economy");
-const { venueCapacity, venueAttendanceBonus } = require("./venueEngine");
+const { venueCapacity } = require("./venueEngine");
+const { calculateProjectedWalkins } = require("./showForecast");
 
 async function runShowById(showId) {
   const show = db
@@ -56,12 +57,20 @@ async function runShowById(showId) {
 
   const event = randomShowEvent();
 
-  const adjustedWalkins = Math.max(
+  const rawWalkinDemand = Math.max(
     0,
-    (show.simulated_attendees || 0) + event.attendance,
+    Number(show.simulated_attendees || 0) + event.attendance,
   );
 
-  const paidRevenue = tickets.reduce(
+  const finalCapacity = venueCapacity(show);
+  const admittedTickets = tickets.slice(0, finalCapacity);
+  const adjustedWalkins = calculateProjectedWalkins({
+    baseWalkins: rawWalkinDemand,
+    venue: show,
+    ticketCount: admittedTickets.length,
+  });
+
+  const paidRevenue = admittedTickets.reduce(
     (sum, ticket) => sum + (ticket.price_paid || 0),
     0,
   );
@@ -70,16 +79,8 @@ async function runShowById(showId) {
     adjustedWalkins * (show.ticket_price || 0) * event.revenueMultiplier,
   );
 
-  let totalAttendance = tickets.length + adjustedWalkins;
+  const totalAttendance = admittedTickets.length + adjustedWalkins;
   const totalRevenue = paidRevenue + simulatedRevenue;
-
-  const finalCapacity = venueCapacity(show);
-
-  totalAttendance = Math.floor(
-    totalAttendance * (1 + (venueAttendanceBonus(show) || 0)),
-  );
-
-  totalAttendance = Math.min(totalAttendance, finalCapacity);
 
   const staffCost = staff.reduce((sum, person) => sum + (person.pay || 0), 0);
   const lineupCost = lineup.reduce((sum, dj) => sum + (dj.pay || 0), 0);
@@ -193,6 +194,7 @@ async function runShowById(showId) {
     staff,
     lineup,
     adjustedWalkins,
+    rawWalkinDemand,
     paidRevenue,
     simulatedRevenue,
     totalAttendance,

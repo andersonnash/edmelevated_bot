@@ -102,7 +102,7 @@ async function createShow(interaction) {
       event.name,
       event.date,
       event.price,
-      projectedWalkins,
+      baseWalkins,
     );
 
   const showId = created.lastInsertRowid;
@@ -336,9 +336,14 @@ function getShowCounts(showId) {
     .prepare("SELECT COUNT(*) AS count FROM show_staff WHERE show_id = ?")
     .get(showId);
 
+  const tickets = db
+    .prepare("SELECT COUNT(*) AS count FROM show_tickets WHERE show_id = ?")
+    .get(showId);
+
   return {
     djCount: djs.count || 0,
     showStaffCount: staff.count || 0,
+    ticketCount: tickets.count || 0,
   };
 }
 
@@ -401,7 +406,7 @@ function buildShowPage(userId, status, page = 0) {
   const safePage = Math.max(0, Math.min(page, totalPages - 1));
   const show = shows[safePage];
 
-  const { djCount, showStaffCount } = getShowCounts(show.id);
+  const { djCount, showStaffCount, ticketCount } = getShowCounts(show.id);
   const showStaffBoostPercent = getShowStaffBoostPercent(showStaffCount);
   const finalCapacity = venueCapacity(show);
 
@@ -409,6 +414,7 @@ function buildShowPage(userId, status, page = 0) {
   const projectedWalkins = calculateProjectedWalkins({
     baseWalkins: baseProjectedWalkins,
     venue: show,
+    ticketCount,
   });
   const attendanceBoostPercent = attendanceBonusPercent(show);
 
@@ -567,6 +573,19 @@ async function buyTicket(interaction) {
   if (existing) {
     return interaction.editReply({
       content: "You already have a ticket to this show.",
+      ephemeral: true,
+    });
+  }
+
+  const ticketCount = db
+    .prepare("SELECT COUNT(*) AS count FROM show_tickets WHERE show_id = ?")
+    .get(show.id).count;
+
+  const venue = db.prepare("SELECT * FROM venues WHERE id = ?").get(show.venue_id);
+
+  if (ticketCount >= venueCapacity(venue)) {
+    return interaction.editReply({
+      content: "That show is sold out.",
       ephemeral: true,
     });
   }
@@ -993,8 +1012,20 @@ async function promoteShowById(interaction, showId) {
 
   promoteTransaction();
 
-  const projectedAfterPromotion =
-    Number(show.simulated_attendees || 0) + promo.hype;
+  const venue = db.prepare("SELECT * FROM venues WHERE id = ?").get(show.venue_id);
+  const ticketCount = db
+    .prepare("SELECT COUNT(*) AS count FROM show_tickets WHERE show_id = ?")
+    .get(show.id).count;
+  const projectedBeforePromotion = calculateProjectedWalkins({
+    baseWalkins: Number(show.simulated_attendees || 0),
+    venue,
+    ticketCount,
+  });
+  const projectedAfterPromotion = calculateProjectedWalkins({
+    baseWalkins: Number(show.simulated_attendees || 0) + promo.hype,
+    venue,
+    ticketCount,
+  });
 
   const xpUpdate = addXp(userId, 25);
   await announceLevelUp(interaction, xpUpdate);
@@ -1021,7 +1052,7 @@ async function promoteShowById(interaction, showId) {
       },
       {
         name: "👥 Projected Walk-ins",
-        value: `${show.simulated_attendees || 0} → ${projectedAfterPromotion}`,
+        value: `${projectedBeforePromotion} → ${projectedAfterPromotion}`,
         inline: true,
       },
       {

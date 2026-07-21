@@ -7,6 +7,10 @@ const {
   SHOW_STAFF_VENUE_BOOST_PER_STAFF,
   SHOW_STAFF_VENUE_BOOST_CAP,
 } = require("../constants");
+const {
+  venueCapacity,
+  venueAttendanceBonus,
+} = require("./showMath");
 
 function venueReputation(venue) {
   return Object.values(VENUE_DEPARTMENTS).reduce((sum, department) => {
@@ -116,22 +120,6 @@ function venueHourlyIncome(venue) {
       showStaffMultiplier *
       eventMultiplier,
   );
-}
-
-function venueCapacity(venue) {
-  const baseCapacity = venue.base_capacity || 0;
-  const securityLevel = venue.security_level || 0;
-
-  const securityBonus = 1 + securityLevel * 0.2;
-
-  return Math.floor(baseCapacity * securityBonus);
-}
-
-function venueAttendanceBonus(venue) {
-  const productionLevel = Number(venue?.production_level || 0);
-  const productionDepartment = VENUE_DEPARTMENTS.production;
-
-  return productionLevel * (productionDepartment.benefitPerLevel / 100);
 }
 
 function equipmentHourlyIncome(item) {
