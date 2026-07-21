@@ -24,6 +24,7 @@ const {
 const {
   calculateProjectedWalkins,
   attendanceBonusPercent,
+  generateInitialWalkins,
   isProjectedSoldOut,
 } = require("../services/showForecast");
 
@@ -75,7 +76,7 @@ async function createShow(interaction) {
 
   const event = randomShowData();
 
-  const baseWalkins = Math.floor(Math.random() * 31) + 10;
+  const baseWalkins = generateInitialWalkins(venue);
 
   const projectedWalkins = calculateProjectedWalkins({
     baseWalkins,
