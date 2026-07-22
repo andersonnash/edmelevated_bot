@@ -1,4 +1,6 @@
 const OWNER_ID = "861947655584219146";
+const SHOW_CREATION_XP = 5;
+const SHOW_COMPLETION_XP = 35;
 
 function isOwner(userId) {
   return userId === OWNER_ID;
@@ -204,7 +206,6 @@ const VENUE_DEPARTMENTS = {
     column: "bar_level",
     baseCost: 1_000,
     benefitPerLevel: 15,
-    reputationPerLevel: 2,
     effect: "Boosts passive income",
   },
 
@@ -214,7 +215,6 @@ const VENUE_DEPARTMENTS = {
     column: "security_level",
     baseCost: 2_500,
     benefitPerLevel: 20,
-    reputationPerLevel: 1,
     effect: "Boosts venue capacity",
   },
 
@@ -224,7 +224,6 @@ const VENUE_DEPARTMENTS = {
     column: "production_level",
     baseCost: 5_000,
     benefitPerLevel: 15,
-    reputationPerLevel: 3,
     effect: "Boosts show attendance",
   },
 };
@@ -239,7 +238,7 @@ const ROLES = {
   scene_explorer: {
     name: "Scene Explorer",
     emoji: "🎮",
-    unlock: "Play your first game",
+    unlock: "Complete your first city activity",
   },
   crate_digger: {
     name: "Crate Digger",
@@ -274,7 +273,7 @@ const ROLES = {
   scene_icon: {
     name: "Scene Icon",
     emoji: "🌟",
-    unlock: "Reach 100 reputation",
+    unlock: "Reach 100 Scene Reputation",
   },
   city_legend: {
     name: "City Legend",
@@ -785,6 +784,8 @@ const REPEATABLE_BOOKING_DAILY_LIMIT = 3;
 
 module.exports = {
   OWNER_ID,
+  SHOW_CREATION_XP,
+  SHOW_COMPLETION_XP,
   VENUE_TYPES,
   EQUIPMENT_TYPES,
   INSURANCE_TIERS,

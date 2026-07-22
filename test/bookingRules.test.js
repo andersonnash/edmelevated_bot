@@ -80,6 +80,26 @@ test("rewards repeatable gigs that match the DJ's career genre", () => {
 
   assert.equal(reward.cash, 440);
   assert.equal(reward.djReputation, 9);
+  assert.equal(reward.reputation, 1);
+});
+
+test("reduces repeatable Scene Reputation without changing milestones", () => {
+  const booking = {
+    cash: 400,
+    xp: 35,
+    reputation: 5,
+    djReputation: 5,
+    showBonus: 8,
+  };
+  const approach = {
+    cashMultiplier: 1,
+    xpBonus: 0,
+    reputationBonus: 2,
+    djReputationBonus: 0,
+  };
+
+  assert.equal(calculateBookingReward(booking, approach, 0, true).reputation, 3);
+  assert.equal(calculateBookingReward(booking, approach, 0, false).reputation, 7);
 });
 
 test("locks career milestones until every requirement is met", () => {

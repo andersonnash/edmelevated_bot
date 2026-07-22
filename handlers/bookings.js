@@ -10,6 +10,7 @@ const db = require("../db");
 
 const { addCash } = require("../services/economy");
 const { money } = require("../services/formatters");
+const { addSceneReputation } = require("../services/reputation");
 const { getUser } = require("../services/roles");
 const { addXp, announceLevelUp } = require("../services/xp");
 const {
@@ -29,6 +30,7 @@ const {
   addDjReputation,
   calculateDjBookingFee,
   findOrCreateDjProfile,
+  recordCompletedGig,
 } = require("../services/djs");
 
 const OPEN_DECKS = DJ_BOOKINGS.openDecks;
@@ -601,12 +603,11 @@ async function completeCareerBooking(
   const transaction = db.transaction(() => {
     const feeBefore = calculateDjBookingFee(profile);
     addCash(userId, reward.cash);
-    db.prepare(
-      "UPDATE users SET reputation = reputation + ? WHERE discord_id = ?",
-    ).run(reward.reputation, userId);
+    addSceneReputation(userId, reward.reputation);
     const xpUpdate = addXp(userId, reward.xp);
     const djUpdate = addDjReputation(userId, reward.djReputation);
-    const feeAfter = calculateDjBookingFee(djUpdate.profile);
+    const gigUpdate = recordCompletedGig(userId);
+    const feeAfter = calculateDjBookingFee(gigUpdate.profile);
 
     if (kind === "milestone") {
       db.prepare(
@@ -663,7 +664,7 @@ async function completeCareerBooking(
         value:
           `${money(reward.cash)} cash\n` +
           `+${reward.xp} XP\n` +
-          `+${reward.reputation} scene reputation\n` +
+          `+${reward.reputation} Scene Reputation\n` +
           `+${reward.djReputation} DJ reputation`,
         inline: true,
       },
@@ -739,17 +740,12 @@ async function completeOpenDecks(interaction, genre, openerKey) {
 
     addCash(userId, reward.cash);
 
-    db.prepare(
-      `
-      UPDATE users
-      SET reputation = reputation + ?
-      WHERE discord_id = ?
-    `,
-    ).run(reward.reputation, userId);
+    addSceneReputation(userId, reward.reputation);
 
     const xpUpdate = addXp(userId, reward.xp);
     const djUpdate = addDjReputation(userId, reward.djReputation);
-    const feeAfter = calculateDjBookingFee(djUpdate.profile);
+    const gigUpdate = recordCompletedGig(userId);
+    const feeAfter = calculateDjBookingFee(gigUpdate.profile);
 
     db.prepare(
       `
@@ -801,7 +797,7 @@ async function completeOpenDecks(interaction, genre, openerKey) {
         value:
           `${money(reward.cash)} cash\n` +
           `+${reward.xp} XP\n` +
-          `+${reward.reputation} scene reputation\n` +
+          `+${reward.reputation} Scene Reputation\n` +
           `+${reward.djReputation} DJ reputation`,
         inline: true,
       },
@@ -809,7 +805,7 @@ async function completeOpenDecks(interaction, genre, openerKey) {
         name: "DJ Career",
         value:
           `${result.profileCreated ? "DJ Profile Created\n" : ""}` +
-          `Bookings: +1\n` +
+          `Completed Gigs: +1\n` +
           `Booking Fee: ${money(result.feeBefore)} → **${money(result.feeAfter)}**`,
         inline: true,
       },

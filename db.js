@@ -19,6 +19,13 @@ CREATE TABLE IF NOT EXISTS user_roles (
   role TEXT
 );
 
+CREATE TABLE IF NOT EXISTS user_activity_stats (
+  user_id TEXT PRIMARY KEY,
+  crate_digs INTEGER DEFAULT 0,
+  street_team_runs INTEGER DEFAULT 0,
+  rave_stories INTEGER DEFAULT 0
+);
+
 CREATE TABLE IF NOT EXISTS venues (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   owner_id TEXT,

@@ -40,7 +40,6 @@ const {
 const {
   randomShowData,
   randomContestName,
-  randomShowEvent,
   todayString,
 } = require("../services/generators");
 
@@ -49,6 +48,7 @@ const {
   SHOW_STAFF_VENUE_BOOST_PER_STAFF,
   SHOW_STAFF_VENUE_BOOST_CAP,
   SHOW_GENRES,
+  SHOW_CREATION_XP,
   isOwner,
 } = require("../constants");
 
@@ -118,7 +118,7 @@ async function createShow(interaction) {
     );
 
   const showId = created.lastInsertRowid;
-  const xpUpdate = addXp(userId, 40);
+  const xpUpdate = addXp(userId, SHOW_CREATION_XP);
   await announceLevelUp(interaction, xpUpdate);
 
   addRole(userId, "Promoter");
@@ -452,6 +452,14 @@ function buildShowPage(userId, status, page = 0) {
     ticketCount,
   });
   const attendanceBoostPercent = attendanceBonusPercent(show);
+  const closureEndsAt = show.closed_until
+    ? new Date(show.closed_until.replace(" ", "T") + "Z")
+    : null;
+  const isDelayedByClosure =
+    status === "upcoming" &&
+    show.show_date <= todayString() &&
+    closureEndsAt &&
+    closureEndsAt > new Date();
 
   const title =
     status === "upcoming"
@@ -526,6 +534,16 @@ function buildShowPage(userId, status, page = 0) {
           ? "Build your lineup, hire staff, and promote before show day."
           : "Use /collect to collect completed show payouts.",
     });
+
+  if (isDelayedByClosure) {
+    const reopensAt = Math.floor(closureEndsAt.getTime() / 1000);
+    embed.addFields({
+      name: "⚠️ Show Delayed",
+      value:
+        `${show.closure_reason || "The venue is temporarily closed."}\n` +
+        `Venue reopens <t:${reopensAt}:F> (<t:${reopensAt}:R>). The show will run on the first hourly scheduler cycle after reopening.`,
+    });
+  }
 
   if (status === "completed" && show.rating_overall != null) {
     embed.addFields({
@@ -686,7 +704,6 @@ async function buyTicket(interaction) {
 function buildRunShowEmbed(result) {
   const {
     show,
-    event,
     tickets,
     staff,
     lineup,
@@ -702,6 +719,7 @@ function buildRunShowEmbed(result) {
     rating,
     baseReputationGain,
     reputationGain,
+    xpUpdate,
   } = result;
 
   const staffSummary = staff.length
@@ -726,8 +744,7 @@ function buildRunShowEmbed(result) {
         name: "📍 Event",
         value:
           `**Venue:** ${show.venue_name}\n` +
-          `**Genre:** ${SHOW_GENRES[show.genre] || "Mixed"}\n` +
-          `**Dynamic Event:** ${event.title}`,
+          `**Genre:** ${SHOW_GENRES[show.genre] || "Mixed"}`,
       },
       {
         name: "👥 Attendance",
@@ -769,9 +786,10 @@ function buildRunShowEmbed(result) {
       {
         name: "⭐ Rewards",
         value:
-          `**Base Reputation:** +${baseReputationGain}\n` +
+          `**XP:** +${xpUpdate.xpGain}${xpUpdate.leveledUp ? ` • Level ${xpUpdate.newLevel}!` : ""}\n` +
+          `**Base Scene Reputation:** +${baseReputationGain}\n` +
           `**Rating Bonus:** +${rating.reputationBonus}\n` +
-          `**Total Reputation:** +${reputationGain}`,
+          `**Total Scene Reputation:** +${reputationGain}`,
       },
     )
     .setFooter({
@@ -839,6 +857,8 @@ async function runShow(interaction) {
       ephemeral: true,
     });
   }
+
+  await announceLevelUp(interaction, result.xpUpdate);
 
   const embed = buildRunShowEmbed(result);
   const row = buildCollectShowRow(result.show.show_id);

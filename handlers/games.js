@@ -12,6 +12,9 @@ const { addXp, announceLevelUp } = require("../services/xp");
 const { addRole } = require("../services/roles");
 const { addCash } = require("../services/economy");
 const { money } = require("../services/formatters");
+const { addSceneReputation } = require("../services/reputation");
+const { incrementActivity } = require("../services/progressionAchievements");
+const { calculateProjectedWalkins } = require("../services/showForecast");
 
 const db = require("../db");
 
@@ -32,6 +35,28 @@ function pickWeighted(items) {
   }
 
   return items[items.length - 1];
+}
+
+function projectedWalkins(show, baseWalkins = show.simulated_attendees) {
+  return calculateProjectedWalkins({
+    baseWalkins,
+    venue: show,
+    ticketCount: show.ticket_count || 0,
+  });
+}
+
+function showDemandResult(show, amount, before, after) {
+  if (!show) return "No upcoming show to boost.";
+  const capacityNote =
+    before === after
+      ? "\nThe show is already at projected capacity."
+      : "";
+  return (
+    `**${show.name}**\n` +
+    `Demand: **+${amount}**\n` +
+    `Projected walk-ins: **${before} → ${after}**` +
+    capacityNote
+  );
 }
 
 const rewards = [
@@ -174,19 +199,30 @@ async function crateDig(interaction) {
   addCash(userId, cashEarned);
 
   addRole(userId, "Scene Explorer");
+  incrementActivity(userId, "crate_digs");
 
   const show = db
     .prepare(
       `
-    SELECT id, name, simulated_attendees
+    SELECT
+      shows.id,
+      shows.name,
+      shows.simulated_attendees,
+      venues.base_capacity,
+      venues.security_level,
+      venues.production_level,
+      (SELECT COUNT(*) FROM show_tickets WHERE show_id = shows.id) AS ticket_count
     FROM shows
-    WHERE owner_id = ?
-      AND status = 'upcoming'
-    ORDER BY show_date ASC
+    JOIN venues ON venues.id = shows.venue_id
+    WHERE shows.owner_id = ?
+      AND shows.status = 'upcoming'
+    ORDER BY shows.show_date ASC
     LIMIT 1
     `,
     )
     .get(userId);
+
+  const projectedBefore = show ? projectedWalkins(show) : 0;
 
   if (show && pull.attendance > 0) {
     db.prepare(
@@ -197,6 +233,9 @@ async function crateDig(interaction) {
     `,
     ).run(pull.attendance, show.id);
   }
+  const projectedAfter = show
+    ? projectedWalkins(show, show.simulated_attendees + pull.attendance)
+    : 0;
 
   const finalEmbed = new EmbedBuilder()
     .setColor(pull.color)
@@ -209,9 +248,12 @@ async function crateDig(interaction) {
       },
       {
         name: "👥 Show Bonus",
-        value: show
-          ? `+${pull.attendance} projected attendees to **${show.name}**`
-          : "No upcoming show to boost.",
+        value: showDemandResult(
+          show,
+          pull.attendance,
+          projectedBefore,
+          projectedAfter,
+        ),
         inline: true,
       },
       {
@@ -362,28 +404,33 @@ async function streetTeam(interaction) {
 
   addCash(userId, cashEarned);
 
-  db.prepare(
-    `
-  UPDATE users
-  SET reputation = reputation + ?
-  WHERE discord_id = ?
-  `,
-  ).run(reputationEarned, userId);
+  addSceneReputation(userId, reputationEarned);
 
   addRole(userId, "Scene Explorer");
+  incrementActivity(userId, "street_team_runs");
 
   const show = db
     .prepare(
       `
-    SELECT id, name, simulated_attendees
+    SELECT
+      shows.id,
+      shows.name,
+      shows.simulated_attendees,
+      venues.base_capacity,
+      venues.security_level,
+      venues.production_level,
+      (SELECT COUNT(*) FROM show_tickets WHERE show_id = shows.id) AS ticket_count
     FROM shows
-    WHERE owner_id = ?
-    AND status = 'upcoming'
+    JOIN venues ON venues.id = shows.venue_id
+    WHERE shows.owner_id = ?
+    AND shows.status = 'upcoming'
     ORDER BY RANDOM()
     LIMIT 1
   `,
     )
     .get(userId);
+
+  const projectedBefore = show ? projectedWalkins(show) : 0;
 
   if (show) {
     db.prepare(
@@ -394,6 +441,9 @@ async function streetTeam(interaction) {
   `,
     ).run(reward.hype, show.id);
   }
+  const projectedAfter = show
+    ? projectedWalkins(show, show.simulated_attendees + reward.hype)
+    : 0;
 
   const xpUpdate = addXp(userId, xpEarned);
   await announceLevelUp(interaction, xpUpdate);
@@ -413,7 +463,7 @@ async function streetTeam(interaction) {
         inline: true,
       },
       {
-        name: "⭐ Reputation",
+        name: "⭐ Scene Reputation",
         value: `+${reputationEarned}`,
         inline: true,
       },
@@ -424,14 +474,17 @@ async function streetTeam(interaction) {
       },
       {
         name: "📈 Show Boost",
-        value: show
-          ? `+${reward.hype} projected attendees to **${show.name}**`
-          : `+${reward.hype} hype earned, but you have no upcoming shows.`,
+        value: showDemandResult(
+          show,
+          reward.hype,
+          projectedBefore,
+          projectedAfter,
+        ),
         inline: false,
       },
     )
     .setFooter({
-      text: "Street team work builds reputation and future show momentum.",
+      text: "Street team work builds Scene Reputation and future show momentum.",
     });
 
   return interaction.editReply({
@@ -610,15 +663,10 @@ async function handleRaveStoryChoice(interaction) {
 
   addCash(userId, choice.cash);
 
-  db.prepare(
-    `
-    UPDATE users
-    SET reputation = reputation + ?
-    WHERE discord_id = ?
-  `,
-  ).run(choice.reputation, userId);
+  addSceneReputation(userId, choice.reputation);
 
   addRole(userId, "Scene Explorer");
+  incrementActivity(userId, "rave_stories");
 
   const xpUpdate = addXp(userId, choice.xp);
 
@@ -631,7 +679,7 @@ async function handleRaveStoryChoice(interaction) {
   } else if (choice.reputation >= 4) {
     footer = "⭐ People are starting to recognize your name.";
   } else if (choice.reputation >= 2) {
-    footer = "🎧 Your reputation in the scene increased.";
+    footer = "🎧 Your Scene Reputation increased.";
   }
 
   const embed = new EmbedBuilder()
@@ -645,7 +693,7 @@ async function handleRaveStoryChoice(interaction) {
         inline: true,
       },
       {
-        name: "⭐ Reputation",
+        name: "⭐ Scene Reputation",
         value: `+${choice.reputation}`,
         inline: true,
       },

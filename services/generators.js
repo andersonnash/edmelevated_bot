@@ -98,65 +98,8 @@ function todayString() {
   ].join("-");
 }
 
-function randomShowEvent() {
-  const roll = Math.random();
-
-  if (roll < 0.6) {
-    return {
-      title: "Normal Night",
-      attendance: 0,
-      revenueMultiplier: 1,
-      reputation: 0,
-    };
-  }
-
-  if (roll < 0.72) {
-    return {
-      title: "📸 Local Influencer Posted",
-      attendance: 50,
-      revenueMultiplier: 1.2,
-      reputation: 8,
-    };
-  }
-
-  if (roll < 0.82) {
-    return {
-      title: "🔥 TikTok Clip Went Viral",
-      attendance: 100,
-      revenueMultiplier: 1.4,
-      reputation: 15,
-    };
-  }
-
-  if (roll < 0.9) {
-    return {
-      title: "🌧 Rainstorm",
-      attendance: -50,
-      revenueMultiplier: 0.8,
-      reputation: -5,
-    };
-  }
-
-  if (roll < 0.96) {
-    return {
-      title: "🚔 Noise Complaint",
-      attendance: -100,
-      revenueMultiplier: 0.6,
-      reputation: -10,
-    };
-  }
-
-  return {
-    title: "🪩 Legendary Night",
-    attendance: 250,
-    revenueMultiplier: 2,
-    reputation: 40,
-  };
-}
-
 module.exports = {
   randomShowData,
   randomContestName,
-  randomShowEvent,
   todayString,
 };
