@@ -12,13 +12,6 @@ const {
   venueAttendanceBonus,
 } = require("./showMath");
 
-function venueReputation(venue) {
-  return Object.values(VENUE_DEPARTMENTS).reduce((sum, department) => {
-    const level = venue[department.column] || 0;
-    return sum + level * department.reputationPerLevel;
-  }, 0);
-}
-
 function isActiveUntil(timestamp) {
   if (!timestamp) return false;
 
@@ -254,7 +247,6 @@ module.exports = {
   equipmentHourlyIncome,
   venuePendingIncome,
   equipmentPendingIncome,
-  venueReputation,
   venueCapacity,
   venueAttendanceBonus,
   getVenueIncome,

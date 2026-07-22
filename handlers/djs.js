@@ -45,7 +45,7 @@ async function djProfile(interaction) {
         inline: true,
       },
       {
-        name: "🎟 Completed Bookings",
+        name: "🎟 Completed Gigs",
         value: "```ansi\n" + `${profile.bookings}` + "```",
         inline: true,
       },
@@ -58,7 +58,7 @@ async function djProfile(interaction) {
         name: "📈 How to Grow",
         value:
           "Build DJ reputation through `/bookings` and show lineups.\n" +
-          "Higher DJ reputation and completed bookings increase your booking fee and status.\n\n" +
+          "Higher DJ reputation and completed gigs increase your booking fee and status.\n\n" +
           "**Tip:** Buy gear, take bookings, then get added to shows.",
       },
     )
@@ -106,8 +106,8 @@ async function topDjs(interaction) {
         name: `${index + 1}. ${dj.username} — ${title}`,
         value:
           `DJ Level: **${level}**\n` +
-          `Reputation: **${dj.dj_reputation}**\n` +
-          `Bookings: **${dj.bookings}**\n` +
+          `DJ Reputation: **${dj.dj_reputation}**\n` +
+          `Completed Gigs: **${dj.bookings}**\n` +
           `Booking Fee: **${money(bookingFee)}**`,
       });
     });

@@ -33,6 +33,10 @@ const {
 } = require("../services/xp");
 const { addCash } = require("../services/economy");
 const { money } = require("../services/formatters");
+const { addSceneReputation } = require("../services/reputation");
+const {
+  evaluateProgressionAchievements,
+} = require("../services/progressionAchievements");
 const {
   getVenueIncome,
   getEquipmentIncome,
@@ -117,7 +121,7 @@ async function register(interaction) {
         inline: true,
       },
       {
-        name: "📍 Reputation",
+        name: "📍 Scene Reputation",
         value: "**0**",
         inline: true,
       },
@@ -237,7 +241,7 @@ function nextObjective(user, venues, equipment, readyToCollect = 0) {
 
   if (reputation < 10) {
     return (
-      "Reach **10 reputation** to unlock Granary Warehouse.\n\n" +
+      "Reach **10 Scene Reputation** to unlock Granary Warehouse.\n\n" +
       `Progress: ${reputation} / 10`
     );
   }
@@ -352,7 +356,7 @@ async function profile(interaction) {
         `Average:      ${promoterStats.averageStars}/5 (${promoterStats.averageScore}/100)\n` +
         `Best:         ${promoterStats.bestStars}/5 (${promoterStats.bestScore}/100)\n` +
         `Strong Streak:${String(promoterStats.currentStreak).padStart(3)} (Best: ${promoterStats.bestStreak})\n` +
-        `Rating Rep:   +${promoterStats.totalReputationBonus}` +
+        `Rating Scene Rep: +${promoterStats.totalReputationBonus}` +
         "```",
     });
   }
@@ -373,7 +377,7 @@ async function profile(interaction) {
       name: "📊 STATS",
       value:
         "```ansi\n" +
-        `Reputation:    ${user.reputation || 0}\n` +
+        `Scene Rep:     ${user.reputation || 0}\n` +
         `Roles:         ${roleEmojis}\n` +
         `Lifetime:      ${money(user.lifetime_earned || 0)}\n` +
         "```",
@@ -416,12 +420,26 @@ async function profile(interaction) {
 
 async function roles(interaction) {
   const userId = interaction.user.id;
+  const user = getUser(userId);
+  evaluateProgressionAchievements(userId);
 
   const roles = db
     .prepare("SELECT role FROM user_roles WHERE user_id = ?")
     .all(userId);
 
   const unlocked = roles.map((r) => r.role);
+  const activityStats =
+    db
+      .prepare("SELECT * FROM user_activity_stats WHERE user_id = ?")
+      .get(userId) || {};
+
+  const progressByRole = {
+    "Crate Digger": `${activityStats.crate_digs || 0}/10 crate digs`,
+    "Street Team": `${activityStats.street_team_runs || 0}/5 street-team runs`,
+    "Story Chaser": `${activityStats.rave_stories || 0}/5 rave stories`,
+    "Scene Icon": `${user?.reputation || 0}/100 Scene Reputation`,
+    "City Legend": `Level ${user?.level || 1}/25`,
+  };
 
   const currentRoles = unlocked.length
     ? unlocked.map((role) => `🏆 ${role}`).join("\n")
@@ -431,14 +449,22 @@ async function roles(interaction) {
     .map((role) => {
       const earned = unlocked.includes(role.name);
 
-      return `${earned ? "✅" : "⬜"} ${role.emoji} ${role.name}\n↳ ${role.unlock}`;
+      const progress = progressByRole[role.name];
+      return (
+        `${earned ? "✅" : "⬜"} ${role.emoji} ${role.name}\n` +
+        `↳ ${role.unlock}${progress && !earned ? ` • ${progress}` : ""}`
+      );
     })
     .join("\n\n");
 
   const embed = new EmbedBuilder()
     .setColor(0xfacc15)
     .setTitle("🏆 EDM ELEVATED ROLES")
-    .setDescription("Player achievements and milestone titles.")
+    .setDescription(
+      "Player achievements and milestone titles. XP raises your unlimited player level; " +
+        "Scene Reputation measures citywide credibility; DJ Reputation and Completed Gigs grow your DJ career; " +
+        "Show Rating measures event quality. Venue Reputation is planned but not yet tracked.",
+    )
     .addFields(
       {
         name: "Unlocked Roles",
@@ -499,15 +525,7 @@ async function work(interaction) {
 
   addCash(userId, earned);
 
-  if (job.reputation > 0) {
-    db.prepare(
-      `
-      UPDATE users
-      SET reputation = reputation + ?
-      WHERE discord_id = ?
-      `,
-    ).run(job.reputation, userId);
-  }
+  addSceneReputation(userId, job.reputation);
 
   addRole(userId, "Scene Explorer");
 
@@ -530,7 +548,7 @@ async function work(interaction) {
         inline: true,
       },
       {
-        name: "⭐ Reputation",
+        name: "⭐ Scene Reputation",
         value: `+${job.reputation}`,
         inline: true,
       },
@@ -559,7 +577,7 @@ async function leaderboard(interaction) {
   const board = users
     .map(
       (u, i) =>
-        `${i + 1}. **${u.username}** — Rep: ${u.reputation}, Cash: $${money(u.cash)}`,
+        `${i + 1}. **${u.username}** — Scene Rep: ${u.reputation}, Cash: $${money(u.cash)}`,
     )
     .join("\n");
 
@@ -571,7 +589,8 @@ async function leaderboard(interaction) {
   users.forEach((user, index) => {
     embed.addFields({
       name: `${index + 1}. ${user.username}`,
-      value: `**Rep:** ${user.reputation}\n` + `**Cash:** $${money(user.cash)}`,
+      value:
+        `**Scene Rep:** ${user.reputation}\n` + `**Cash:** $${money(user.cash)}`,
     });
   });
 

@@ -37,6 +37,7 @@ function calculateBookingReward(
   const careerMultiplier = repeatable
     ? 1 + Math.min(Math.max(0, djReputation), 100) / 200
     : 1;
+  const reputation = booking.reputation + (approach.reputationBonus || 0);
 
   return {
     cash: Math.round(
@@ -46,7 +47,9 @@ function calculateBookingReward(
         (genreMatch ? 1.1 : 1),
     ),
     xp: booking.xp + approach.xpBonus,
-    reputation: booking.reputation + (approach.reputationBonus || 0),
+    reputation: repeatable
+      ? Math.max(1, Math.floor(reputation / 2))
+      : reputation,
     djReputation:
       booking.djReputation +
       approach.djReputationBonus +

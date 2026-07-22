@@ -24,7 +24,7 @@ export const guideSections = [
       {
         heading: "Your first command",
         text: [
-          "Start with /profile. This is your home base. It shows your cash, XP, reputation, passive income, owned venues, owned equipment, and your next objective.",
+          "Start with /profile. This is your home base. It shows your cash, XP, Scene Reputation, passive income, owned venues, owned equipment, and your next objective.",
           "If you ever feel lost, run /profile again. The profile is designed to point you toward your next real move.",
         ],
       },
@@ -47,8 +47,82 @@ export const guideSections = [
   },
 
   {
-    id: "equipment",
+    id: "progression",
     category: "Progression",
+    title: "Game Progression",
+    summary:
+      "The complete path from working your first shift to running venues, producing strong shows, and becoming a city legend.",
+    commands: [
+      "/profile",
+      "/help",
+      "/roles",
+      "/bookings",
+      "/my_shows",
+    ],
+    sections: [
+      {
+        heading: "The core progression loop",
+        text: [
+          "Start with work and side activities, invest the rewards in equipment, build a DJ career through bookings, buy a venue, and turn that venue into successful shows.",
+          "Each part feeds the next: active play earns resources, assets create income and unlock opportunities, and stronger events build the credibility needed for bigger goals.",
+        ],
+      },
+      {
+        heading: "1. Earn your start",
+        text: [
+          "Use /work, /crate_dig, and /rave_story to earn your first cash and XP while beginning to build Scene Reputation.",
+          "Your immediate goal is to afford equipment. /profile shows your current resources and points toward a useful next step.",
+        ],
+      },
+      {
+        heading: "2. Buy equipment",
+        text: [
+          "Equipment is your first asset. It generates passive rental income and unlocks the DJ booking path.",
+          "Collect the income with /collect, but keep playing actively: bookings are the main bridge between early gear ownership and your first venue.",
+        ],
+      },
+      {
+        heading: "3. Build your DJ career",
+        text: [
+          "Career milestones and repeatable gigs award cash, XP, DJ Reputation, Completed Gigs, and sometimes demand for your next owned show.",
+          "DJ Reputation and repeatable-gig progress unlock later career milestones. Completed Gigs and DJ Reputation also raise your booking value.",
+        ],
+      },
+      {
+        heading: "4. Buy and improve venues",
+        text: [
+          "Cash and Scene Reputation unlock larger venues. Venue departments improve physical capabilities such as income, capacity, and show attendance.",
+          "Venues also bring management decisions: staff can improve income, incidents can temporarily close a venue, and insurance reduces that risk.",
+        ],
+      },
+      {
+        heading: "5. Create better shows",
+        text: [
+          "Create shows, build lineups, hire staff, and promote persistent demand before show day. Capacity limits attendance, but it does not prevent you from continuing to build stored demand.",
+          "When a show completes, its rating measures attendance, profitability, production, lineup coverage, and staffing coverage. A strong Show Rating matters more than raw crowd size when Scene Reputation is awarded.",
+        ],
+      },
+      {
+        heading: "6. Expand your city status",
+        text: [
+          "XP provides unlimited player levels, while /roles tracks achievements for activity, level, and Scene Reputation milestones.",
+          "Scene Reputation unlocks broader city opportunities. DJ Reputation and Completed Gigs advance the separate artist path. Strong shows generate income and credibility to reinvest in larger venues and better events.",
+          "Venue Reputation is planned as a separate future measurement earned by venues through completed shows. It will eventually support sponsorships and other venue rewards, but it is not tracked yet.",
+        ],
+      },
+      {
+        heading: "When you are unsure what to do",
+        text: [
+          "Use /profile for your current resources and next objective, /help for system explanations, and /roles for achievement progress.",
+          "The simple path is: earn, buy gear, take gigs, buy a venue, build a show, improve its rating, and reinvest.",
+        ],
+      },
+    ],
+  },
+
+  {
+    id: "equipment",
+    category: "Equipment",
     title: "Equipment",
     summary:
       "Gear is your first real asset. It earns passive income and unlocks the DJ career path.",
@@ -114,7 +188,7 @@ export const guideSections = [
         heading: "What your first booking does",
         text: [
           "Completing your first booking creates your DJ profile.",
-          "It gives cash, XP, scene reputation, DJ reputation, and increases your completed bookings count.",
+          "It gives cash, XP, Scene Reputation, DJ Reputation, and increases your Completed Gigs count.",
           "It also raises your booking fee, which makes your DJ career feel like it is actually growing.",
         ],
       },
@@ -122,18 +196,18 @@ export const guideSections = [
         heading: "One-time versus repeatable",
         text: [
           "Career milestones are completed once, do not use a cooldown, and advance the path toward the next career booking.",
-          "The next milestone does not unlock immediately: it requires a certain number of completed repeatable gigs and enough DJ reputation.",
+          "The next milestone does not unlock immediately: it requires a certain number of completed repeatable gigs and enough DJ Reputation.",
           "Repeatable DJ gigs are separate buttons that remain available after they unlock.",
-          "Repeatable gigs unlock as you clear milestones, scale their cash with DJ reputation, and can add demand to your next owned show.",
+          "Repeatable gigs unlock as you clear milestones, scale their cash with DJ Reputation, and can add demand to your next owned show.",
           "All repeatable gigs share one cooldown: you can complete one every six hours and no more than three per UTC day.",
         ],
       },
       {
         heading: "Career requirements",
         text: [
-          "Open Decks unlocks Community Night. Complete 2 repeatable gigs and reach 15 DJ reputation to unlock Private Party.",
-          "Private Party unlocks Afterparty Set. Complete 4 repeatable gigs total and reach 35 DJ reputation to unlock Local Club Support.",
-          "Local Club Support unlocks Club Support Slot. Complete 8 repeatable gigs total and reach 70 DJ reputation to unlock Warehouse Closing Slot.",
+          "Open Decks unlocks Community Night. Complete 2 repeatable gigs and reach 15 DJ Reputation to unlock Private Party.",
+          "Private Party unlocks Afterparty Set. Complete 4 repeatable gigs total and reach 35 DJ Reputation to unlock Local Club Support.",
+          "Local Club Support unlocks Club Support Slot. Complete 8 repeatable gigs total and reach 70 DJ Reputation to unlock Warehouse Closing Slot.",
           "Warehouse Closing Slot unlocks Underground Genre Showcase as the final repeatable tier.",
         ],
       },
@@ -145,7 +219,7 @@ export const guideSections = [
     category: "DJ Career",
     title: "DJ Profile",
     summary:
-      "Your DJ profile tracks who you are as an artist: reputation, bookings, level, and fee.",
+      "Your DJ profile tracks who you are as an artist: DJ Reputation, Completed Gigs, level, and fee.",
     commands: ["/dj_profile", "/top_djs", "/bookings"],
     sections: [
       {
@@ -158,8 +232,8 @@ export const guideSections = [
       {
         heading: "What it tracks",
         text: [
-          "DJ reputation shows how much credibility you have as a DJ.",
-          "Completed bookings show how many opportunities you have played.",
+          "DJ Reputation shows how much credibility you have as a DJ.",
+          "Completed Gigs includes career bookings, repeatable bookings, and completed show-lineup appearances.",
           "Your booking fee shows how valuable your name is becoming.",
         ],
       },
@@ -213,7 +287,7 @@ export const guideSections = [
       {
         heading: "Growing into bigger rooms",
         text: [
-          "Higher-tier venues require more cash and reputation.",
+          "Higher-tier venues require more cash and Scene Reputation.",
           "That means you cannot just buy your way into the biggest spaces immediately. You have to build enough credibility for the city to let you move up.",
         ],
       },
@@ -266,7 +340,7 @@ export const guideSections = [
           "Shows run automatically when their assigned show time arrives.",
           "You do not manually start the show. The bot handles the show result behind the scenes.",
           "The show report scores attendance, profitability, production, lineup coverage, and staffing coverage, then combines them into an overall five-star rating.",
-          "Well-rounded shows earn a reputation bonus, so filling the room is important but is not the only measure of success.",
+          "Well-rounded shows earn a Scene Reputation bonus, so filling the room is important but is not the only measure of success.",
           "Ratings are saved with completed shows. Your profile tracks your average, best rating, and streak of shows scoring 75 or higher.",
           "That means /create_show schedules the event, but the payout does not happen immediately.",
         ],
@@ -283,7 +357,7 @@ export const guideSections = [
         heading: "Why shows matter",
         text: [
           "Shows are the point where your assets turn into events.",
-          "Gear, venues, DJs, staff, promotion, and reputation all start feeding into one loop: throw better shows, earn more, reinvest, and grow the scene.",
+          "Gear, venues, DJs, staff, promotion, and Scene Reputation all start feeding into one loop: throw better shows, earn more, reinvest, and grow the scene.",
         ],
       },
     ],
@@ -331,22 +405,33 @@ export const guideSections = [
   {
     id: "reputation",
     category: "Mechanics",
-    title: "Reputation vs DJ Reputation",
+    title: "Scene Reputation vs DJ Reputation",
     summary:
-      "There are two reputation tracks, and they matter in different ways.",
+      "There are two player reputation tracks, and they matter in different ways.",
     commands: ["/profile", "/dj_profile", "/bookings"],
     sections: [
       {
-        heading: "Scene reputation",
+        heading: "All progression measurements",
         text: [
-          "Scene reputation is your overall credibility in EDMELEVATED City.",
+          "XP raises your player level with no maximum level. Activities and shows award XP, and levels unlock achievements such as City Legend.",
+          "Scene Reputation is your citywide credibility. It comes from scene activity, bookings, and well-run shows, and helps unlock larger venues and progression achievements.",
+          "DJ Reputation measures your artist career. It helps determine DJ status, booking value, and career-milestone access.",
+          "Completed Gigs counts career bookings, repeatable bookings, and completed show-lineup appearances. Each completed gig also increases booking value.",
+          "Show Rating scores attendance, profitability, production, lineup coverage, and staffing coverage. Strong ratings now matter more than raw crowd size when shows award Scene Reputation.",
+          "Venue Reputation is planned as a separately stored future measurement for sponsorships and other venue rewards. Department upgrades remain physical improvements and do not currently create Venue Reputation.",
+        ],
+      },
+      {
+        heading: "Scene Reputation",
+        text: [
+          "Scene Reputation is your overall credibility in EDMELEVATED City.",
           "It helps represent your general progress as a player and can matter for unlocking bigger opportunities, like better venues.",
         ],
       },
       {
-        heading: "DJ reputation",
+        heading: "DJ Reputation",
         text: [
-          "DJ reputation is specific to your artist career.",
+          "DJ Reputation is specific to your artist career.",
           "It affects your DJ level, your booking fee, and how strong your DJ profile looks.",
         ],
       },
@@ -360,8 +445,8 @@ export const guideSections = [
       {
         heading: "The simple version",
         text: [
-          "Scene reputation helps the city trust you with bigger things.",
-          "DJ reputation helps people take you seriously behind the decks.",
+          "Scene Reputation helps the city trust you with bigger things.",
+          "DJ Reputation helps people take you seriously behind the decks.",
         ],
       },
     ],

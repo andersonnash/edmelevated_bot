@@ -63,9 +63,7 @@ function addDjReputation(userId, amount) {
   db.prepare(
     `
     UPDATE dj_profiles
-    SET
-      dj_reputation = ?,
-      bookings = bookings + 1
+    SET dj_reputation = ?
     WHERE user_id = ?
   `,
   ).run(newReputation, userId);
@@ -84,10 +82,23 @@ function addDjReputation(userId, amount) {
   };
 }
 
+function recordCompletedGig(userId) {
+  db
+    .prepare("UPDATE dj_profiles SET bookings = bookings + 1 WHERE user_id = ?")
+    .run(userId);
+
+  return {
+    profile: db
+      .prepare("SELECT * FROM dj_profiles WHERE user_id = ?")
+      .get(userId),
+  };
+}
+
 module.exports = {
   findOrCreateDjProfile,
   calculateDjBookingFee,
   addDjReputation,
   getDjLevel,
   getDjTitle,
+  recordCompletedGig,
 };

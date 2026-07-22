@@ -183,11 +183,11 @@ const commands = [
             value: "stagehand_loadin",
           },
           {
-            name: "🎧 Open Decks — XP + reputation",
+            name: "🎧 Open Decks — XP + Scene Reputation",
             value: "open_decks",
           },
           {
-            name: "📣 Promo Runner — small cash + reputation",
+            name: "📣 Promo Runner — small cash + Scene Reputation",
             value: "promo_runner",
           },
         ),

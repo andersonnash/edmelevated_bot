@@ -22,7 +22,6 @@ const {
   hoursSince,
   venueHourlyIncome,
   venuePendingIncome,
-  venueReputation,
   venueCapacity,
   getActiveShowStaffBoost,
 } = require("../services/venueEngine");
@@ -174,8 +173,8 @@ async function buyVenue(interaction) {
   if (user.reputation < venueType.repRequired) {
     return interaction.reply({
       content:
-        `You need **${venueType.repRequired} reputation** to buy **${venueType.name}**.\n` +
-        `Your current reputation: **${user.reputation}**`,
+        `You need **${venueType.repRequired} Scene Reputation** to buy **${venueType.name}**.\n` +
+        `Your current Scene Reputation: **${user.reputation}**`,
       ephemeral: true,
     });
   }
@@ -479,11 +478,6 @@ function buildVenuePage(userId, page = 0) {
       value: `${venue.dj_limit}`,
       inline: true,
     },
-    {
-      name: "⭐ Venue Reputation",
-      value: `${venueReputation(venue)}`,
-      inline: true,
-    },
   ];
 
   if (activeShowStaffCount > 0) {
@@ -666,7 +660,6 @@ async function upgradeVenue(interaction) {
   const cost = department.baseCost * nextLevel;
   const currentBenefit = department.benefitPerLevel * currentLevel;
   const nextBenefit = department.benefitPerLevel * nextLevel;
-  const repGain = department.reputationPerLevel;
 
   const user = getUser(userId);
 
@@ -703,11 +696,6 @@ async function upgradeVenue(interaction) {
       {
         name: "New Level",
         value: `Lv.${nextLevel}`,
-        inline: true,
-      },
-      {
-        name: "Venue Reputation",
-        value: `+${repGain}`,
         inline: true,
       },
       {

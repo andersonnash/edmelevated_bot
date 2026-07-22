@@ -17,7 +17,7 @@ function mainHelpEmbed() {
       {
         name: "🆕 First Steps",
         value:
-          "`/profile` — Your home base. Shows cash, XP, rep, income, and next objective.\n" +
+          "`/profile` — Your home base. Shows cash, XP, Scene Reputation, income, and next objective.\n" +
           "`/work` — Reliable starter cash.\n" +
           "`/crate_dig` — Quick random rewards and possible show demand.\n" +
           "`/rave_story` — Short choice-based scene events.\n" +
@@ -126,7 +126,7 @@ function categoryEmbed(category) {
       .setColor(0xec4899)
       .setTitle("🎮 Games & Side Activities")
       .setDescription(
-        "Quick activities for earning rewards, building reputation, and boosting shows while you work toward bigger goals.",
+        "Quick activities for earning rewards, building Scene Reputation, and boosting shows while you work toward bigger goals.",
       )
       .addFields(
         {
@@ -137,12 +137,12 @@ function categoryEmbed(category) {
         {
           name: "`/rave_story`",
           value:
-            "Play a short choice-based scene story. Good for XP, reputation, and a little extra cash.",
+            "Play a short choice-based scene story. Good for XP, Scene Reputation, and a little extra cash.",
         },
         {
           name: "`/street_team`",
           value:
-            "Promote your next upcoming show, add projected walk-ins, earn reputation, and pick up some cash.",
+            "Promote your next upcoming show, add projected walk-ins, earn Scene Reputation, and pick up some cash.",
         },
         {
           name: "When to use these",
@@ -245,7 +245,7 @@ function categoryEmbed(category) {
         {
           name: "`/dj_profile`",
           value:
-            "View another user's DJ reputation, level, bookings, and booking fee.",
+            "View another user's DJ Reputation, level, Completed Gigs, and booking fee.",
         },
         {
           name: "`/top_djs`",
@@ -332,7 +332,7 @@ function categoryEmbed(category) {
         {
           name: "`/profile`",
           value:
-            "View your cash, level, XP, reputation, venues, equipment, passive income, and next objective.",
+            "View your cash, level, XP, Scene Reputation, venues, equipment, passive income, and next objective.",
         },
         {
           name: "`/work`",
@@ -357,25 +357,29 @@ function categoryEmbed(category) {
       .setColor(0xfacc15)
       .setTitle("🌟 Progression Commands")
       .setDescription(
-        "Track your level, reputation, roles, and position in the city.",
+        "Track your level, Scene Reputation, roles, and position in the city.",
       )
       .addFields(
         {
           name: "How progression works",
           value:
-            "XP raises your level.\n" +
-            "Reputation shows how much credibility you have in the scene.\n" +
-            "Cash lets you buy equipment, venues, upgrades, insurance, and promotions.",
+            "**XP & Level** — unlimited player progression; activities and shows award XP.\n" +
+            "**Scene Reputation** — citywide credibility used for venue and progression unlocks.\n" +
+            "**DJ Reputation** — artist credibility that raises DJ status and booking value.\n" +
+            "**Completed Gigs** — bookings and show-lineup appearances; also raises booking value.\n" +
+            "**Show Rating** — event quality across attendance, profit, production, lineup, and staffing.\n" +
+            "**Venue Reputation** — planned as a separate future venue measurement; not yet tracked.\n" +
+            "**Cash** — buys equipment, venues, upgrades, insurance, and promotions.",
         },
         {
           name: "`/profile`",
           value:
-            "View your cash, level, XP, reputation, venues, equipment, income, and next objective.",
+            "View your cash, level, XP, Scene Reputation, venues, equipment, income, and next objective.",
         },
         {
           name: "`/roles`",
           value:
-            "View your earned scene roles and see how your status is growing.",
+            "View earned achievements and progress toward activity, Scene Reputation, and level milestones.",
         },
         {
           name: "`/leaderboard`",
@@ -433,7 +437,7 @@ function categoryEmbed(category) {
         {
           name: "`/profile`",
           value:
-            "Check your current progress, cash, income, reputation, and next objective.",
+            "Check your current progress, cash, income, Scene Reputation, and next objective.",
         },
         {
           name: "`/my_shows`",

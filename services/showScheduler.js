@@ -17,10 +17,15 @@ function startShowScheduler(client) {
     const shows = db
       .prepare(
         `
-        SELECT id
+        SELECT shows.id
         FROM shows
+        JOIN venues ON venues.id = shows.venue_id
         WHERE status = 'upcoming'
         AND show_date <= ?
+        AND (
+          venues.closed_until IS NULL
+          OR venues.closed_until <= datetime('now')
+        )
       `,
       )
       .all(today);
@@ -37,9 +42,7 @@ function startShowScheduler(client) {
         .addFields(
           {
             name: "📍 Event",
-            value:
-              `**Venue:** ${result.show.venue_name}\n` +
-              `**Dynamic Event:** ${result.event.title}`,
+            value: `**Venue:** ${result.show.venue_name}`,
           },
           {
             name: "👥 Attendance",
@@ -73,9 +76,10 @@ function startShowScheduler(client) {
           {
             name: "⭐ Rewards",
             value:
-              `**Base Reputation:** +${result.baseReputationGain}\n` +
+              `**XP:** +${result.xpUpdate.xpGain}${result.xpUpdate.leveledUp ? ` • Level ${result.xpUpdate.newLevel}!` : ""}\n` +
+              `**Base Scene Reputation:** +${result.baseReputationGain}\n` +
               `**Rating Bonus:** +${result.rating.reputationBonus}\n` +
-              `**Total Reputation:** +${result.reputationGain}`,
+              `**Total Scene Reputation:** +${result.reputationGain}`,
           },
         )
         .setFooter({

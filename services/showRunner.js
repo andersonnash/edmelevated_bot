@@ -1,10 +1,16 @@
 const db = require("../db");
-const { randomShowEvent } = require("./generators");
-const { addDjReputation, calculateDjBookingFee } = require("./djs");
+const {
+  addDjReputation,
+  calculateDjBookingFee,
+  recordCompletedGig,
+} = require("./djs");
 const { addCash } = require("./economy");
 const { venueCapacity } = require("./venueEngine");
 const { calculateProjectedWalkins } = require("./showForecast");
 const { calculateShowRating } = require("./showRatings");
+const { addSceneReputation } = require("./reputation");
+const { addXp } = require("./xp");
+const { SHOW_COMPLETION_XP } = require("../constants");
 
 async function runShowById(showId) {
   const show = db
@@ -59,20 +65,14 @@ async function runShowById(showId) {
     .prepare("SELECT * FROM show_lineup WHERE show_id = ?")
     .all(show.show_id);
 
-  const event = randomShowEvent();
-
-  const rawWalkinDemand = Math.max(
-    0,
-    Number(show.simulated_attendees || 0) + event.attendance,
-  );
-
   const finalCapacity = venueCapacity(show);
   const admittedTickets = tickets.slice(0, finalCapacity);
-  const adjustedWalkins = calculateProjectedWalkins({
-    baseWalkins: rawWalkinDemand,
+  const projectedWalkins = calculateProjectedWalkins({
+    baseWalkins: Number(show.simulated_attendees || 0),
     venue: show,
     ticketCount: admittedTickets.length,
   });
+  const adjustedWalkins = projectedWalkins;
 
   const paidRevenue = admittedTickets.reduce(
     (sum, ticket) => sum + (ticket.price_paid || 0),
@@ -80,7 +80,7 @@ async function runShowById(showId) {
   );
 
   const simulatedRevenue = Math.floor(
-    adjustedWalkins * (show.ticket_price || 0) * event.revenueMultiplier,
+    adjustedWalkins * (show.ticket_price || 0),
   );
 
   const totalAttendance = admittedTickets.length + adjustedWalkins;
@@ -112,12 +112,11 @@ async function runShowById(showId) {
     staffCount: staff.length,
   });
 
-  const baseReputationGain = Math.max(
-    1,
-    Math.floor(totalAttendance / 2) + (event.reputation || 0),
-  );
+  const attendancePercent = Math.min(1, totalAttendance / finalCapacity);
+  const baseReputationGain = Math.max(1, Math.ceil(attendancePercent * 5));
   const reputationGain = baseReputationGain + rating.reputationBonus;
 
+  let xpUpdate;
   const transaction = db.transaction(() => {
     db.prepare(
       `
@@ -167,6 +166,7 @@ async function runShowById(showId) {
 
       const djRepGain = Math.max(1, Math.floor(totalAttendance / 75));
       addDjReputation(dj.dj_user_id, djRepGain);
+      recordCompletedGig(dj.dj_user_id);
     }
 
     for (const person of staff) {
@@ -213,13 +213,8 @@ async function runShowById(showId) {
       `,
     ).run(show.show_id, show.owner_id, null, netProfit);
 
-    db.prepare(
-      `
-      UPDATE users
-      SET reputation = reputation + ?
-      WHERE discord_id = ?
-      `,
-    ).run(reputationGain, show.owner_id);
+    addSceneReputation(show.owner_id, reputationGain);
+    xpUpdate = addXp(show.owner_id, SHOW_COMPLETION_XP);
 
     db.prepare(
       `
@@ -234,12 +229,11 @@ async function runShowById(showId) {
 
   return {
     show,
-    event,
     tickets,
     staff,
     lineup,
     adjustedWalkins,
-    rawWalkinDemand,
+    rawWalkinDemand: Number(show.simulated_attendees || 0),
     paidRevenue,
     simulatedRevenue,
     totalAttendance,
@@ -251,6 +245,7 @@ async function runShowById(showId) {
     rating,
     baseReputationGain,
     reputationGain,
+    xpUpdate,
     payouts: {
       owner: netProfit,
       djs: lineup.map((dj) => ({
