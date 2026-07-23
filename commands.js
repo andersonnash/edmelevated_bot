@@ -12,6 +12,14 @@ const commands = [
     .setDescription("View EDM Elevated City commands"),
 
   new SlashCommandBuilder()
+    .setName("journey")
+    .setDescription("View your opening journey and borrowed-venue showcase"),
+
+  new SlashCommandBuilder()
+    .setName("underground_run")
+    .setDescription("Take an always-available risk-and-reward run through the city"),
+
+  new SlashCommandBuilder()
     .setName("buy_equipment")
     .setDescription("Buy gear that generates passive rental income")
     .addStringOption((option) =>
@@ -181,10 +189,6 @@ const commands = [
           {
             name: "🔊 Stagehand Load-In — cash + XP",
             value: "stagehand_loadin",
-          },
-          {
-            name: "🎧 Open Decks — XP + Scene Reputation",
-            value: "open_decks",
           },
           {
             name: "📣 Promo Runner — small cash + Scene Reputation",

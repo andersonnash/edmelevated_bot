@@ -10,12 +10,16 @@ const help = require("./help");
 const games = require("./games");
 const equipment = require("./equipment");
 const shop = require("./shop");
-const bookings = require("./bookings")
+const bookings = require("./bookings");
+const journey = require("./journey");
+const undergroundRun = require("./undergroundRun");
 
 const { getUser } = require("../services/roles");
 
 const commandMap = {
   help: help.help,
+  journey: journey.journey,
+  underground_run: undergroundRun.undergroundRun,
 
   crate_dig: games.crateDig,
   street_team: games.streetTeam,
@@ -95,6 +99,14 @@ async function handleCommand(interaction) {
 
     if (interaction.customId.startsWith("rave_story_")) {
       return games.handleRaveStoryChoice(interaction);
+    }
+
+    if (interaction.customId.startsWith("journey_showcase:")) {
+      return journey.handleJourneyButton(interaction);
+    }
+
+    if (interaction.customId.startsWith("underground_run:")) {
+      return undergroundRun.handleUndergroundRunButton(interaction);
     }
 
     if (interaction.customId.startsWith("help_")) {

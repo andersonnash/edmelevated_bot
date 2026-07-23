@@ -55,6 +55,8 @@ export const guideSections = [
     commands: [
       "/profile",
       "/help",
+      "/journey",
+      "/underground_run",
       "/roles",
       "/bookings",
       "/my_shows",
@@ -70,8 +72,8 @@ export const guideSections = [
       {
         heading: "1. Earn your start",
         text: [
-          "Use /work, /crate_dig, and /rave_story to earn your first cash and XP while beginning to build Scene Reputation.",
-          "Your immediate goal is to afford equipment. /profile shows your current resources and points toward a useful next step.",
+          "Use /journey to follow the guided opening path. It connects your first controller, Open Decks performance, Street Team run, and first scene activity to one clear objective.",
+          "Use /work, /crate_dig, and /rave_story for reliable early rewards. When those activities are on cooldown, /underground_run remains playable.",
         ],
       },
       {
@@ -96,6 +98,14 @@ export const guideSections = [
         ],
       },
       {
+        heading: "Your borrowed-venue showcase",
+        text: [
+          "After completing the opening Journey requirements, you can run a one-time community showcase at a borrowed venue.",
+          "Choose whether to focus on reading the crowd, polishing production, or building a community moment. The result introduces show-quality decisions and provides enough community backing to bridge a normal new player toward Garage Party.",
+          "The borrowed room is not an owned asset and does not generate passive income. Buying Garage Party still marks the start of your real venue career.",
+        ],
+      },
+      {
         heading: "5. Create better shows",
         text: [
           "Create shows, build lineups, hire staff, and promote persistent demand before show day. Capacity limits attendance, but it does not prevent you from continuing to build stored demand.",
@@ -115,6 +125,40 @@ export const guideSections = [
         text: [
           "Use /profile for your current resources and next objective, /help for system explanations, and /roles for achievement progress.",
           "The simple path is: earn, buy gear, take gigs, buy a venue, build a show, improve its rating, and reinvest.",
+        ],
+      },
+    ],
+  },
+
+  {
+    id: "underground-run",
+    category: "Games",
+    title: "Underground Run",
+    summary:
+      "An always-available risk/reward activity for players who want to keep playing while other commands are on cooldown.",
+    commands: ["/underground_run", "/profile", "/work"],
+    sections: [
+      {
+        heading: "How a run works",
+        text: [
+          "Start an Underground Run at any time and choose one of three different situations offered for that run.",
+          "The selected scenario unfolds through a short active story. At the end, choose a safe, balanced, or risky approach. More risk creates a larger possible payout, but also raises the chance that the opportunity falls apart.",
+        ],
+      },
+      {
+        heading: "One scenario, one decision",
+        text: [
+          "Your final approach immediately resolves the scenario, awards any cash and XP, and ends the run.",
+          "A bust loses the temporary stake and possible cash reward, but never removes additional money from your regular wallet. You still keep a small amount of earned XP.",
+          "After the result, start another Underground Run or return to another part of the city.",
+        ],
+      },
+      {
+        heading: "No cooldown, controlled rewards",
+        text: [
+          "Underground Run has no cooldown, and a player with an empty wallet can still start. A run stakes up to $25 from the wallet when available.",
+          "The first three completed runs each UTC day pay 100% of the stash, the next three pay 50%, and later runs pay 25%.",
+          "It does not award Scene Reputation. Jobs, bookings, shows, and other city activities remain the strongest ways to make meaningful progression.",
         ],
       },
     ],

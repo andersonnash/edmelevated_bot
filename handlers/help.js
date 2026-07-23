@@ -18,11 +18,21 @@ function mainHelpEmbed() {
         name: "🆕 First Steps",
         value:
           "`/profile` — Your home base. Shows cash, XP, Scene Reputation, income, and next objective.\n" +
-          "`/work` — Reliable starter cash.\n" +
-          "`/crate_dig` — Quick random rewards and possible show demand.\n" +
-          "`/rave_story` — Short choice-based scene events.\n" +
+          "`/journey` — Your guided opening path toward a first venue.\n" +
           "`/buy_equipment` — Buy gear to start earning passive income.\n" +
-          "`/bookings` — Take DJ gigs after buying gear, unlock your DJ profile, and raise your booking fee.",
+          "`/bookings` — Complete Open Decks and create your DJ profile.\n" +
+          "`/street_team` — Build community momentum for your showcase.\n" +
+          "`/crate_dig` or `/rave_story` — Complete your first scene activity.\n" +
+          "`/journey` — Run the borrowed-venue showcase.\n" +
+          "`/buy_venue` — Buy Garage Party.\n" +
+          "`/create_show` — Produce your first owned show.",
+      },
+      {
+        name: "🎮 Play Anytime & Keep Earning",
+        value:
+          "`/underground_run` — Choose a story scenario, watch it unfold, and take one final risk for rewards. No cooldown.\n" +
+          "`/work` — Reliable starter cash from scene jobs.\n" +
+          "`/crate_dig`, `/rave_story`, and `/street_team` — Replay when their cooldowns expire.",
       },
       {
         name: "🏙 Core Game Loop",
@@ -72,7 +82,7 @@ function mainHelpEmbed() {
       },
     )
     .setFooter({
-      text: "Tip: Start with /profile, then use /work, /crate_dig, or /rave_story to build starter cash.",
+      text: "Tip: Start with /profile, then follow /journey toward your first venue.",
     });
 }
 
@@ -126,9 +136,14 @@ function categoryEmbed(category) {
       .setColor(0xec4899)
       .setTitle("🎮 Games & Side Activities")
       .setDescription(
-        "Quick activities for earning rewards, building Scene Reputation, and boosting shows while you work toward bigger goals.",
+        "Interactive activities for earning rewards, taking risks, building Scene Reputation, and boosting shows.",
       )
       .addFields(
+        {
+          name: "`/underground_run` • Always Available",
+          value:
+            "Choose one of several story scenarios, watch it unfold, then make one safe, balanced, or risky decision for the final reward. The run ends after that scenario. Daily diminishing returns keep it playable without replacing jobs, bookings, or shows.",
+        },
         {
           name: "`/crate_dig`",
           value:
@@ -360,6 +375,11 @@ function categoryEmbed(category) {
         "Track your level, Scene Reputation, roles, and position in the city.",
       )
       .addFields(
+        {
+          name: "`/journey` • Start Here",
+          value:
+            "Follow the one-time opening path: buy a controller, complete Open Decks, build community momentum, and run a borrowed-venue showcase that funds your move toward Garage Party.",
+        },
         {
           name: "How progression works",
           value:
