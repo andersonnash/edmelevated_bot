@@ -344,19 +344,6 @@ const WORK_JOBS = {
     flavor: "You helped load subs, cables, decks, and lights into the venue.",
   },
 
-  open_decks: {
-    name: "Open Decks",
-    emoji: "🎧",
-    minCash: 40,
-    maxCash: 100,
-    xp: 22,
-    reputation: 1,
-    cooldownMinutes: 60,
-    minLevel: 2,
-    flavor:
-      "You played an early open-decks slot and a few people actually noticed.",
-  },
-
   promo_runner: {
     name: "Promo Runner",
     emoji: "📣",

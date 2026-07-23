@@ -160,6 +160,19 @@ function hasCompletedBooking(userId, bookingKey) {
 }
 
 function nextObjective(user, venues, equipment, readyToCollect = 0) {
+  const openingJourney = db
+    .prepare(
+      "SELECT showcase_completed FROM user_journey_progress WHERE user_id = ?",
+    )
+    .get(user.discord_id);
+
+  if (!venues.length && !openingJourney?.showcase_completed) {
+    return (
+      "Complete your **Opening Journey** and borrowed-venue showcase.\n\n" +
+      "Run `/journey` to see your current step."
+    );
+  }
+
   const cash = user.cash || 0;
   const reputation = user.reputation || 0;
   const completedOpenDecks = hasCompletedBooking(

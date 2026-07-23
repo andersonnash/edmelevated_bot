@@ -1050,30 +1050,11 @@ async function promoteShowById(interaction, showId) {
     });
   }
 
-  const promoOptions = [
-    {
-      text: "posted flyers around downtown",
-      cost: 100,
-      hype: 15,
-    },
-    {
-      text: "ran an Instagram promo blast",
-      cost: 300,
-      hype: 40,
-    },
-    {
-      text: "paid a local influencer to post the flyer",
-      cost: 1000,
-      hype: 125,
-    },
-    {
-      text: "booked a full street-team campaign",
-      cost: 2500,
-      hype: 300,
-    },
-  ];
-
-  const promo = promoOptions[Math.floor(Math.random() * promoOptions.length)];
+  const promo = {
+    text: "posted flyers around downtown",
+    cost: 100,
+    hype: 15,
+  };
   const user = getUser(userId);
 
   if (!user) {

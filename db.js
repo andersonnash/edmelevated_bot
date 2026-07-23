@@ -26,6 +26,39 @@ CREATE TABLE IF NOT EXISTS user_activity_stats (
   rave_stories INTEGER DEFAULT 0
 );
 
+CREATE TABLE IF NOT EXISTS user_journey_progress (
+  user_id TEXT PRIMARY KEY,
+  showcase_completed INTEGER DEFAULT 0,
+  showcase_choice TEXT,
+  showcase_score INTEGER,
+  showcase_cash_reward INTEGER DEFAULT 0,
+  completed_at TEXT
+);
+
+CREATE TABLE IF NOT EXISTS underground_run_state (
+  user_id TEXT PRIMARY KEY,
+  round INTEGER DEFAULT 1,
+  stash INTEGER DEFAULT 0,
+  xp_stash INTEGER DEFAULT 0,
+  entry_paid INTEGER DEFAULT 0,
+  scenario_key TEXT,
+  phase TEXT DEFAULT 'choose',
+  started_at TEXT DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS underground_run_history (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id TEXT NOT NULL,
+  result TEXT NOT NULL,
+  rounds_completed INTEGER DEFAULT 0,
+  cash_paid INTEGER DEFAULT 0,
+  xp_paid INTEGER DEFAULT 0,
+  completed_at TEXT DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_underground_run_history_user_time
+ON underground_run_history(user_id, completed_at);
+
 CREATE TABLE IF NOT EXISTS venues (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   owner_id TEXT,
@@ -262,5 +295,7 @@ addColumnIfMissing("venues", "closed_at", "TEXT");
 addColumnIfMissing("users", "active_cosmetic_title", "TEXT");
 addColumnIfMissing("venues", "insurance_expires_at", "TEXT");
 addColumnIfMissing("shows", "genre", "TEXT DEFAULT 'mixed'");
+addColumnIfMissing("underground_run_state", "scenario_key", "TEXT");
+addColumnIfMissing("underground_run_state", "phase", "TEXT DEFAULT 'choose'");
 
 module.exports = db;
