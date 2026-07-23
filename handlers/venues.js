@@ -26,6 +26,14 @@ const {
   getActiveShowStaffBoost,
 } = require("../services/venueEngine");
 
+function discordTime(timestamp) {
+  if (!timestamp) return "Unknown";
+  const date = new Date(timestamp.replace(" ", "T") + "Z");
+  if (Number.isNaN(date.getTime())) return timestamp;
+  const unix = Math.floor(date.getTime() / 1000);
+  return `<t:${unix}:F> (<t:${unix}:R>)`;
+}
+
 async function venueInsurance(interaction) {
   const userId = interaction.user.id;
   const venueId = interaction.options.getString("venue");
@@ -82,7 +90,7 @@ async function venueInsurance(interaction) {
     return interaction.reply({
       content:
         `**${venue.name}** already has active insurance.\n` +
-        `Coverage expires at: **${venue.insurance_expires_at} UTC**`,
+        `Coverage expires: ${discordTime(venue.insurance_expires_at)}`,
       ephemeral: true,
     });
   }
@@ -142,7 +150,7 @@ async function venueInsurance(interaction) {
       },
       {
         name: "Expires",
-        value: `${expiresAt} UTC`,
+        value: discordTime(expiresAt),
         inline: true,
       },
     )

@@ -321,10 +321,10 @@ async function bookings(interaction) {
 
   if (completed) {
     const repeatableMessage = !repeatableOffers.length
-      ? "**Shared rules:** 6-hour cooldown • Maximum 3 per UTC day\n" +
+      ? "**Shared rules:** 6-hour cooldown • Maximum 3 per day\n" +
         "Complete **Private Party** to unlock your first repeatable gig."
       : repeatableStatus.available
-        ? "**Shared rules:** 6-hour cooldown • Maximum 3 per UTC day\n" +
+        ? "**Shared rules:** 6-hour cooldown • Maximum 3 per day\n" +
           repeatableOffers
             .map(
               (offer) =>
@@ -333,9 +333,9 @@ async function bookings(interaction) {
             )
             .join("\n")
         : repeatableStatus.reason === "daily_limit"
-          ? "**Shared rules:** 6-hour cooldown • Maximum 3 per UTC day\n" +
+          ? "**Shared rules:** 6-hour cooldown • Maximum 3 per day\n" +
             "You completed all three repeatable gigs for today."
-          : "**Shared rules:** 6-hour cooldown • Maximum 3 per UTC day\n" +
+          : "**Shared rules:** 6-hour cooldown • Maximum 3 per day\n" +
             `Next repeatable gig in **${formatRemainingTime(repeatableStatus.remainingMs)}**.`;
 
     embed.addFields({
@@ -677,7 +677,7 @@ async function completeCareerBooking(
             : "") +
           (kind === "milestone"
             ? `One-time career milestone completed\nNext unlock: **${milestoneUnlockText(booking.key)}**`
-            : "Repeatable DJ gig completed\nNext repeatable gig: **6 hours** (maximum 3 per UTC day)"),
+            : "Repeatable DJ gig completed\nNext repeatable gig: **6 hours** (maximum 3 per day)"),
         inline: true,
       },
       {
