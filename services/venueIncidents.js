@@ -1,7 +1,7 @@
 const { EmbedBuilder } = require("discord.js");
 const db = require("../db");
 const { postSceneFeed } = require("./sceneFeed");
-const { INSURANCE_TIERS } = require("../constants");
+const { VENUE_INSURANCE } = require("./venueInvestmentRules");
 
 const VENUE_INCIDENTS = [
   {
@@ -77,7 +77,7 @@ function getActiveInsurance(venue) {
     return null;
   }
 
-  return INSURANCE_TIERS[venue.insurance_tier] || null;
+  return VENUE_INSURANCE;
 }
 
 function boostVenueForEvent(venue, event) {
@@ -242,7 +242,6 @@ async function processVenueEvents(client) {
     const { ownerId, venue, type, event } = result;
     const embed = buildVenueEventEmbed(venue, type, event);
 
-    // DM owner
     try {
       const user = await client.users.fetch(ownerId);
       await user.send({ embeds: [embed] });
@@ -250,7 +249,6 @@ async function processVenueEvents(client) {
       console.error("Venue event DM failed:", error);
     }
 
-    // Public city feed
     await postSceneFeed(client, embed);
   }
 

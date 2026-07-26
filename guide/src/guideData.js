@@ -94,7 +94,7 @@ export const guideSections = [
         heading: "4. Buy and improve venues",
         text: [
           "Cash and Scene Reputation unlock larger venues. Venue departments improve physical capabilities such as income, capacity, and show attendance.",
-          "Venues also bring management decisions: staff can improve income, incidents can temporarily close a venue, and insurance reduces that risk.",
+          "Venues also bring management decisions: staff can improve income, incidents can temporarily close a venue, and insurance reduces that risk. Permanent staff and department upgrade prices scale with venue size.",
         ],
       },
       {
@@ -592,8 +592,8 @@ export const guideSections = [
       {
         heading: "Insurance",
         text: [
-          "Use /venue_insurance to buy coverage for a venue.",
-          "Insurance is mainly there to protect you from the rougher side of venue ownership. It can reduce incident risk and closure time when things go wrong.",
+          "Use /venue_insurance to buy 48 hours of coverage for a venue. The price scales with the size of the venue.",
+          "Coverage reduces incident risk by 35% and cuts closure time by 50% when things go wrong.",
         ],
       },
       {

@@ -203,20 +203,7 @@ const commands = [
         .setName("department")
         .setDescription("Department to upgrade")
         .setRequired(true)
-        .addChoices(
-          {
-            name: "🍺 Bar — +15% income/level — starts $1,000",
-            value: "bar",
-          },
-          {
-            name: "🚪 Security — +20% capacity/level — starts $2,500",
-            value: "security",
-          },
-          {
-            name: "🎛 Production — +15% attendance/level — starts $5,000",
-            value: "production",
-          },
-        ),
+        .setAutocomplete(true),
     ),
 
   new SlashCommandBuilder()
@@ -228,26 +215,6 @@ const commands = [
         .setDescription("The venue you want to insure")
         .setRequired(true)
         .setAutocomplete(true),
-    )
-    .addStringOption((option) =>
-      option
-        .setName("tier")
-        .setDescription("The insurance coverage tier")
-        .setRequired(true)
-        .addChoices(
-          {
-            name: "Basic Coverage — $10,000 — 48h",
-            value: "basic",
-          },
-          {
-            name: "Commercial Coverage — $40,000 — 72h",
-            value: "commercial",
-          },
-          {
-            name: "Festival Coverage — $150,000 — 7 days",
-            value: "festival",
-          },
-        ),
     ),
 
   new SlashCommandBuilder()

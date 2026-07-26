@@ -190,19 +190,19 @@ function categoryEmbed(category) {
             "🍺 **Bar** — increases passive income\n" +
             "🚪 **Security** — increases venue capacity\n" +
             "🎛 **Production** — boosts show attendance\n\n" +
-            "Each upgrade costs more as that department levels up.",
+            "Prices scale with the venue and increase as that department levels up.",
         },
         {
           name: "Venue staff vs show staff",
           value:
-            "`/hire_venue_staff` = permanent staff for one venue. They increase that venue's income.\n" +
+            "`/hire_venue_staff` = permanent staff for one venue. They increase that venue's income, and hiring prices scale with venue size.\n" +
             "`/hire_staff` = temporary show staff. They boost venue income only until that show runs.",
         },
         {
-          name: "Venue insurance",
+          name: "`/venue_insurance`",
           value:
-            "`/venue_insurance` buys temporary coverage for a venue.\n" +
-            "Insurance reduces incident risk and shortens closure time when bad events happen.",
+            "Buys 48 hours of coverage for a venue.\n" +
+            "The price scales with venue size. Coverage reduces incident risk by 35% and closure time by 50%.",
         },
         {
           name: "`/buy_venue`",
@@ -221,11 +221,6 @@ function categoryEmbed(category) {
           name: "`/hire_venue_staff`",
           value:
             "Hire permanent staff members for a venue to increase its income.",
-        },
-        {
-          name: "`/venue_insurance`",
-          value:
-            "Buy temporary coverage to reduce venue incident risk and closure time.",
         },
         {
           name: "`/collect`",

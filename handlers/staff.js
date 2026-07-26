@@ -6,6 +6,9 @@ const {
   SHOW_STAFF_VENUE_BOOST_PER_STAFF,
   SHOW_STAFF_VENUE_BOOST_CAP,
 } = require("../constants");
+const {
+  venueStaffHiringCost,
+} = require("../services/venueInvestmentRules");
 
 const { addRole } = require("../services/roles");
 
@@ -313,16 +316,17 @@ async function hireVenueStaff(interaction) {
     });
   }
 
+  const hiringCost = venueStaffHiringCost(venue.type, role);
   const user = getUser(userId);
-  if (user.cash < roleData.cost) {
+  if (user.cash < hiringCost) {
     return interaction.reply({
-      content: `You need $${roleData.cost} to hire a ${roleData.label}.`,
+      content: `You need $${hiringCost.toLocaleString()} to hire a ${roleData.label}.`,
       ephemeral: true,
     });
   }
 
   db.prepare(`UPDATE users SET cash = cash - ? WHERE discord_id = ?`).run(
-    roleData.cost,
+    hiringCost,
     userId,
   );
 
@@ -349,7 +353,7 @@ async function hireVenueStaff(interaction) {
       },
       {
         name: "💰 Hiring Cost",
-        value: `-$${roleData.cost}`,
+        value: `-$${hiringCost.toLocaleString()}`,
         inline: true,
       },
       {

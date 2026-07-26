@@ -73,7 +73,7 @@ CREATE TABLE IF NOT EXISTS venues (
   dj_limit INTEGER DEFAULT 1,
   stage_level INTEGER DEFAULT 0,
   last_collected_at TEXT DEFAULT CURRENT_TIMESTAMP,
-  insurance_tier TEXT DEFAULT 'basic',
+  insurance_tier TEXT DEFAULT 'none',
   bar_level INTEGER DEFAULT 0,
   security_level INTEGER DEFAULT 0,
   production_level INTEGER DEFAULT 0,
