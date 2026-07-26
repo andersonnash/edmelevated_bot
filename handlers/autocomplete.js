@@ -1,5 +1,15 @@
 const db = require("../db");
-const { SHOP_ITEMS, VENUE_TYPES } = require("../constants");
+const {
+  SHOP_ITEMS,
+  VENUE_TYPES,
+  VENUE_DEPARTMENTS,
+  VENUE_INSURANCE,
+} = require("../constants");
+const {
+  venueInsuranceCost,
+  venueDepartmentUpgradeCost,
+  venueStaffHiringCost,
+} = require("../services/venueInvestmentRules");
 
 async function handleAutocomplete(interaction) {
   const userId = interaction.user.id;
@@ -54,16 +64,93 @@ async function handleAutocomplete(interaction) {
   ) {
     const venues = db
       .prepare(
-        `SELECT id, name, bar_level, security_level, production_level FROM venues WHERE owner_id = ? AND name LIKE ? LIMIT 25`,
+        `
+        SELECT
+          id,
+          name,
+          type,
+          bar_level,
+          security_level,
+          production_level,
+          insurance_expires_at
+        FROM venues
+        WHERE owner_id = ?
+          AND name LIKE ?
+        LIMIT 25
+        `,
       )
       .all(userId, `%${focused}%`);
 
     return interaction.respond(
-      venues.map((v) => ({
-        name: `${v.name} #${v.id} — Bar ${v.bar_level} / Sec ${v.security_level} / Prod ${v.production_level}`,
-        value: String(v.id),
-      })),
+      venues.map((venue) => {
+        let details =
+          `Bar ${venue.bar_level} / Sec ${venue.security_level} / ` +
+          `Prod ${venue.production_level}`;
+
+        if (interaction.commandName === "venue_insurance") {
+          const insuranceActive =
+            venue.insurance_expires_at &&
+            new Date(
+              venue.insurance_expires_at.replace(" ", "T") + "Z",
+            ) > new Date();
+
+          details = insuranceActive
+            ? "Already insured"
+            : `$${venueInsuranceCost(venue.type).toLocaleString()} for ${VENUE_INSURANCE.durationHours} hours`;
+        } else if (interaction.commandName === "hire_venue_staff") {
+          details = VENUE_TYPES[venue.type]?.name || "Venue";
+        } else if (interaction.commandName === "create_show") {
+          details = VENUE_TYPES[venue.type]?.name || "Venue";
+        }
+
+        return {
+          name: `${venue.name} #${venue.id} — ${details}`.slice(0, 100),
+          value: String(venue.id),
+        };
+      }),
     );
+  }
+
+  if (
+    interaction.commandName === "upgrade_venue" &&
+    interaction.options.getFocused(true).name === "department"
+  ) {
+    const venueId = interaction.options.getString("venue");
+    const venue = venueId
+      ? db
+          .prepare("SELECT * FROM venues WHERE id = ? AND owner_id = ?")
+          .get(venueId, userId)
+      : null;
+
+    if (!venue) {
+      return interaction.respond([]);
+    }
+
+    const focusedLower = focused.toLowerCase();
+    const choices = Object.entries(VENUE_DEPARTMENTS)
+      .filter(([key, department]) =>
+        `${key} ${department.name}`.toLowerCase().includes(focusedLower),
+      )
+      .map(([key, department]) => {
+        const currentLevel = venue[department.column] || 0;
+        const nextLevel = currentLevel + 1;
+        const cost = venueDepartmentUpgradeCost(
+          venue.type,
+          key,
+          nextLevel,
+        );
+        const totalBenefit = department.benefitPerLevel * nextLevel;
+
+        return {
+          name:
+            `${department.emoji} ${department.name} ` +
+            `Lv.${currentLevel} → Lv.${nextLevel} — ` +
+            `$${cost.toLocaleString()} — ${totalBenefit}% total`,
+          value: key,
+        };
+      });
+
+    return interaction.respond(choices);
   }
 
   if (interaction.commandName === "buy_venue") {
@@ -93,11 +180,20 @@ async function handleAutocomplete(interaction) {
     interaction.options.getFocused(true).name === "role"
   ) {
     const { VENUE_STAFF_ROLES } = require("../constants");
+    const venueId = interaction.options.getString("venue");
+    const venue = venueId
+      ? db
+          .prepare(
+            "SELECT type FROM venues WHERE id = ? AND owner_id = ?",
+          )
+          .get(venueId, userId)
+      : null;
 
     const choices = Object.keys(VENUE_STAFF_ROLES).map((key) => {
       const role = VENUE_STAFF_ROLES[key];
+      const cost = venue ? venueStaffHiringCost(venue.type, key) : role.cost;
       return {
-        name: `${role.emoji} ${role.label} — $${role.cost} (+${Math.round(role.incomeBoost * 100)}%)`,
+        name: `${role.emoji} ${role.label} — $${cost.toLocaleString()} (+${Math.round(role.incomeBoost * 100)}%)`,
         value: key,
       };
     });

@@ -33,6 +33,9 @@ const {
 } = require("../services/xp");
 const { addCash } = require("../services/economy");
 const { money } = require("../services/formatters");
+const {
+  venueDepartmentUpgradeCost,
+} = require("../services/venueInvestmentRules");
 const { addSceneReputation } = require("../services/reputation");
 const {
   evaluateProgressionAchievements,
@@ -239,7 +242,12 @@ function nextObjective(user, venues, equipment, readyToCollect = 0) {
 
   if (!hasVenueUpgrade) {
     const barUpgrade = VENUE_DEPARTMENTS.bar;
-    const barUpgradeCost = barUpgrade.baseCost;
+    const firstVenue = venues[0];
+    const barUpgradeCost = venueDepartmentUpgradeCost(
+      firstVenue.type,
+      "bar",
+      1,
+    );
     const barBenefit = barUpgrade.benefitPerLevel;
 
     if (cash < barUpgradeCost) {

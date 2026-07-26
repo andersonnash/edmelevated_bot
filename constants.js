@@ -17,7 +17,9 @@ const VENUE_TYPES = {
     name: "Garage Party",
     cost: 2_500,
     repRequired: 0,
-    passiveIncome: 100,
+    passiveIncome: 150,
+    investmentMultiplier: 0.5,
+    insuranceCost: 250,
     baseCapacity: 25,
     staffLimit: 1,
     djLimit: 1,
@@ -30,6 +32,8 @@ const VENUE_TYPES = {
     cost: 10_000,
     repRequired: 10,
     passiveIncome: 350,
+    investmentMultiplier: 1,
+    insuranceCost: 750,
     baseCapacity: 100,
     staffLimit: 3,
     djLimit: 2,
@@ -42,6 +46,8 @@ const VENUE_TYPES = {
     cost: 30_000,
     repRequired: 25,
     passiveIncome: 850,
+    investmentMultiplier: 2,
+    insuranceCost: 2_000,
     baseCapacity: 250,
     staffLimit: 6,
     djLimit: 3,
@@ -54,6 +60,8 @@ const VENUE_TYPES = {
     cost: 75_000,
     repRequired: 50,
     passiveIncome: 1_500,
+    investmentMultiplier: 4,
+    insuranceCost: 5_000,
     baseCapacity: 600,
     staffLimit: 10,
     djLimit: 5,
@@ -66,6 +74,8 @@ const VENUE_TYPES = {
     cost: 250_000,
     repRequired: 100,
     passiveIncome: 4_000,
+    investmentMultiplier: 10,
+    insuranceCost: 15_000,
     baseCapacity: 2_500,
     staffLimit: 25,
     djLimit: 12,
@@ -116,33 +126,13 @@ const EQUIPMENT_TYPES = {
   },
 };
 
-const INSURANCE_TIERS = {
-  basic: {
-    name: "Basic Coverage",
-    cost: 10_000,
-    durationHours: 48,
-    incidentReduction: 0.15,
-    closureReduction: 0.25,
-    description: "Basic 48-hour protection against venue incidents.",
-  },
-
-  commercial: {
-    name: "Commercial Coverage",
-    cost: 40_000,
-    durationHours: 72,
-    incidentReduction: 0.35,
-    closureReduction: 0.5,
-    description: "Stronger temporary coverage for established venues.",
-  },
-
-  festival: {
-    name: "Festival Coverage",
-    cost: 150_000,
-    durationHours: 168,
-    incidentReduction: 0.6,
-    closureReduction: 0.75,
-    description: "Premium week-long protection for major venues.",
-  },
+const VENUE_INSURANCE = {
+  key: "standard",
+  name: "Venue Insurance",
+  durationHours: 48,
+  incidentReduction: 0.35,
+  closureReduction: 0.5,
+  description: "48-hour protection against venue incidents.",
 };
 
 const SHOW_STAFF_PAYOUT = 150;
@@ -820,7 +810,7 @@ module.exports = {
   SHOW_COMPLETION_XP,
   VENUE_TYPES,
   EQUIPMENT_TYPES,
-  INSURANCE_TIERS,
+  VENUE_INSURANCE,
   VENUE_DEPARTMENTS,
   VENUE_STAFF_ROLES,
   ROLES,

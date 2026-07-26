@@ -1,5 +1,10 @@
 const db = require("../db");
-const { VENUE_TYPES, VENUE_DEPARTMENTS, INSURANCE_TIERS } = require("../constants");
+const { VENUE_TYPES, VENUE_DEPARTMENTS } = require("../constants");
+const {
+  VENUE_INSURANCE,
+  venueInsuranceCost,
+  venueDepartmentUpgradeCost,
+} = require("../services/venueInvestmentRules");
 const { getUser, addRole } = require("../services/roles");
 
 const { money } = require("../services/formatters");
@@ -37,15 +42,6 @@ function discordTime(timestamp) {
 async function venueInsurance(interaction) {
   const userId = interaction.user.id;
   const venueId = interaction.options.getString("venue");
-  const tierKey = interaction.options.getString("tier");
-  const tier = INSURANCE_TIERS[tierKey];
-
-  if (!tier) {
-    return interaction.reply({
-      content: "That insurance tier does not exist.",
-      ephemeral: true,
-    });
-  }
 
   const user = db
     .prepare(
@@ -67,7 +63,7 @@ async function venueInsurance(interaction) {
   const venue = db
     .prepare(
       `
-      SELECT id, name, owner_id, insurance_tier, insurance_expires_at
+      SELECT id, name, type, owner_id, insurance_tier, insurance_expires_at
       FROM venues
       WHERE id = ?
         AND owner_id = ?
@@ -95,10 +91,12 @@ async function venueInsurance(interaction) {
     });
   }
 
-  if ((user.cash || 0) < tier.cost) {
+  const insuranceCost = venueInsuranceCost(venue.type);
+
+  if ((user.cash || 0) < insuranceCost) {
     return interaction.reply({
       content:
-        `You need **${money(tier.cost)}** for **${tier.name}**.\n` +
+        `You need **${money(insuranceCost)}** for **${VENUE_INSURANCE.name}**.\n` +
         `You currently have **${money(user.cash || 0)}**.`,
       ephemeral: true,
     });
@@ -106,7 +104,7 @@ async function venueInsurance(interaction) {
 
   const expiresAt = db
     .prepare(`SELECT datetime('now', ?) AS expires_at`)
-    .get(`+${tier.durationHours} hours`).expires_at;
+    .get(`+${VENUE_INSURANCE.durationHours} hours`).expires_at;
 
   const buyInsurance = db.transaction(() => {
     db.prepare(
@@ -115,7 +113,7 @@ async function venueInsurance(interaction) {
       SET cash = cash - ?
       WHERE discord_id = ?
       `,
-    ).run(tier.cost, userId);
+    ).run(insuranceCost, userId);
 
     db.prepare(
       `
@@ -124,7 +122,7 @@ async function venueInsurance(interaction) {
           insurance_expires_at = ?
       WHERE id = ?
       `,
-    ).run(tierKey, expiresAt, venue.id);
+    ).run(VENUE_INSURANCE.key, expiresAt, venue.id);
   });
 
   buyInsurance();
@@ -132,20 +130,22 @@ async function venueInsurance(interaction) {
   const embed = new EmbedBuilder()
     .setColor(0x22c55e)
     .setTitle("🛡️ VENUE INSURANCE ACTIVE")
-    .setDescription(`**${venue.name}** is now covered by **${tier.name}**.`)
+    .setDescription(
+      `**${venue.name}** is now covered by **${VENUE_INSURANCE.name}**.`,
+    )
     .addFields(
       {
         name: "Coverage",
         value:
           "```ansi\n" +
-          `Duration:       ${tier.durationHours} hours\n` +
-          `Incident Risk:  -${Math.round(tier.incidentReduction * 100)}%\n` +
-          `Closure Time:   -${Math.round(tier.closureReduction * 100)}%\n` +
+          `Duration:       ${VENUE_INSURANCE.durationHours} hours\n` +
+          `Incident Risk:  -${Math.round(VENUE_INSURANCE.incidentReduction * 100)}%\n` +
+          `Closure Time:   -${Math.round(VENUE_INSURANCE.closureReduction * 100)}%\n` +
           "```",
       },
       {
         name: "Cost",
-        value: money(tier.cost),
+        value: money(insuranceCost),
         inline: true,
       },
       {
@@ -328,9 +328,7 @@ function formatInsuranceStatus(venue) {
     return null;
   }
 
-  const tier = INSURANCE_TIERS[venue.insurance_tier];
-
-  if (!tier || !venue.insurance_expires_at) {
+  if (!venue.insurance_expires_at) {
     return null;
   }
 
@@ -346,11 +344,11 @@ function formatInsuranceStatus(venue) {
   const hoursLeft = Math.ceil((expiresAt - new Date()) / 1000 / 60 / 60);
 
   return (
-    `**${tier.name}**\n` +
+    `**${VENUE_INSURANCE.name}**\n` +
     `Expires: <t:${expiresUnix}:R>\n` +
     `Time Left: ~${hoursLeft}h\n` +
-    `Incident Risk: -${Math.round(tier.incidentReduction * 100)}%\n` +
-    `Closure Time: -${Math.round(tier.closureReduction * 100)}%`
+    `Incident Risk: -${Math.round(VENUE_INSURANCE.incidentReduction * 100)}%\n` +
+    `Closure Time: -${Math.round(VENUE_INSURANCE.closureReduction * 100)}%`
   );
 }
 
@@ -442,12 +440,12 @@ function buildVenuePage(userId, page = 0) {
     )
     .get(venue.id).count;
 
-  let color = 0x06b6d4; // default
+  let color = 0x06b6d4;
 
   if (isActiveUntil(venue.closed_until)) {
-    color = 0xef4444; // red
+    color = 0xef4444;
   } else if (isActiveUntil(venue.boosted_until)) {
-    color = 0xf59e0b; // gold
+    color = 0xf59e0b;
   }
 
   const insuranceStatus = formatInsuranceStatus(venue);
@@ -665,7 +663,11 @@ async function upgradeVenue(interaction) {
   const currentLevel = venue[department.column] || 0;
   const nextLevel = currentLevel + 1;
 
-  const cost = department.baseCost * nextLevel;
+  const cost = venueDepartmentUpgradeCost(
+    venue.type,
+    departmentKey,
+    nextLevel,
+  );
   const currentBenefit = department.benefitPerLevel * currentLevel;
   const nextBenefit = department.benefitPerLevel * nextLevel;
 
