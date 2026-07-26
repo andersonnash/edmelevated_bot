@@ -38,7 +38,7 @@ export const guideSections = [
       {
         heading: "What to do first",
         text: [
-          "Use /work for reliable starter cash.",
+          "Use /work to automatically play a random scene-work story for reliable starter cash and XP. Work has one shared 45-minute cooldown.",
           "Use /crate_dig and /rave_story for more flavorful side activities.",
           "Once you have enough money, use /buy_equipment to buy your first controller and start building momentum.",
         ],
@@ -73,7 +73,7 @@ export const guideSections = [
         heading: "1. Earn your start",
         text: [
           "Use /journey to follow the guided opening path. It connects your first controller, Open Decks performance, Street Team run, and first scene activity to one clear objective.",
-          "Use /work, /crate_dig, and /rave_story for reliable early rewards. When those activities are on cooldown, /underground_run remains playable.",
+          "Use /work for a random scene shift with a reliable payout, and use /crate_dig and /rave_story for other early rewards. When those activities are on cooldown, /underground_run remains playable.",
         ],
       },
       {

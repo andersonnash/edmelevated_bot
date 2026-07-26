@@ -13,7 +13,7 @@ const {
   CAREER_ROLES,
   VENUE_TYPES,
   EQUIPMENT_TYPES,
-  WORK_JOBS,
+  WORK_SCENARIOS,
   SHOP_ITEMS,
   VENUE_DEPARTMENTS,
   DJ_BOOKINGS,
@@ -47,6 +47,11 @@ const {
 
 const { checkCooldown } = require("../services/cooldowns");
 const { getPromoterRatingStats } = require("../services/showRatingHistory");
+const {
+  WORK_COOLDOWN_MINUTES,
+  calculateWorkReward,
+  selectWorkScenario,
+} = require("../services/workRules");
 
 async function register(interaction) {
   const userId = interaction.user.id;
@@ -305,7 +310,7 @@ async function profile(interaction) {
   const nextStep =
     passiveTotal > 0
       ? "Use /collect to claim your income, then reinvest with /upgrade_venue, /hire_venue_staff, /buy_equipment, or /create_show."
-      : "Choose a scene job with /work, upgrade venues, hire venue staff, buy equipment, or create your next show.";
+      : "Run /work for a random scene shift, upgrade venues, hire venue staff, buy equipment, or create your next show.";
 
   const pending = db
     .prepare(
@@ -501,68 +506,66 @@ function roll(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 async function work(interaction) {
   const userId = interaction.user.id;
   const user = getUser(userId);
-
-  const jobKey = interaction.options.getString("job");
-  const job = WORK_JOBS[jobKey];
-
-  if (!job) {
-    return interaction.reply({
-      content: "That job does not exist.",
-      ephemeral: true,
-    });
-  }
-
   const level = user.level || 1;
-
-  if (job.minLevel && level < job.minLevel) {
-    return interaction.reply({
-      content: `${job.emoji} **${job.name}** unlocks at level ${job.minLevel}.`,
-      ephemeral: true,
-    });
-  }
-
-  const cooldown = checkCooldown(userId, `work_${jobKey}`, job.cooldownMinutes);
+  const cooldown = checkCooldown(userId, "work", WORK_COOLDOWN_MINUTES);
 
   if (cooldown) {
     return interaction.reply({
-      content: `⏳ You already worked that job.\nTry again in **${cooldown}**.`,
+      content: `⏳ You already worked a scene shift.\nYour next shift is available in **${cooldown}**.`,
       ephemeral: true,
     });
   }
 
-  const levelBonus = Math.floor(level * 5);
-  const earned = roll(job.minCash, job.maxCash) + levelBonus;
+  const scenario = selectWorkScenario(WORK_SCENARIOS);
+  const reward = calculateWorkReward(scenario, level);
 
-  addCash(userId, earned);
+  for (let index = 0; index < scenario.steps.length; index += 1) {
+    const progress = `${"▰".repeat(index + 1)}${"▱".repeat(
+      scenario.steps.length - index - 1,
+    )}`;
+    const embed = new EmbedBuilder()
+      .setColor(0x38bdf8)
+      .setTitle(`${scenario.emoji} ${scenario.name.toUpperCase()}`)
+      .setDescription(scenario.steps[index])
+      .addFields({ name: "Shift Progress", value: progress });
 
-  addSceneReputation(userId, job.reputation);
+    if (index === 0) {
+      await interaction.reply({ embeds: [embed] });
+    } else {
+      await interaction.editReply({ embeds: [embed] });
+    }
+
+    await sleep(1200);
+  }
+
+  addCash(userId, reward.cash);
+
+  addSceneReputation(userId, reward.reputation);
 
   addRole(userId, "Scene Explorer");
 
-  const xpUpdate = addXp(userId, job.xp);
-  await announceLevelUp(interaction, xpUpdate);
+  const xpUpdate = addXp(userId, reward.xp);
 
   const embed = new EmbedBuilder()
     .setColor(0x22c55e)
-    .setTitle(`${job.emoji} WORK COMPLETE`)
-    .setDescription(job.flavor)
+    .setTitle(`${scenario.emoji} WORK COMPLETE`)
+    .setDescription(scenario.result)
     .addFields(
       {
         name: "💵 Cash",
-        value: `+${money(earned)}`,
+        value: `+${money(reward.cash)}`,
         inline: true,
       },
       {
         name: "✨ XP",
-        value: `+${job.xp}`,
-        inline: true,
-      },
-      {
-        name: "⭐ Scene Reputation",
-        value: `+${job.reputation}`,
+        value: `+${reward.xp}`,
         inline: true,
       },
     )
@@ -570,9 +573,10 @@ async function work(interaction) {
       text: "Work is reliable money. Bigger gains come from shows, venues, and equipment.",
     });
 
-  return interaction.reply({
+  await interaction.editReply({
     embeds: [embed],
   });
+  await announceLevelUp(interaction, xpUpdate);
 }
 
 async function leaderboard(interaction) {

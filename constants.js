@@ -309,53 +309,98 @@ const CAREER_ROLES = {
   },
 };
 
-const WORK_JOBS = {
-  door_shift: {
+const WORK_SCENARIOS = [
+  {
+    key: "door_rush",
     name: "Door Shift",
     emoji: "🚪",
-    minCash: 60,
-    maxCash: 120,
+    minCash: 75,
+    maxCash: 125,
     xp: 8,
     reputation: 0,
-    cooldownMinutes: 30,
-    flavor:
-      "You worked the door, checked wristbands, and kept the line moving.",
+    steps: [
+      "You arrive at the venue and find the entry line wrapped around the block.",
+      "The guest list freezes while three groups argue about missing names.",
+      "You reorganize the line, verify the list by hand, and keep the doors moving.",
+    ],
+    result: "You survived the door rush without losing the crowd or the promoter's trust.",
   },
-
-  barback_shift: {
-    name: "Barback Shift",
+  {
+    key: "barback_emergency",
+    name: "Barback Emergency",
     emoji: "🍸",
     minCash: 90,
-    maxCash: 160,
-    xp: 6,
+    maxCash: 145,
+    xp: 9,
     reputation: 0,
-    cooldownMinutes: 45,
-    flavor: "You hauled ice, restocked the bar, and somehow survived the rush.",
+    steps: [
+      "You clock in just as the main bar runs out of ice and clean glassware.",
+      "Orders pile up while somebody discovers the backup cooler was never stocked.",
+      "You rebuild the station, haul supplies through the crowd, and rescue the rush.",
+    ],
+    result: "The bar stays open, the line disappears, and the exhausted bartender pays you out.",
   },
-
-  stagehand_loadin: {
+  {
+    key: "stagehand_load_in",
     name: "Stagehand Load-In",
     emoji: "🔊",
-    minCash: 75,
-    maxCash: 140,
-    xp: 15,
-    reputation: 0,
-    cooldownMinutes: 45,
-    flavor: "You helped load subs, cables, decks, and lights into the venue.",
-  },
-
-  promo_runner: {
-    name: "Promo Runner",
-    emoji: "📣",
-    minCash: 50,
-    maxCash: 110,
+    minCash: 85,
+    maxCash: 150,
     xp: 12,
-    reputation: 1,
-    cooldownMinutes: 45,
-    flavor:
-      "You pushed flyers, posted stories, and helped keep the scene alive.",
+    reputation: 0,
+    steps: [
+      "A production truck arrives late with doors opening in less than an hour.",
+      "You unload subs, trace power, and discover two cases were labeled incorrectly.",
+      "The final cable lands just before soundcheck, and the system comes alive.",
+    ],
+    result: "The room is ready on time, and the production lead adds your name to the paid crew list.",
   },
-};
+  {
+    key: "street_promo_shift",
+    name: "Street Promo Shift",
+    emoji: "📣",
+    minCash: 70,
+    maxCash: 120,
+    xp: 10,
+    reputation: 0,
+    steps: [
+      "A promoter hands you a stack of flyers and a list of places that supposedly allow posters.",
+      "Rain starts halfway through the route, forcing you into group chats and late-night food lines.",
+      "You finish the stack, land several reposts, and send proof back to the promoter.",
+    ],
+    result: "The campaign reaches the right crowd, and the promoter sends your shift payment.",
+  },
+  {
+    key: "coat_check_chaos",
+    name: "Coat-Check Chaos",
+    emoji: "🧥",
+    minCash: 80,
+    maxCash: 135,
+    xp: 9,
+    reputation: 0,
+    steps: [
+      "The temperature drops, and every person entering the venue suddenly has a jacket.",
+      "A rack jams while ticket numbers begin arriving out of order.",
+      "You rebuild the system, find the missing coats, and clear the line before closing.",
+    ],
+    result: "Every jacket finds its owner, and management pays you for preventing a complete disaster.",
+  },
+  {
+    key: "after_show_strike",
+    name: "After-Show Strike",
+    emoji: "🧹",
+    minCash: 100,
+    maxCash: 160,
+    xp: 14,
+    reputation: 0,
+    steps: [
+      "The crowd leaves, the lights come up, and the venue looks like a storm passed through it.",
+      "You coil cables, break down the booth, and separate rented gear from house equipment.",
+      "The last case locks, the floor clears, and the truck finally pulls away.",
+    ],
+    result: "You finish the strike faster than expected and collect the late-night crew payout.",
+  },
+];
 
 const SHOP_ITEMS = {
   title_dnb_lifer: {
@@ -780,7 +825,7 @@ module.exports = {
   VENUE_STAFF_ROLES,
   ROLES,
   CAREER_ROLES,
-  WORK_JOBS,
+  WORK_SCENARIOS,
   SHOP_ITEMS,
   BOT_ADMIN_ID,
   SHOW_STAFF_ROLES,

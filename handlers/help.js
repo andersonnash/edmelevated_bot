@@ -31,7 +31,7 @@ function mainHelpEmbed() {
         name: "🎮 Play Anytime & Keep Earning",
         value:
           "`/underground_run` — Choose a story scenario, watch it unfold, and take one final risk for rewards. No cooldown.\n" +
-          "`/work` — Reliable starter cash from scene jobs.\n" +
+          "`/work` — Play a random scene-work story for reliable cash and XP every 45 minutes.\n" +
           "`/crate_dig`, `/rave_story`, and `/street_team` — Replay when their cooldowns expire.",
       },
       {
@@ -351,7 +351,8 @@ function categoryEmbed(category) {
         },
         {
           name: "`/work`",
-          value: "Pick a scene job and earn reliable starter cash.",
+          value:
+            "Automatically play a random scene-work scenario and earn reliable cash and XP. All work shares one 45-minute cooldown.",
         },
         {
           name: "`/collect`",
