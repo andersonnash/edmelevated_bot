@@ -6,83 +6,48 @@ const {
   MessageFlags,
 } = require("discord.js");
 
+const CITY_SIGNAL_COLOR = 0x22d3ee;
+const CITY_SIGNAL_FOOTER =
+  "Start with /profile, then follow /journey";
+
 function mainHelpEmbed() {
   return new EmbedBuilder()
-    .setColor(0x8b5cf6)
-    .setTitle("🎧 WELCOME TO EDMELEVATED CITY")
+    .setColor(CITY_SIGNAL_COLOR)
+    .setTitle("EDM ELEVATED // CITY SIGNAL")
     .setDescription(
-      "Build your name in the scene: work jobs, buy gear, buy venues, throw shows, hire staff, promote events, and grow from broke opener to city legend.",
+      "**WELCOME TO THE CITY**\n\n" +
+        "You are not here just to build a balance. You are here to build a name, create nights people remember, and change the sound of the city.",
     )
     .addFields(
       {
-        name: "🆕 First Steps",
+        name: "01 // BUILD YOUR SOUND",
         value:
-          "`/profile` — Your home base. Shows cash, XP, Scene Reputation, income, and next objective.\n" +
-          "`/journey` — Your guided opening path toward a first venue.\n" +
-          "`/buy_equipment` — Buy gear to start earning passive income.\n" +
-          "`/bookings` — Complete Open Decks and create your DJ profile.\n" +
-          "`/street_team` — Build community momentum for your showcase.\n" +
-          "`/crate_dig` or `/rave_story` — Complete your first scene activity.\n" +
-          "`/journey` — Run the borrowed-venue showcase.\n" +
-          "`/buy_venue` — Buy Garage Party.\n" +
-          "`/create_show` — Produce your first owned show.",
+          "Start unknown. Find gear, take bookings, earn trust, and develop an identity behind the decks.",
       },
       {
-        name: "🎮 Play Anytime & Keep Earning",
+        name: "02 // CREATE THE NIGHT",
         value:
-          "`/underground_run` — Choose a story scenario, watch it unfold, and take one final risk for rewards. No cooldown.\n" +
-          "`/work` — Play a random scene-work story for reliable cash and XP every 45 minutes.\n" +
-          "`/crate_dig`, `/rave_story`, and `/street_team` — Replay when their cooldowns expire.",
+          "Secure a room. Build the lineup. Move tickets. Staff the floor. Open the doors and live with the result.",
       },
       {
-        name: "🏙 Core Game Loop",
+        name: "03 // SHAPE THE CITY",
         value:
-          "Earn cash → buy equipment → take DJ bookings → collect passive income → buy venues → create shows → promote shows → add DJs + staff → collect show profits → reinvest.",
+          "Own spaces, strengthen scenes, create opportunities, and leave a history other players can feel.",
       },
       {
-        name: "🎵 Shows",
+        name: "START HERE",
         value:
-          "`/create_show` — Create a show at one of your venues.\n" +
-          "`/my_shows` — View your shows and use show buttons.\n" +
-          "`/promote_show` — Spend cash to boost walk-ins.\n" +
-          "`/add_lineup` — Add another user as a DJ.\n" +
-          "`/hire_staff` — Hire show staff for a temporary venue income boost.\n" +
-          "`/collect_show` — Owner collects completed show profits and settles payouts.",
+          "`/profile` opens your city file and identifies your next move.\n" +
+          "`/journey` guides your first signal from borrowed gear to your own venue.",
       },
       {
-        name: "🏟 Venues & Passive Income",
+        name: "EXPLORE THE CITY",
         value:
-          "`/buy_venue` — Buy your first event space.\n" +
-          "`/my_venues` — View income, capacity, staff, upgrades, insurance, and pending earnings.\n" +
-          "`/upgrade_venue` — Upgrade Bar, Security, or Production.\n" +
-          "`/hire_venue_staff` — Hire permanent venue staff for income boosts.\n" +
-          "`/venue_insurance` — Reduce venue incident risk and closure time.\n" +
-          "`/collect` — Collect passive income from venues and equipment.",
-      },
-      {
-        name: "💼 Jobs & Payouts",
-        value:
-          "`/my_jobs` — View shows where you were hired as staff.\n" +
-          "Show staff are paid when the show owner collects and settles the completed show.\n" +
-          "Staff job status goes: **assigned → completed → paid**.",
-      },
-      {
-        name: "🎟 Extras",
-        value:
-          "`/my_equipment` — View owned equipment and income.\n" +
-          "`/dj_profile` — View another user's DJ profile.\n" +
-          "`/top_djs` — View top DJs.\n" +
-          "`/create_kandi`, `/give_kandi`, `/my_kandi` — Create, gift, and view kandi.\n" +
-          "`/start_contest`, `/enter_contest`, `/draw_winner` — Run ticket contests.",
-      },
-      {
-        name: "🧭 Lost?",
-        value:
-          "Use `/profile` anytime. It should tell you what your next best move is.",
+          "Use the controls below to tune into shows, venues, artists, crews, equipment, progression, and the wider scene.",
       },
     )
     .setFooter({
-      text: "Tip: Start with /profile, then follow /journey toward your first venue.",
+      text: CITY_SIGNAL_FOOTER,
     });
 }
 
@@ -485,31 +450,31 @@ function helpButtons(active = "home") {
   const row1 = new ActionRowBuilder().addComponents(
     new ButtonBuilder()
       .setCustomId("help_shows")
-      .setLabel("🎵 Shows")
+      .setLabel("Shows")
       .setStyle(ButtonStyle.Primary)
       .setDisabled(active === "shows"),
 
     new ButtonBuilder()
       .setCustomId("help_games")
-      .setLabel("🎮 Games")
-      .setStyle(ButtonStyle.Primary)
+      .setLabel("After Hours")
+      .setStyle(ButtonStyle.Secondary)
       .setDisabled(active === "games"),
 
     new ButtonBuilder()
       .setCustomId("help_venues")
-      .setLabel("🏟 Venues")
+      .setLabel("Venues")
       .setStyle(ButtonStyle.Primary)
       .setDisabled(active === "venues"),
 
     new ButtonBuilder()
       .setCustomId("help_djs")
-      .setLabel("🎧 DJs")
-      .setStyle(ButtonStyle.Primary)
+      .setLabel("DJs")
+      .setStyle(ButtonStyle.Secondary)
       .setDisabled(active === "djs"),
 
     new ButtonBuilder()
       .setCustomId("help_staff")
-      .setLabel("👷 Staff")
+      .setLabel("Staff")
       .setStyle(ButtonStyle.Secondary)
       .setDisabled(active === "staff"),
   );
@@ -517,31 +482,31 @@ function helpButtons(active = "home") {
   const row2 = new ActionRowBuilder().addComponents(
     new ButtonBuilder()
       .setCustomId("help_economy")
-      .setLabel("💵 Economy")
-      .setStyle(ButtonStyle.Success)
+      .setLabel("Money")
+      .setStyle(ButtonStyle.Secondary)
       .setDisabled(active === "economy"),
 
     new ButtonBuilder()
       .setCustomId("help_equipment")
-      .setLabel("🎛 Equipment")
-      .setStyle(ButtonStyle.Success)
+      .setLabel("Equipment")
+      .setStyle(ButtonStyle.Secondary)
       .setDisabled(active === "equipment"),
 
     new ButtonBuilder()
       .setCustomId("help_progression")
-      .setLabel("🌟 Progression")
-      .setStyle(ButtonStyle.Secondary)
+      .setLabel("Progression")
+      .setStyle(ButtonStyle.Primary)
       .setDisabled(active === "progression"),
 
     new ButtonBuilder()
       .setCustomId("help_social")
-      .setLabel("🌈 Social")
+      .setLabel("Community")
       .setStyle(ButtonStyle.Secondary)
       .setDisabled(active === "social"),
 
     new ButtonBuilder()
       .setCustomId("help_scene")
-      .setLabel("📣 Scene")
+      .setLabel("City")
       .setStyle(ButtonStyle.Secondary)
       .setDisabled(active === "scene"),
   );
@@ -549,7 +514,7 @@ function helpButtons(active = "home") {
   const row3 = new ActionRowBuilder().addComponents(
     new ButtonBuilder()
       .setCustomId("help_home")
-      .setLabel("🏠 Back to Help")
+      .setLabel("Back to City Signal")
       .setStyle(ButtonStyle.Secondary)
       .setDisabled(active === "home"),
   );
