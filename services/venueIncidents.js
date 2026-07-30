@@ -223,7 +223,7 @@ function buildVenueEventEmbed(venue, type, event) {
         value: isIncident
           ? event.insuranceName
             ? `Closed for **${event.hoursClosed} hours**. Insurance reduced the closure from **${event.originalHoursClosed} hours**.`
-            : `Closed for **${event.hoursClosed} hours**. Passive income from this venue is paused.`
+            : `Closed for **${event.hoursClosed} hours**. Venue income is paused.`
           : `Income boosted **x${event.incomeMultiplier}** for **${event.hoursBoosted} hours**.`,
       },
       {

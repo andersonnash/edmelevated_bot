@@ -267,7 +267,7 @@ async function buyVenue(interaction) {
         inline: true,
       },
       {
-        name: "💰 Passive Income",
+        name: "💰 Venue Income",
         value: `${money(venueType.passiveIncome)}/hr`,
         inline: true,
       },
@@ -522,7 +522,7 @@ function buildVenuePage(userId, page = 0) {
     )
     .addFields(fields)
     .setFooter({
-      text: "Use /collect to collect all passive income.",
+      text: "Use /collect when your venue income is ready.",
     });
 
   const row = new ActionRowBuilder().addComponents(
@@ -727,14 +727,9 @@ async function upgradeVenue(interaction) {
         value: `${nextBenefit}%`,
         inline: true,
       },
-      {
-        name: "Upgrade Cost",
-        value: money(cost),
-        inline: true,
-      },
     )
     .setFooter({
-      text: "Venue departments improve passive income, capacity, and show performance.",
+      text: "Venue departments improve venue income, capacity, and show performance.",
     });
 
   return interaction.reply({

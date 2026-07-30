@@ -89,7 +89,7 @@ async function buyEquipment(interaction) {
         inline: true,
       },
       {
-        name: "💼 Passive Income",
+        name: "💼 Equipment Rental Income",
         value: "This equipment can now be rented out automatically.",
       },
     )

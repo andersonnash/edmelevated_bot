@@ -28,8 +28,8 @@ function randomShowData() {
   const prices = [20, 25, 30, 35, 40, 50];
 
   const now = new Date();
-  const minDays = 5;
-  const maxDays = 10;
+  const minDays = 3;
+  const maxDays = 14;
 
   const randomDays =
     Math.floor(Math.random() * (maxDays - minDays + 1)) + minDays;

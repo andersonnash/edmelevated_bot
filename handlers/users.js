@@ -136,7 +136,7 @@ async function register(interaction) {
       {
         name: "🎯 First Objective",
         value:
-          "Buy your first piece of equipment with `/buy_equipment` to start earning passive income.",
+          "Buy your first piece of equipment with `/buy_equipment` to start earning equipment rental income.",
         inline: false,
       },
       {
@@ -192,7 +192,7 @@ function nextObjective(user, venues, equipment, readyToCollect = 0) {
     return (
       "Buy your first DJ controller.\n\n" +
       `Recommended: **Pioneer DDJ-FLX4** (${money(500)})\n` +
-      "Why: starts your passive rental income and unlocks DJ bookings."
+      "Why: starts your equipment rental income and unlocks DJ bookings."
     );
   }
 
@@ -208,7 +208,7 @@ function nextObjective(user, venues, equipment, readyToCollect = 0) {
   if (readyToCollect > 0) {
     return (
       "You have income ready to collect.\n\n" +
-      `Ready: **${money(readyToCollect)}**\n` +
+      `Ready to Collect: **${money(readyToCollect)}**\n` +
       "Claim it, then reinvest into gear, venue staff, or venue upgrades."
     );
   }
@@ -261,7 +261,7 @@ function nextObjective(user, venues, equipment, readyToCollect = 0) {
     return (
       "Upgrade your venue.\n\n" +
       `Recommended: **${barUpgrade.emoji} ${barUpgrade.name} Lv1**\n` +
-      `Benefit: +${barBenefit}% passive income.`
+      `Benefit: +${barBenefit}% venue income.`
     );
   }
 
@@ -382,7 +382,7 @@ async function profile(interaction) {
         `Average:      ${promoterStats.averageStars}/5 (${promoterStats.averageScore}/100)\n` +
         `Best:         ${promoterStats.bestStars}/5 (${promoterStats.bestScore}/100)\n` +
         `Strong Streak:${String(promoterStats.currentStreak).padStart(3)} (Best: ${promoterStats.bestStreak})\n` +
-        `Rating Scene Rep: +${promoterStats.totalReputationBonus}` +
+        `Rating Scene Reputation: +${promoterStats.totalReputationBonus}` +
         "```",
     });
   }
@@ -403,7 +403,7 @@ async function profile(interaction) {
       name: "📊 STATS",
       value:
         "```ansi\n" +
-        `Scene Rep:     ${user.reputation || 0}\n` +
+        `Scene Reputation: ${user.reputation || 0}\n` +
         `Roles:         ${roleEmojis}\n` +
         `Lifetime:      ${money(user.lifetime_earned || 0)}\n` +
         "```",
@@ -599,13 +599,6 @@ async function leaderboard(interaction) {
     )
     .all();
 
-  const board = users
-    .map(
-      (u, i) =>
-        `${i + 1}. **${u.username}** — Scene Rep: ${u.reputation}, Cash: $${money(u.cash)}`,
-    )
-    .join("\n");
-
   const embed = new EmbedBuilder()
     .setColor(0xffd000)
     .setTitle("🏆 EDMELEVATED LEADERBOARD")
@@ -615,7 +608,8 @@ async function leaderboard(interaction) {
     embed.addFields({
       name: `${index + 1}. ${user.username}`,
       value:
-        `**Scene Rep:** ${user.reputation}\n` + `**Cash:** $${money(user.cash)}`,
+        `**Scene Reputation:** ${user.reputation}\n` +
+        `**Cash:** ${money(user.cash)}`,
     });
   });
 
