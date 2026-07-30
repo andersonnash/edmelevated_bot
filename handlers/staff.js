@@ -143,13 +143,13 @@ async function hireStaffForShow(interaction, showId, hiredUser) {
       {
         name: "📈 Venue Income Boost",
         value:
-          `+${staffBoostPercent}% passive income until this show runs.\n` +
+          `+${staffBoostPercent}% venue income until this show runs.\n` +
           `Temporary show staff boost caps at +${maxBoostPercent}%.`,
         inline: false,
       },
       {
         name: "💵 Staff Payout",
-        value: `${hiredUser.username} will receive **$${SHOW_STAFF_PAYOUT}** when the show runs.`,
+        value: `${hiredUser.username} will receive **$${SHOW_STAFF_PAYOUT}** when the owner settles the completed show.`,
         inline: false,
       },
     )
@@ -228,13 +228,13 @@ async function handleHireStaffButton(interaction) {
       {
         name: "📈 Temporary Boost",
         value:
-          `Each staff member adds **+${staffBoostPercent}%** venue passive income until the show runs.\n` +
+          `Each staff member adds **+${staffBoostPercent}%** venue income until the show runs.\n` +
           `Show staff boost caps at **+${maxBoostPercent}%**.`,
         inline: false,
       },
       {
         name: "💵 Staff Payout",
-        value: `Each staff member gets **$${SHOW_STAFF_PAYOUT}** when the show runs.`,
+        value: `Each staff member receives **$${SHOW_STAFF_PAYOUT}** when the owner settles the completed show.`,
         inline: false,
       },
     );
@@ -385,7 +385,7 @@ function formatJobPayout(job) {
   const payout = `$${Number(job.pay || 0).toLocaleString()}`;
 
   if (job.status === "assigned") {
-    return `${payout} when the show runs`;
+    return `${payout} after the show runs and the owner settles it`;
   }
 
   if (job.status === "completed") {
@@ -405,7 +405,7 @@ function formatJobStatus(job) {
   }
 
   if (job.status === "completed") {
-    return "Completed — waiting for owner to collect show profits";
+    return "Completed — waiting for owner settlement";
   }
 
   if (job.status === "paid") {
@@ -473,7 +473,7 @@ async function myJobs(interaction) {
             `**Status:** ${statusEmoji[job.status] || "•"} ${formatJobStatus(job)}\n` +
             `**Effect:** ${
               job.status === "assigned"
-                ? "Boosting venue passive income until showtime."
+                ? "Boosting venue income until showtime."
                 : "Staff work has been completed for this show."
             }`,
           inline: false,

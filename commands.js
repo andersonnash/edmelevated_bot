@@ -268,7 +268,7 @@ const commands = [
 
   new SlashCommandBuilder()
     .setName("my_shows")
-    .setDescription("View your upcoming shows"),
+    .setDescription("Manage your upcoming and completed shows"),
 
   new SlashCommandBuilder()
     .setName("buy_ticket")
@@ -391,7 +391,7 @@ const commands = [
 
   new SlashCommandBuilder()
     .setName("collect_show")
-    .setDescription("Collect payouts from one completed show")
+    .setDescription("Settle a completed show and distribute payouts")
     .addStringOption((option) =>
       option
         .setName("show")

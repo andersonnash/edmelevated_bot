@@ -32,7 +32,7 @@ export const guideSections = [
         heading: "Your early-game goal",
         text: [
           "At the beginning, your main goal is to buy your first piece of equipment.",
-          "Gear matters because it starts passive income and unlocks DJ bookings. That is when the game starts opening up.",
+          "Gear matters because it starts equipment rental income and unlocks DJ bookings. That is when the game starts opening up.",
         ],
       },
       {
@@ -79,7 +79,7 @@ export const guideSections = [
       {
         heading: "2. Buy equipment",
         text: [
-          "Equipment is your first asset. It generates passive rental income and unlocks the DJ booking path.",
+          "Equipment is your first asset. It generates equipment rental income and unlocks the DJ booking path.",
           "Collect the income with /collect, but keep playing actively: bookings are the main bridge between early gear ownership and your first venue.",
         ],
       },
@@ -169,21 +169,21 @@ export const guideSections = [
     category: "Equipment",
     title: "Equipment",
     summary:
-      "Gear is your first real asset. It earns passive income and unlocks the DJ career path.",
+      "Gear is your first real asset. It earns equipment rental income and unlocks the DJ career path.",
     commands: ["/buy_equipment", "/my_equipment", "/collect", "/bookings"],
     sections: [
       {
         heading: "Why equipment matters",
         text: [
           "Equipment is the first thing that makes you feel like you own something in the city.",
-          "It is not just a shopping list. Gear gives you passive rental income and unlocks DJ bookings, which gives you something active to do before you can afford a venue.",
+          "It is not just a shopping list. Gear gives you equipment rental income and unlocks DJ bookings, which gives you something active to do before you can afford a venue.",
         ],
       },
       {
-        heading: "Passive income",
+        heading: "Equipment rental income",
         text: [
           "Owned equipment earns money over time. That money does not instantly go into your cash balance.",
-          "Use /collect to claim passive income when it is ready.",
+          "Use /collect when equipment rental income is ready to collect.",
         ],
       },
       {
@@ -323,7 +323,7 @@ export const guideSections = [
       {
         heading: "What venues do",
         text: [
-          "Venues generate passive income.",
+          "Venues generate venue income.",
           "Venues let you create shows.",
           "Venues can be upgraded and staffed to become more valuable over time.",
         ],
@@ -515,7 +515,7 @@ export const guideSections = [
         heading: "How to collect it",
         text: [
           "Use /collect when income is ready.",
-          "Your /profile should show when there is passive income waiting for you.",
+          "Your /profile shows when passive income is Ready to Collect.",
         ],
       },
       {

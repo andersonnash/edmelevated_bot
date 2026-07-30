@@ -38,7 +38,7 @@ function mainHelpEmbed() {
         name: "START HERE",
         value:
           "`/profile` opens your city file and identifies your next move.\n" +
-          "`/journey` guides your first signal from borrowed gear to your own venue.",
+          "`/journey` guides your opening path from borrowed gear to your own venue.",
       },
       {
         name: "EXPLORE THE CITY",
@@ -80,7 +80,7 @@ function categoryEmbed(category) {
         {
           name: "`/hire_staff`",
           value:
-            "Hire another user as show staff. Show staff temporarily boost venue passive income until the show runs.",
+            "Hire another user as show staff. Show staff temporarily boost venue income until the show runs.",
         },
         {
           name: "`/show_lineup`",
@@ -138,13 +138,13 @@ function categoryEmbed(category) {
       .setColor(0x38bdf8)
       .setTitle("🏟 Venues Commands")
       .setDescription(
-        "Buy venues, upgrade departments, insure venues, hire permanent staff, host shows, and build passive income.",
+        "Buy venues, upgrade departments, insure venues, hire permanent staff, host shows, and build venue income.",
       )
       .addFields(
         {
           name: "How venues make money",
           value:
-            "Venues generate passive income over time.\n" +
+            "Venues generate venue income over time.\n" +
             "Income builds while you're away until you collect it.\n" +
             "Bigger venues earn more per hour and can host larger shows.",
         },
@@ -152,7 +152,7 @@ function categoryEmbed(category) {
           name: "Venue upgrades",
           value:
             "`/upgrade_venue` improves specific venue departments:\n\n" +
-            "🍺 **Bar** — increases passive income\n" +
+            "🍺 **Bar** — increases venue income\n" +
             "🚪 **Security** — increases venue capacity\n" +
             "🎛 **Production** — boosts show attendance\n\n" +
             "Prices scale with the venue and increase as that department levels up.",
@@ -171,7 +171,7 @@ function categoryEmbed(category) {
         },
         {
           name: "`/buy_venue`",
-          value: "Purchase a venue and start building passive income.",
+          value: "Purchase a venue and start building venue income.",
         },
         {
           name: "`/my_venues`",
@@ -263,13 +263,13 @@ function categoryEmbed(category) {
       .setColor(0x14b8a6)
       .setTitle("🎛 Equipment Commands")
       .setDescription(
-        "Buy gear, build starter passive income, and stack rental earnings while you work toward venues.",
+        "Buy gear, build equipment rental income, and stack earnings while you work toward venues.",
       )
       .addFields(
         {
           name: "Why equipment matters",
           value:
-            "Equipment is the easiest way for new players to start earning passive income.\n" +
+            "Equipment is the easiest way for new players to start earning equipment rental income.\n" +
             "Multiple copies increase hourly rental income.\n" +
             "Better gear earns more over time.",
         },
@@ -281,7 +281,7 @@ function categoryEmbed(category) {
         },
         {
           name: "`/buy_equipment`",
-          value: "Purchase gear that generates passive rental income.",
+          value: "Purchase gear that generates equipment rental income.",
         },
         {
           name: "`/my_equipment`",
@@ -294,7 +294,7 @@ function categoryEmbed(category) {
         },
       )
       .setFooter({
-        text: "Tip: If you are new, buying your first piece of equipment is usually the fastest path to passive income.",
+        text: "Tip: If you are new, buying your first piece of equipment is usually the fastest path to equipment rental income.",
       }),
 
     economy: new EmbedBuilder()

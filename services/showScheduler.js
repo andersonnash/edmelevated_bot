@@ -47,7 +47,7 @@ function startShowScheduler(client) {
           {
             name: "👥 Attendance",
             value:
-              `**Real Tickets:** ${result.tickets.length}\n` +
+              `**Ticket Holders:** ${result.tickets.length}\n` +
               `**Walk-ins:** ${result.adjustedWalkins}\n` +
               `**Total:** ${result.totalAttendance}`,
           },
@@ -85,7 +85,7 @@ function startShowScheduler(client) {
         .setFooter({
           text:
             result.netProfit >= 0
-              ? "Use /collect_show to claim your profit"
+              ? "Use /collect_show to settle this show"
               : "You took a loss on this one",
         });
 

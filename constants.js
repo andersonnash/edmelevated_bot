@@ -152,7 +152,7 @@ const SHOW_STAFF_ROLES = {
   staff: {
     label: "Show Staff",
     emoji: "👷",
-    description: "Boosts venue passive income until the show runs.",
+    description: "Boosts venue income until the show runs.",
   },
 
   bartender: { label: "Bartender", minPay: 150, bonus: 10 },
@@ -196,7 +196,7 @@ const VENUE_DEPARTMENTS = {
     column: "bar_level",
     baseCost: 1_000,
     benefitPerLevel: 15,
-    effect: "Boosts passive income",
+    effect: "Boosts venue income",
   },
 
   security: {

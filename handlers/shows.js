@@ -90,6 +90,7 @@ async function createShow(interaction) {
     baseWalkins,
     venue,
   });
+  const capacity = venueCapacity(venue);
 
   const created = db
     .prepare(
@@ -146,7 +147,7 @@ async function createShow(interaction) {
         inline: true,
       },
       {
-        name: "📅 Date",
+        name: "📅 Scheduled Date",
         value: event.date,
         inline: true,
       },
@@ -158,7 +159,9 @@ async function createShow(interaction) {
       {
         name: "👥 Forecast",
         value:
+          `Ticket Holders: **0**\n` +
           `Projected Walk-ins: **${projectedWalkins}**\n` +
+          `Projected Attendance: **${projectedWalkins} / ${capacity}**\n` +
           `Price Effect: **${ticketPriceDemandLabel(ticketPrice)}**\n` +
           `Venue Boost: **+${attendanceBonusPercent(venue)}%**`,
       },
@@ -290,7 +293,9 @@ async function showLineup(interaction, buttonShowId = null) {
 
     value: lineup.length
       ? lineup
-          .map((dj) => `${dj.slot_order}. ${dj.dj_username} — $${dj.pay}`)
+          .map(
+            (dj) => `${dj.slot_order}. ${dj.dj_username} — ${money(dj.pay)}`,
+          )
           .join("\n")
       : "No DJs yet.",
   });
@@ -299,7 +304,7 @@ async function showLineup(interaction, buttonShowId = null) {
     name: `👷 Staff (${staff.length})`,
 
     value: staff.length
-      ? staff.map((s) => `${s.role} — $${s.pay}`).join("\n")
+      ? staff.map((s) => `${s.role} — ${money(s.pay)}`).join("\n")
       : "No staff assigned.",
   });
 
@@ -308,8 +313,12 @@ async function showLineup(interaction, buttonShowId = null) {
 
     value:
       `Genre: ${SHOW_GENRES[show.genre] || "Mixed"}\n` +
-      `Tickets: ${show.tickets_sold}\n` +
-      `Price: $${show.ticket_price}`,
+      `Ticket Holders: ${show.tickets_sold}\n` +
+      `Ticket Price: ${money(show.ticket_price)}`,
+  });
+
+  embed.setFooter({
+    text: "DJ and staff payouts are paid when the owner settles the completed show.",
   });
 
   if (interaction.deferred || interaction.replied) {
@@ -374,11 +383,17 @@ function getShowCounts(showId) {
   const tickets = db
     .prepare("SELECT COUNT(*) AS count FROM show_tickets WHERE show_id = ?")
     .get(showId);
+  const unpaidPayouts = db
+    .prepare(
+      "SELECT COUNT(*) AS count FROM show_payouts WHERE show_id = ? AND paid = 0",
+    )
+    .get(showId);
 
   return {
     djCount: djs.count || 0,
     showStaffCount: staff.count || 0,
     ticketCount: tickets.count || 0,
+    unpaidPayoutCount: unpaidPayouts.count || 0,
   };
 }
 
@@ -441,7 +456,8 @@ function buildShowPage(userId, status, page = 0) {
   const safePage = Math.max(0, Math.min(page, totalPages - 1));
   const show = shows[safePage];
 
-  const { djCount, showStaffCount, ticketCount } = getShowCounts(show.id);
+  const { djCount, showStaffCount, ticketCount, unpaidPayoutCount } =
+    getShowCounts(show.id);
   const showStaffBoostPercent = getShowStaffBoostPercent(showStaffCount);
   const finalCapacity = venueCapacity(show);
 
@@ -452,6 +468,7 @@ function buildShowPage(userId, status, page = 0) {
     ticketCount,
   });
   const attendanceBoostPercent = attendanceBonusPercent(show);
+  const projectedAttendance = ticketCount + projectedWalkins;
   const closureEndsAt = show.closed_until
     ? new Date(show.closed_until.replace(" ", "T") + "Z")
     : null;
@@ -482,7 +499,7 @@ function buildShowPage(userId, status, page = 0) {
         inline: true,
       },
       {
-        name: "📅 Date",
+        name: "📅 Scheduled Date",
         value: show.show_date || "No date set",
         inline: true,
       },
@@ -494,8 +511,8 @@ function buildShowPage(userId, status, page = 0) {
         inline: true,
       },
       {
-        name: "🎫 Tickets Sold",
-        value: `${show.tickets_sold || 0}`,
+        name: "🎫 Ticket Holders",
+        value: `${ticketCount}`,
         inline: true,
       },
       {
@@ -512,14 +529,24 @@ function buildShowPage(userId, status, page = 0) {
             : `${showStaffCount}/${show.staff_limit || 0} hired`,
         inline: true,
       },
-      {
-        name: "🏟 Capacity",
-        value: `${finalCapacity}`,
-        inline: true,
-      },
+    )
+    .setFooter({
+      text:
+        status === "upcoming"
+          ? "Build your lineup, hire staff, and promote before show day."
+          : "Use /collect_show to settle this completed show.",
+    });
+
+  if (status === "upcoming") {
+    embed.addFields(
       {
         name: "👥 Projected Walk-ins",
         value: `${projectedWalkins}`,
+        inline: true,
+      },
+      {
+        name: "🏟 Projected Attendance",
+        value: `${projectedAttendance} / ${finalCapacity}`,
         inline: true,
       },
       {
@@ -527,13 +554,14 @@ function buildShowPage(userId, status, page = 0) {
         value: `+${attendanceBoostPercent}% from venue upgrades`,
         inline: true,
       },
-    )
-    .setFooter({
-      text:
-        status === "upcoming"
-          ? "Build your lineup, hire staff, and promote before show day."
-          : "Use /collect to collect completed show payouts.",
+    );
+  } else {
+    embed.addFields({
+      name: "💰 Settlement Status",
+      value: unpaidPayoutCount > 0 ? "Ready to Settle" : "Settled",
+      inline: true,
     });
+  }
 
   if (isDelayedByClosure) {
     const reopensAt = Math.floor(closureEndsAt.getTime() / 1000);
@@ -749,7 +777,7 @@ function buildRunShowEmbed(result) {
       {
         name: "👥 Attendance",
         value:
-          `**Real Tickets:** ${tickets.length}\n` +
+          `**Ticket Holders:** ${tickets.length}\n` +
           `**Walk-ins:** ${adjustedWalkins}\n` +
           `**Total:** ${totalAttendance}`,
       },
@@ -776,12 +804,16 @@ function buildRunShowEmbed(result) {
           `*“${rating.reaction}”*`,
       },
       {
-        name: "👷 Staff Earnings",
-        value: staffSummary,
+        name: "👷 Staff Payouts",
+        value: staff.length
+          ? `${staffSummary}\n*Pending settlement*`
+          : staffSummary,
       },
       {
-        name: "🎧 DJ Earnings",
-        value: lineupSummary,
+        name: "🎧 DJ Payouts",
+        value: lineup.length
+          ? `${lineupSummary}\n*Pending settlement*`
+          : lineupSummary,
       },
       {
         name: "⭐ Rewards",
@@ -793,10 +825,7 @@ function buildRunShowEmbed(result) {
       },
     )
     .setFooter({
-      text:
-        netProfit >= 0
-          ? "Use /collect_show to settle this show"
-          : "You took a loss on this one",
+      text: "Use /collect_show to settle this show and distribute payouts",
     });
 }
 
@@ -804,7 +833,7 @@ function buildCollectShowRow(showId) {
   return new ActionRowBuilder().addComponents(
     new ButtonBuilder()
       .setCustomId(`collect_show_${showId}`)
-      .setLabel("💰 Collect Show Profit")
+      .setLabel("Settle Show")
       .setStyle(ButtonStyle.Success),
   );
 }
@@ -865,7 +894,7 @@ async function runShow(interaction) {
 
   const response = {
     embeds: [embed],
-    components: result.netProfit >= 0 ? [row] : [],
+    components: [row],
   };
   if (interaction.deferred || interaction.replied) {
     return interaction.editReply(response);
@@ -932,7 +961,7 @@ async function collectShow(interaction, buttonShowId = null) {
 
     if (show.status !== "completed") {
       return interaction.editReply(
-        "That show is not completed yet. You can only collect completed shows.",
+        "That show is not completed yet. You can only settle completed shows.",
       );
     }
 
@@ -940,13 +969,18 @@ async function collectShow(interaction, buttonShowId = null) {
 
     if (!settlement) {
       return interaction.editReply(
-        "There are no unpaid payouts for this show. It may have already been collected.",
+        "There are no unpaid payouts for this show. It may have already been settled.",
       );
     }
 
-    addRole(userId, "Profitable Promoter");
-
     const { djs, staff, ownerTake, totalPaid } = settlement;
+    if (ownerTake > 0) {
+      addRole(userId, "Profitable Promoter");
+    }
+    const participantPayouts = [...djs, ...staff].reduce(
+      (sum, payout) => sum + payout.amount,
+      0,
+    );
 
     const balance =
       db.prepare("SELECT cash FROM users WHERE discord_id = ?").get(userId)
@@ -967,11 +1001,11 @@ async function collectShow(interaction, buttonShowId = null) {
 
     const embed = new EmbedBuilder()
       .setColor(0x22c55e)
-      .setTitle("💰 SHOW PAYDAY!")
-      .setDescription(`**${show.name}**\nEveryone has been paid for this show.`)
+      .setTitle("💰 SHOW SETTLED")
+      .setDescription(`**${show.name}**\nAll show payouts have been processed.`)
       .addFields(
         {
-          name: "🏟️ Owner",
+          name: "🏟️ Owner Result",
           value: `${interaction.user}\n${money(ownerTake)}`,
           inline: false,
         },
@@ -988,7 +1022,8 @@ async function collectShow(interaction, buttonShowId = null) {
         {
           name: "📊 Settlement",
           value:
-            `**Total Distributed:** ${money(totalPaid)}\n` +
+            `**Participant Payouts:** ${money(participantPayouts)}\n` +
+            `**Net Settlement:** ${money(totalPaid)}\n` +
             `**Balance:** ${money(balance)}`,
           inline: false,
         },
@@ -1000,7 +1035,7 @@ async function collectShow(interaction, buttonShowId = null) {
   } catch (error) {
     console.error("collectShow error:", error);
     return interaction.editReply(
-      "An error occurred while collecting this show.",
+      "An error occurred while settling this show.",
     );
   }
 }
@@ -1111,6 +1146,12 @@ async function promoteShowById(interaction, showId) {
     venue,
     ticketCount,
   });
+  const capacity = venueCapacity(venue);
+  const attendanceBeforePromotion = ticketCount + projectedBeforePromotion;
+  const attendanceAfterPromotion = ticketCount + projectedAfterPromotion;
+  const effectiveAttendanceGain =
+    attendanceAfterPromotion - attendanceBeforePromotion;
+  const isProjectedSellout = attendanceAfterPromotion >= capacity;
 
   const xpUpdate = addXp(userId, 25);
   await announceLevelUp(interaction, xpUpdate);
@@ -1131,13 +1172,25 @@ async function promoteShowById(interaction, showId) {
         inline: false,
       },
       {
-        name: "📈 Hype Gain",
+        name: "📈 Demand Added",
         value: `+${promo.hype}`,
         inline: true,
       },
       {
-        name: "👥 Projected Walk-ins",
-        value: `${projectedBeforePromotion} → ${projectedAfterPromotion}`,
+        name: "👥 Before Promotion",
+        value: `${attendanceBeforePromotion} / ${capacity} projected attendance`,
+        inline: true,
+      },
+      {
+        name: "🏟 After Promotion",
+        value:
+          `${attendanceAfterPromotion} / ${capacity} projected attendance` +
+          (isProjectedSellout ? "\n**Projected Sellout**" : ""),
+        inline: true,
+      },
+      {
+        name: "➕ Effective Attendance Gain",
+        value: `+${effectiveAttendanceGain}`,
         inline: true,
       },
       {
@@ -1152,7 +1205,10 @@ async function promoteShowById(interaction, showId) {
       },
     )
     .setFooter({
-      text: "Promotion increases projected walk-ins for this show.",
+      text:
+        effectiveAttendanceGain < promo.hype
+          ? `Promotion added ${promo.hype} demand. Venue capacity limited the attendance forecast to ${capacity}.`
+          : `Promotion added ${promo.hype} demand to this show's attendance forecast.`,
     });
 
   return interaction.reply({
