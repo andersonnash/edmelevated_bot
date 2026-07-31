@@ -393,7 +393,7 @@ export const guideSections = [
         heading: "Getting paid",
         text: [
           "Shows do not pay out instantly when you create them.",
-          "After the show automatically runs and is marked completed, the owner uses /collect_show to collect profits and settle payouts.",
+          "After the show automatically runs and is marked completed, the owner uses /collect_show to settle the show, receive the owner result, and distribute participant payouts.",
           "This is also when DJ and staff payouts are settled for that completed show.",
         ],
       },
@@ -540,7 +540,7 @@ export const guideSections = [
         heading: "Completed shows",
         text: [
           "A show has to complete before payouts are settled.",
-          "Once it is complete, the owner can use /collect_show to collect the show profit.",
+          "Once it is complete, the owner can use /collect_show to settle the show and process every payout.",
         ],
       },
       {
