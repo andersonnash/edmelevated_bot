@@ -40,6 +40,28 @@ async function blockDisallowedChannel(interaction) {
     .catch(() => {});
 }
 
+async function handleCommandSafely(interaction) {
+  try {
+    return await handleCommand(interaction);
+  } catch (error) {
+    console.error(
+      `Interaction failed: ${interaction.commandName || interaction.customId || "unknown"}`,
+      error,
+    );
+
+    const content =
+      "Something went wrong while processing that action. Please try again.";
+
+    if (interaction.deferred || interaction.replied) {
+      return interaction.editReply({ content }).catch(() => {});
+    }
+
+    return interaction
+      .reply({ content, flags: MessageFlags.Ephemeral })
+      .catch(() => {});
+  }
+}
+
 client.once("clientReady", () => {
   startShowScheduler(client);
   console.log(`Logged in as ${client.user.tag}`);
@@ -62,18 +84,21 @@ client.on("interactionCreate", async (interaction) => {
   }
 
   if (interaction.isChatInputCommand()) {
-    return handleCommand(interaction);
+    return handleCommandSafely(interaction);
   }
 
   if (interaction.isButton()) {
-    return handleCommand(interaction);
+    return handleCommandSafely(interaction);
   }
 
   if (interaction.isUserSelectMenu()) {
-    return handleCommand(interaction);
+    return handleCommandSafely(interaction);
   }
 });
 
-registerCommands().then(() => {
-  client.login(process.env.DISCORD_TOKEN);
-});
+registerCommands()
+  .then(() => client.login(process.env.DISCORD_TOKEN))
+  .catch((error) => {
+    console.error("Bot startup failed:", error);
+    process.exitCode = 1;
+  });

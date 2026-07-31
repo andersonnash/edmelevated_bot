@@ -382,7 +382,7 @@ async function profile(interaction) {
         `Average:      ${promoterStats.averageStars}/5 (${promoterStats.averageScore}/100)\n` +
         `Best:         ${promoterStats.bestStars}/5 (${promoterStats.bestScore}/100)\n` +
         `Strong Streak:${String(promoterStats.currentStreak).padStart(3)} (Best: ${promoterStats.bestStreak})\n` +
-        `Rating Scene Reputation: +${promoterStats.totalReputationBonus}` +
+        `Show Bonus: +${promoterStats.totalReputationBonus} Scene Reuputation` +
         "```",
     });
   }

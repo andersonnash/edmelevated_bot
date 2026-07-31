@@ -21,7 +21,7 @@ const commands = [
 
   new SlashCommandBuilder()
     .setName("buy_equipment")
-    .setDescription("Buy gear that generates passive rental income")
+    .setDescription("Buy gear that generates equipment rental income")
     .addStringOption((option) =>
       option
         .setName("type")
@@ -395,7 +395,7 @@ const commands = [
     .addStringOption((option) =>
       option
         .setName("show")
-        .setDescription("Completed show to collect")
+        .setDescription("Completed show to settle")
         .setRequired(true)
         .setAutocomplete(true),
     ),
