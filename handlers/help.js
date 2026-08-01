@@ -8,7 +8,7 @@ const {
 
 const CITY_SIGNAL_COLOR = 0x22d3ee;
 const CITY_SIGNAL_FOOTER =
-  "Start with /profile, then follow /journey";
+  "New to the city? Start with /journey";
 
 function mainHelpEmbed() {
   return new EmbedBuilder()
@@ -37,8 +37,8 @@ function mainHelpEmbed() {
       {
         name: "START HERE",
         value:
-          "`/profile` opens your city file and identifies your next move.\n" +
-          "`/journey` guides your opening path from borrowed gear to your own venue.",
+          "**New players begin with `/journey`.**\n" +
+          "It teaches the opening path one step at a time. `/profile` becomes your home base for everything that follows.",
       },
       {
         name: "EXPLORE THE CITY",
@@ -339,7 +339,7 @@ function categoryEmbed(category) {
         {
           name: "`/journey` • Start Here",
           value:
-            "Follow the one-time opening path: buy a controller, complete Open Decks, build community momentum, and run a borrowed-venue showcase that funds your move toward Garage Party.",
+            "Every new player starts here. Follow one clear objective at a time: buy a controller, complete Open Decks, build community momentum, and finish with a borrowed-venue showcase that funds your move toward Garage Party.",
         },
         {
           name: "How progression works",

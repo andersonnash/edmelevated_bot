@@ -11,11 +11,8 @@ const {
   OWNER_ID,
   ROLES,
   CAREER_ROLES,
-  VENUE_TYPES,
-  EQUIPMENT_TYPES,
   WORK_SCENARIOS,
   SHOP_ITEMS,
-  VENUE_DEPARTMENTS,
   DJ_BOOKINGS,
 } = require("../constants");
 
@@ -33,13 +30,8 @@ const {
 } = require("../services/xp");
 const { addCash } = require("../services/economy");
 const { money } = require("../services/formatters");
-const {
-  venueDepartmentUpgradeCost,
-} = require("../services/venueInvestmentRules");
-const {
-  venueDepartmentLevelName,
-} = require("../services/venueDepartmentRules");
 const { addSceneReputation } = require("../services/reputation");
+const { buildProfileNextMove } = require("../services/profileNextMove");
 const {
   evaluateProgressionAchievements,
 } = require("../services/progressionAchievements");
@@ -144,12 +136,12 @@ async function register(interaction) {
       {
         name: "🎯 First Objective",
         value:
-          "Buy your first piece of equipment with `/buy_equipment` to start earning equipment rental income.",
+          "Run `/journey`. It will guide you through buying equipment, entering the scene, and playing your first showcase.",
         inline: false,
       },
       {
         name: "🧭 Next Step",
-        value: "Run `/profile` to view your dashboard and next objective.",
+        value: "Start with `/journey`. Return to `/profile` whenever you need direction.",
         inline: false,
       },
     )
@@ -175,114 +167,6 @@ function hasCompletedBooking(userId, bookingKey) {
     .get(userId, bookingKey);
 }
 
-function nextObjective(user, venues, equipment, readyToCollect = 0) {
-  const openingJourney = db
-    .prepare(
-      "SELECT showcase_completed FROM user_journey_progress WHERE user_id = ?",
-    )
-    .get(user.discord_id);
-
-  if (!venues.length && !openingJourney?.showcase_completed) {
-    return (
-      "Complete your **Opening Journey** and borrowed-venue showcase.\n\n" +
-      "Run `/journey` to see your current step."
-    );
-  }
-
-  const cash = user.cash || 0;
-  const reputation = user.reputation || 0;
-  const completedOpenDecks = hasCompletedBooking(
-    user.discord_id,
-    DJ_BOOKINGS.openDecks.key,
-  );
-
-  if (!equipment.length) {
-    return (
-      "Buy your first DJ controller.\n\n" +
-      `Recommended: **Pioneer DDJ-FLX4** (${money(500)})\n` +
-      "Why: starts your equipment rental income and unlocks DJ bookings."
-    );
-  }
-
-  if (!completedOpenDecks) {
-    return (
-      "Take your first DJ booking.\n\n" +
-      "Recommended: **Open Decks Guest Slot**\n" +
-      "Why: creates your DJ profile, gives cash/XP/rep, and raises your booking fee.\n\n" +
-      "Use `/bookings` to get started."
-    );
-  }
-
-  if (readyToCollect > 0) {
-    return (
-      "You have income ready to collect.\n\n" +
-      `Ready to Collect: **${money(readyToCollect)}**\n` +
-      "Claim it, then reinvest into gear, venue staff, or venue upgrades."
-    );
-  }
-
-  if (!venues.length) {
-    if (cash < 2500) {
-      return (
-        "Save for your first venue.\n\n" +
-        `Goal: **Garage Party** (${money(2500)})\n` +
-        `Progress: ${money(cash)} / ${money(2500)}`
-      );
-    }
-
-    return "Buy your first venue with `/buy_venue`.";
-  }
-
-  const shows = db
-    .prepare("SELECT * FROM shows WHERE owner_id = ?")
-    .all(user.discord_id);
-
-  if (!shows.length) {
-    return "Create your first show with `/create_show`.";
-  }
-
-  const hasVenueUpgrade = venues.some(
-    (venue) =>
-      (venue.bar_level || 0) > 0 ||
-      (venue.security_level || 0) > 0 ||
-      (venue.production_level || 0) > 0,
-  );
-
-  if (!hasVenueUpgrade) {
-    const barUpgrade = VENUE_DEPARTMENTS.bar;
-    const firstVenue = venues[0];
-    const barUpgradeCost = venueDepartmentUpgradeCost(
-      firstVenue.type,
-      "bar",
-      1,
-    );
-    const barBenefit = barUpgrade.benefitPerLevel;
-
-    if (cash < barUpgradeCost) {
-      return (
-        "Save for your first venue upgrade.\n\n" +
-        `Recommended: **${barUpgrade.emoji} ${venueDepartmentLevelName("bar", 1)}** (${money(barUpgradeCost)})\n` +
-        `Progress: ${money(cash)} / ${money(barUpgradeCost)}`
-      );
-    }
-
-    return (
-      "Upgrade your venue.\n\n" +
-      `Recommended: **${barUpgrade.emoji} ${venueDepartmentLevelName("bar", 1)}**\n` +
-      `Benefit: +${barBenefit}% venue income.`
-    );
-  }
-
-  if (reputation < 10) {
-    return (
-      "Reach **10 Scene Reputation** to unlock Granary Warehouse.\n\n" +
-      `Progress: ${reputation} / 10`
-    );
-  }
-
-  return "Keep expanding: buy more equipment, upgrade venues, and create bigger shows.";
-}
-
 async function profile(interaction) {
   const userId = interaction.user.id;
   const username = interaction.user.username;
@@ -303,7 +187,7 @@ async function profile(interaction) {
   const profileAccent = activeTitle?.profileAccent || "Build the scene";
 
   const venues = db
-    .prepare("SELECT * FROM venues WHERE owner_id = ?")
+    .prepare("SELECT * FROM venues WHERE owner_id = ? ORDER BY id ASC")
     .all(userId);
   const equipment = db
     .prepare("SELECT * FROM user_equipment WHERE user_id = ?")
@@ -313,16 +197,74 @@ async function profile(interaction) {
     venues.reduce((sum, venue) => sum + venuePendingIncome(venue), 0) +
     equipment.reduce((sum, item) => sum + equipmentPendingIncome(item), 0);
 
-  const objective = nextObjective(user, venues, equipment, passiveTotal);
+  const journeyProgress = db
+    .prepare(
+      "SELECT showcase_completed FROM user_journey_progress WHERE user_id = ?",
+    )
+    .get(userId);
+  const completedOpenDecks = hasCompletedBooking(
+    userId,
+    DJ_BOOKINGS.openDecks.key,
+  );
+  const showCount = db
+    .prepare("SELECT COUNT(*) AS count FROM shows WHERE owner_id = ?")
+    .get(userId).count;
+  const completedShow = db
+    .prepare(
+      `
+      SELECT shows.name
+      FROM shows
+      JOIN show_payouts ON show_payouts.show_id = shows.id
+      WHERE shows.owner_id = ?
+        AND shows.status = 'completed'
+        AND show_payouts.paid = 0
+      ORDER BY shows.show_date ASC, shows.id ASC
+      LIMIT 1
+      `,
+    )
+    .get(userId);
+  const upcomingShowRows = db
+    .prepare(
+      `
+      SELECT
+        shows.name,
+        venues.dj_limit,
+        venues.staff_limit,
+        (SELECT COUNT(*) FROM show_lineup WHERE show_id = shows.id) AS lineup_count,
+        (SELECT COUNT(*) FROM show_staff WHERE show_id = shows.id) AS staff_count,
+        (SELECT COUNT(*) FROM show_promotions WHERE show_id = shows.id) AS promotion_count
+      FROM shows
+      JOIN venues ON venues.id = shows.venue_id
+      WHERE shows.owner_id = ?
+        AND shows.status = 'upcoming'
+      ORDER BY shows.show_date ASC, shows.id ASC
+      `,
+    )
+    .all(userId);
+  const upcomingShows = upcomingShowRows.map((show) => ({
+    name: show.name,
+    lineupCount: show.lineup_count || 0,
+    djLimit: show.dj_limit || 0,
+    staffCount: show.staff_count || 0,
+    staffLimit: show.staff_limit || 0,
+    promotionCount: show.promotion_count || 0,
+  }));
+  const nextMove = buildProfileNextMove({
+    cash: user.cash || 0,
+    journeyComplete: !!journeyProgress?.showcase_completed,
+    hasEquipment: equipment.length > 0,
+    openDecksComplete: completedOpenDecks,
+    venueCount: venues.length,
+    showCount,
+    readyToCollect: passiveTotal,
+    completedShow,
+    upcomingShows,
+    firstVenue: venues[0] || null,
+  });
   const promoterStats = getPromoterRatingStats(userId);
   const djProfile = db
     .prepare("SELECT * FROM dj_profiles WHERE user_id = ?")
     .get(userId);
-
-  const nextStep =
-    passiveTotal > 0
-      ? "Use /collect to claim your income, then reinvest with /upgrade_venue, /hire_venue_staff, /buy_equipment, or /create_show."
-      : "Run /work for a random scene shift, upgrade venues, hire venue staff, buy equipment, or create your next show.";
 
   const pending = db
     .prepare(
@@ -432,12 +374,8 @@ async function profile(interaction) {
         "```",
     },
     {
-      name: "🎯 NEXT OBJECTIVE",
-      value: objective,
-    },
-    {
-      name: "💡 NEXT STEP",
-      value: nextStep,
+      name: "🎯 NEXT MOVE",
+      value: nextMove,
     },
   );
 
