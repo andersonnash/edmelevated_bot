@@ -82,19 +82,20 @@ function selectionEmbed(state, userId) {
         name: "Tonight's Stake",
         value:
           `**${money(state.entry_paid)}** is temporarily at risk.\n` +
-          "Your regular wallet cannot be touched by the outcome.",
+          "Only this $25 stake is at risk. You cannot lose any additional cash.",
         inline: true,
       },
       {
         name: "Today's Payout Rate",
         value:
           `**${payoutRateText(userId)}**\n` +
-          "Runs 1–3: 100% • 4–6: 50% • Later: 25%",
+          "Runs 1–3: 100% • 4–6: 60% • Later: 40%",
         inline: true,
       },
       {
         name: "No Cooldown",
-        value: "After the scenario ends, start another run or return to the rest of the city.",
+        value:
+          "After the scenario ends, start another run or return to the rest of the city.",
       },
     );
 }
@@ -213,6 +214,7 @@ async function resolveScenario(interaction, state, scenario, approachKey) {
     outcome.busted ? 0 : state.stash + outcome.cashGain,
     outcome.xpGain,
     completedToday(interaction.user.id),
+    outcome.busted ? 0 : state.entry_paid,
   );
   let xpUpdate;
 

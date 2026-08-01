@@ -124,8 +124,8 @@ function entryForCash(cash) {
 
 function dailyRewardMultiplier(completedToday) {
   if (completedToday < 3) return 1;
-  if (completedToday < 6) return 0.5;
-  return 0.25;
+  if (completedToday < 6) return 0.6;
+  return 0.4;
 }
 
 function resolveEncounter(approachKey, random = Math.random) {
@@ -143,11 +143,18 @@ function resolveEncounter(approachKey, random = Math.random) {
   return { approach, busted: false, cashGain, xpGain: approach.xp };
 }
 
-function scaledPayout(stash, xpStash, completedToday) {
+function scaledPayout(stash, xpStash, completedToday, protectedStake = 0) {
   const multiplier = dailyRewardMultiplier(completedToday);
+  const totalCash = Math.max(0, stash);
+  const returnedStake = Math.min(
+    totalCash,
+    Math.max(0, Number(protectedStake || 0)),
+  );
+  const earnedCash = Math.max(0, totalCash - returnedStake);
+
   return {
     multiplier,
-    cash: Math.floor(Math.max(0, stash) * multiplier),
+    cash: returnedStake + Math.floor(earnedCash * multiplier),
     xp: Math.floor(Math.max(0, xpStash) * multiplier),
   };
 }

@@ -157,7 +157,7 @@ export const guideSections = [
         heading: "No cooldown, controlled rewards",
         text: [
           "Underground Run has no cooldown, and a player with an empty wallet can still start. A run stakes up to $25 from the wallet when available.",
-          "The first three completed runs each day pay 100% of the stash, the next three pay 50%, and later runs pay 25%.",
+          "A successful run always returns its stake in full. The first three completed runs each day pay 100% of earned profit, the next three pay 60%, and later runs pay 40%.",
           "It does not award Scene Reputation. Jobs, bookings, shows, and other city activities remain the strongest ways to make meaningful progression.",
         ],
       },
