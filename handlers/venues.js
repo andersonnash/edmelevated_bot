@@ -1,5 +1,9 @@
 const db = require("../db");
-const { VENUE_TYPES, VENUE_DEPARTMENTS } = require("../constants");
+const {
+  VENUE_TYPES,
+  VENUE_DEPARTMENTS,
+  VENUE_STAFF_ROLES,
+} = require("../constants");
 const {
   VENUE_INSURANCE,
   venueInsuranceCost,
@@ -26,10 +30,16 @@ const {
 const {
   hoursSince,
   venueHourlyIncome,
+  venueIncomeBreakdown,
   venuePendingIncome,
   venueCapacity,
   getActiveShowStaffBoost,
 } = require("../services/venueEngine");
+const { numberOwnedVenues } = require("../services/venueDisplayRules");
+const {
+  venueDepartmentLevelName,
+  venueDepartmentBenefitLabel,
+} = require("../services/venueDepartmentRules");
 
 function discordTime(timestamp) {
   if (!timestamp) return "Unknown";
@@ -353,9 +363,11 @@ function formatInsuranceStatus(venue) {
 }
 
 function buildVenuePage(userId, page = 0) {
-  const venues = db
+  const venues = numberOwnedVenues(
+    db
     .prepare("SELECT * FROM venues WHERE owner_id = ?")
-    .all(userId);
+    .all(userId),
+  );
 
   if (!venues.length) {
     return {
@@ -431,14 +443,16 @@ function buildVenuePage(userId, page = 0) {
         ? `${wholeHours}h`
         : `${wholeHours}h ${minutes}m`;
 
-  const venueStaffCount = db
+  const venueStaff = db
     .prepare(
       `
-      SELECT COUNT(*) as count FROM venue_staff 
+      SELECT role, username FROM venue_staff
       WHERE venue_id = ? AND status = 'active'
+      ORDER BY id ASC
       `,
     )
-    .get(venue.id).count;
+    .all(venue.id);
+  const venueStaffCount = venueStaff.length;
 
   let color = 0x06b6d4;
 
@@ -449,6 +463,7 @@ function buildVenuePage(userId, page = 0) {
   }
 
   const insuranceStatus = formatInsuranceStatus(venue);
+  const incomeBreakdown = venueIncomeBreakdown(venue);
   const activeShowStaffCount = getActiveShowStaffCountForVenue(venue.id);
   const activeShowStaffBoost = getActiveShowStaffBoost(venue.id);
   const activeShowStaffBoostPercent = Math.round(activeShowStaffBoost * 100);
@@ -486,6 +501,49 @@ function buildVenuePage(userId, page = 0) {
     },
   ];
 
+  fields.push({
+    name: "🧾 Hourly Income Breakdown",
+    value:
+      `Base venue: **${money(incomeBreakdown.baseHourly)}/hr**\n` +
+      `🍺 ${venueDepartmentLevelName("bar", venue.bar_level)}: **+${money(incomeBreakdown.barBoostHourly)}/hr**\n` +
+      `👥 Permanent staff: **+${money(incomeBreakdown.permanentStaffBoostHourly)}/hr**\n` +
+      `👷 Show staff: **+${money(incomeBreakdown.showStaffBoostHourly)}/hr**\n` +
+      `⚡ Event boost: **+${money(incomeBreakdown.eventBoostHourly)}/hr**\n` +
+      `Total: **${money(incomeBreakdown.hourly)}/hr**`,
+    inline: false,
+  });
+
+  const capacityGain = venueCapacity(venue) - Number(venue.base_capacity || 0);
+  const attendanceGain =
+    (venue.production_level || 0) *
+    VENUE_DEPARTMENTS.production.benefitPerLevel;
+
+  fields.push({
+    name: "🛠 Venue Upgrades",
+    value:
+      `🍺 Bar Program: **${venueDepartmentLevelName("bar", venue.bar_level)}** (Lv.${venue.bar_level || 0})\n` +
+      `↳ Infrastructure contribution: **+${money(incomeBreakdown.barBoostHourly)}/hr**\n` +
+      `🚪 Security Level ${venue.security_level || 0}: **+${capacityGain} capacity**\n` +
+      `🎛 Production Level ${venue.production_level || 0}: **+${attendanceGain}% show attendance**`,
+    inline: false,
+  });
+
+  fields.push({
+    name: "👥 Permanent Venue Staff",
+    value: venueStaff.length
+      ? venueStaff
+          .map((member) => {
+            const role = VENUE_STAFF_ROLES[member.role];
+            return role
+              ? `${role.emoji} ${role.label}: **+${Math.round(role.incomeBoost * 100)}% income**`
+              : `👤 ${member.username || member.role}`;
+          })
+          .join("\n") +
+        `\nCombined contribution: **+${money(incomeBreakdown.permanentStaffBoostHourly)}/hr**`
+      : "No permanent staff hired.",
+    inline: false,
+  });
+
   if (activeShowStaffCount > 0) {
     fields.push({
       name: "👷 Active Show Staff Boost",
@@ -518,7 +576,7 @@ function buildVenuePage(userId, page = 0) {
     .setColor(color)
     .setTitle(`🏟 YOUR VENUES (${safePage + 1}/${totalPages})`)
     .setDescription(
-      `**${venue.name}** #${venue.id}\n\n**${venueStatusText(venue)}**`,
+      `**${venue.name}** • Your Venue ${venue.ownerVenueNumber}\n\n**${venueStatusText(venue)}**`,
     )
     .addFields(fields)
     .setFooter({
@@ -668,8 +726,11 @@ async function upgradeVenue(interaction) {
     departmentKey,
     nextLevel,
   );
-  const currentBenefit = department.benefitPerLevel * currentLevel;
-  const nextBenefit = department.benefitPerLevel * nextLevel;
+  const currentLevelName = venueDepartmentLevelName(
+    departmentKey,
+    currentLevel,
+  );
+  const nextLevelName = venueDepartmentLevelName(departmentKey, nextLevel);
 
   const user = getUser(userId);
 
@@ -704,8 +765,8 @@ async function upgradeVenue(interaction) {
         inline: true,
       },
       {
-        name: "New Level",
-        value: `Lv.${nextLevel}`,
+        name: "Upgrade",
+        value: `${currentLevelName} → **${nextLevelName}**`,
         inline: true,
       },
       {
@@ -719,12 +780,12 @@ async function upgradeVenue(interaction) {
       },
       {
         name: "Current Benefit",
-        value: `${currentBenefit}%`,
+        value: venueDepartmentBenefitLabel(departmentKey, currentLevel),
         inline: true,
       },
       {
         name: "New Benefit",
-        value: `${nextBenefit}%`,
+        value: venueDepartmentBenefitLabel(departmentKey, nextLevel),
         inline: true,
       },
     )

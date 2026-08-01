@@ -66,7 +66,7 @@ function categoryEmbed(category) {
         {
           name: "`/my_shows`",
           value:
-            "View upcoming shows and saved ratings for completed shows. Use the buttons to promote, view lineup, hire staff, or collect payouts.",
+            "View upcoming shows and saved ratings for completed shows. Use the buttons to promote, view the lineup, hire show staff, or collect payouts.",
         },
         {
           name: "`/promote_show`",
@@ -78,9 +78,9 @@ function categoryEmbed(category) {
           value: "Add another Discord user as a DJ on your show lineup.",
         },
         {
-          name: "`/hire_staff`",
+          name: "`/hire_show_staff`",
           value:
-            "Hire another user as show staff. Show staff temporarily boost venue income until the show runs.",
+            "Hire another user for an automatically assigned show job. Each hire fills a staffing slot, improves the staffing score, adds +5% temporary venue income, and pays $150 when the show is settled.",
         },
         {
           name: "`/show_lineup`",
@@ -152,7 +152,7 @@ function categoryEmbed(category) {
           name: "Venue upgrades",
           value:
             "`/upgrade_venue` improves specific venue departments:\n\n" +
-            "🍺 **Bar** — increases venue income\n" +
+            "🍺 **Bar Program** — grows from Beer & Wine Service to a Full Bar and Premium Cocktail Program; increases venue income\n" +
             "🚪 **Security** — increases venue capacity\n" +
             "🎛 **Production** — boosts show attendance\n\n" +
             "Prices scale with the venue and increase as that department levels up.",
@@ -161,7 +161,7 @@ function categoryEmbed(category) {
           name: "Venue staff vs show staff",
           value:
             "`/hire_venue_staff` = permanent staff for one venue. They increase that venue's income, and hiring prices scale with venue size.\n" +
-            "`/hire_staff` = temporary show staff. They boost venue income only until that show runs.",
+            "`/hire_show_staff` = temporary show staff. They boost venue income only until that show runs.",
         },
         {
           name: "`/venue_insurance`",
@@ -242,9 +242,9 @@ function categoryEmbed(category) {
       )
       .addFields(
         {
-          name: "`/hire_staff`",
+          name: "`/hire_show_staff`",
           value:
-            "Hire another user as show staff for one of your upcoming shows. Each hired staff member gives a temporary venue income boost until showtime.",
+            "Hire another user for an automatically assigned show job. Each hire fills a staffing slot, adds +5% temporary venue income until showtime, and pays $150 after settlement.",
         },
         {
           name: "`/my_jobs`",

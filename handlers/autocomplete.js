@@ -12,6 +12,11 @@ const {
 } = require("../services/venueInvestmentRules");
 const { venueCapacity } = require("../services/venueEngine");
 const { canListTicketShow } = require("../services/ticketRules");
+const { numberOwnedVenues } = require("../services/venueDisplayRules");
+const {
+  venueDepartmentLevelName,
+  venueDepartmentBenefitLabel,
+} = require("../services/venueDepartmentRules");
 
 async function handleAutocomplete(interaction) {
   const userId = interaction.user.id;
@@ -64,7 +69,8 @@ async function handleAutocomplete(interaction) {
     ) &&
     interaction.options.getFocused(true).name === "venue"
   ) {
-    const venues = db
+    const venues = numberOwnedVenues(
+      db
       .prepare(
         `
         SELECT
@@ -77,16 +83,19 @@ async function handleAutocomplete(interaction) {
           insurance_expires_at
         FROM venues
         WHERE owner_id = ?
-          AND name LIKE ?
+        ORDER BY id ASC
         LIMIT 25
         `,
       )
-      .all(userId, `%${focused}%`);
+      .all(userId),
+    ).filter((venue) =>
+      venue.name.toLowerCase().includes(focused.toLowerCase()),
+    );
 
     return interaction.respond(
       venues.map((venue) => {
         let details =
-          `Bar ${venue.bar_level} / Sec ${venue.security_level} / ` +
+          `${venueDepartmentLevelName("bar", venue.bar_level)} / Sec ${venue.security_level} / ` +
           `Prod ${venue.production_level}`;
 
         if (interaction.commandName === "venue_insurance") {
@@ -106,7 +115,7 @@ async function handleAutocomplete(interaction) {
         }
 
         return {
-          name: `${venue.name} #${venue.id} — ${details}`.slice(0, 100),
+          name: `${venue.name} • Your Venue ${venue.ownerVenueNumber} — ${details}`.slice(0, 100),
           value: String(venue.id),
         };
       }),
@@ -141,13 +150,14 @@ async function handleAutocomplete(interaction) {
           key,
           nextLevel,
         );
-        const totalBenefit = department.benefitPerLevel * nextLevel;
+        const nextName = venueDepartmentLevelName(key, nextLevel);
 
         return {
-          name:
-            `${department.emoji} ${department.name} ` +
+          name: (
+            `${department.emoji} ${nextName} • ${department.name} ` +
             `Lv.${currentLevel} → Lv.${nextLevel} — ` +
-            `$${cost.toLocaleString()} — ${totalBenefit}% total`,
+            `$${cost.toLocaleString()} — ${venueDepartmentBenefitLabel(key, nextLevel)}`
+          ).slice(0, 100),
           value: key,
         };
       });
@@ -214,6 +224,7 @@ async function handleAutocomplete(interaction) {
           shows.ticket_price,
           shows.status,
           venues.type,
+          venues.base_capacity,
           venues.bar_level,
           venues.security_level,
           venues.production_level,
@@ -250,7 +261,7 @@ async function handleAutocomplete(interaction) {
       "force_run_show",
       "promote_show",
       "add_lineup",
-      "hire_staff",
+      "hire_show_staff",
       "show_lineup",
     ].includes(interaction.commandName)
   ) {

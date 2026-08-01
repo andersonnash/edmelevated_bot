@@ -2,6 +2,7 @@ const { EmbedBuilder } = require("discord.js");
 const db = require("../db");
 const { postSceneFeed } = require("./sceneFeed");
 const { VENUE_INSURANCE } = require("./venueInvestmentRules");
+const { venueOwnerNumber } = require("./venueDisplayRules");
 
 const VENUE_INCIDENTS = [
   {
@@ -203,7 +204,13 @@ function rollVenueEventForOwner(ownerId) {
 
 function buildVenueEventEmbed(venue, type, event) {
   const isIncident = type === "incident";
-  const venueLabel = `${venue.name || "Unknown Venue"} #${venue.id ?? "?"}`;
+  const ownedVenues = db
+    .prepare("SELECT id FROM venues WHERE owner_id = ? ORDER BY id ASC")
+    .all(venue.owner_id);
+  const ownerNumber = venueOwnerNumber(ownedVenues, venue.id);
+  const venueLabel = ownerNumber
+    ? `${venue.name || "Unknown Venue"} • Your Venue ${ownerNumber}`
+    : venue.name || "Unknown Venue";
 
   return new EmbedBuilder()
     .setColor(isIncident ? 0xff3355 : 0x22c55e)

@@ -108,7 +108,7 @@ export const guideSections = [
       {
         heading: "5. Create better shows",
         text: [
-          "Create shows, build lineups, hire staff, and promote persistent demand before show day. Capacity limits attendance, but it does not prevent you from continuing to build stored demand.",
+          "Create shows, build lineups, hire show staff, and promote persistent demand before show day. Capacity limits attendance, but it does not prevent you from continuing to build stored demand.",
           "When a show completes, its rating measures attendance, profitability, production, lineup coverage, and staffing coverage. A strong Show Rating matters more than raw crowd size when Scene Reputation is awarded.",
         ],
       },
@@ -269,8 +269,8 @@ export const guideSections = [
       {
         heading: "Your artist identity",
         text: [
-          "Your DJ profile is separate from your regular player profile.",
-          "Your regular profile shows your overall city progress. Your DJ profile shows your career as an artist.",
+          "Your regular /profile includes a compact DJ Career summary alongside your promoter and venue progress.",
+          "Use /dj_profile when you want the detailed view of a player's career as an artist.",
         ],
       },
       {
@@ -329,6 +329,14 @@ export const guideSections = [
         ],
       },
       {
+        heading: "Bar programs and bartenders",
+        text: [
+          "The Bar Program is venue infrastructure: Beer & Wine Service grows into a Full Bar and then a Premium Cocktail Program. Each level permanently increases venue income.",
+          "A Bartender is permanent venue staff. Hiring one fills a staff slot and adds a separate 5% income boost.",
+          "Use /my_venues to see the Bar Program and staff contributions separately.",
+        ],
+      },
+      {
         heading: "Growing into bigger rooms",
         text: [
           "Higher-tier venues require more cash and Scene Reputation.",
@@ -349,7 +357,7 @@ export const guideSections = [
       "/my_shows",
       "/promote_show",
       "/add_lineup",
-      "/hire_staff",
+      "/hire_show_staff",
       "/collect_show",
     ],
     sections: [
@@ -375,7 +383,7 @@ export const guideSections = [
           "Once a show exists, you can build it up before it happens.",
           "Use /promote_show to increase walk-ins.",
           "Use /add_lineup to add DJs.",
-          "Use /hire_staff to bring in people who help the event run better.",
+          "Use /hire_show_staff to bring in people who help the event run better.",
         ],
       },
       {
@@ -413,7 +421,7 @@ export const guideSections = [
     title: "Staff & Lineups",
     summary:
       "Shows feel better when they are not just one person pressing buttons alone in the dark.",
-    commands: ["/add_lineup", "/show_lineup", "/hire_staff", "/my_jobs"],
+    commands: ["/add_lineup", "/show_lineup", "/hire_show_staff", "/my_jobs"],
     sections: [
       {
         heading: "Lineups",
@@ -425,14 +433,15 @@ export const guideSections = [
       {
         heading: "Show staff",
         text: [
-          "Use /hire_staff to hire another user for a show staff role.",
-          "Staff roles help events feel more alive and create more ways for players to participate even if they do not own venues yet.",
+          "Use /hire_show_staff to hire another user for an automatically assigned job such as Door Crew, Bar Support, Stage Crew, Guest Services, or Promo Crew.",
+          "Each hire fills a staffing slot used by the final show rating and adds 5% temporary venue income until showtime. The temporary income boost caps at 25%.",
+          "Assignments add identity without changing the balance: every show staff job currently pays $150.",
         ],
       },
       {
         heading: "Staff payouts",
         text: [
-          "Staff are paid when the show owner collects and settles a completed show.",
+          "Staff receive their $150 payout when the show owner collects and settles a completed show.",
           "The basic flow is assigned, completed, then paid.",
         ],
       },
@@ -516,6 +525,13 @@ export const guideSections = [
         text: [
           "Use /collect when income is ready.",
           "Your /profile shows when passive income is Ready to Collect.",
+        ],
+      },
+      {
+        heading: "Seeing where venue income comes from",
+        text: [
+          "Your /profile separates base venue income from bar upgrades, permanent venue staff, temporary show staff, and active event boosts.",
+          "Use /my_venues for the same breakdown on an individual venue, including its current bar level and exact hourly contribution.",
         ],
       },
       {

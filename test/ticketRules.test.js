@@ -1,6 +1,7 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
 const { canListTicketShow } = require("../services/ticketRules");
+const { venueCapacity } = require("../services/showMath");
 
 const availableShow = {
   owner_id: "promoter-1",
@@ -11,6 +12,24 @@ const availableShow = {
 
 test("lists another promoter's available upcoming show", () => {
   assert.equal(canListTicketShow(availableShow, "buyer-1", 25), true);
+});
+
+test("lists a show using capacity selected with its venue data", () => {
+  const showWithVenue = {
+    ...availableShow,
+    base_capacity: 25,
+    security_level: 1,
+  };
+
+  assert.equal(
+    canListTicketShow(
+      showWithVenue,
+      "buyer-1",
+      venueCapacity(showWithVenue),
+    ),
+    true,
+  );
+  assert.equal(venueCapacity(showWithVenue), 30);
 });
 
 test("does not list the buyer's own show", () => {

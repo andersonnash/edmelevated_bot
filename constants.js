@@ -154,12 +154,31 @@ const SHOW_STAFF_ROLES = {
     emoji: "👷",
     description: "Boosts venue income until the show runs.",
   },
-
-  bartender: { label: "Bartender", minPay: 150, bonus: 10 },
-  security: { label: "Security", minPay: 200, bonus: 10 },
-  vj: { label: "VJ", minPay: 175, bonus: 15 },
-  promoter: { label: "Promoter", minPay: 125, bonus: 20 },
-  general_staff: { label: "General Staff", minPay: 100, bonus: 5 },
+  door_crew: {
+    label: "Door Crew",
+    emoji: "🚪",
+    description: "Keeps entry and the guest list moving.",
+  },
+  bar_support: {
+    label: "Bar Support",
+    emoji: "🍹",
+    description: "Keeps the bar stocked through the rush.",
+  },
+  stage_crew: {
+    label: "Stage Crew",
+    emoji: "🎛️",
+    description: "Keeps changeovers and production on schedule.",
+  },
+  guest_services: {
+    label: "Guest Services",
+    emoji: "🎟️",
+    description: "Handles crowd questions and guest issues.",
+  },
+  promo_crew: {
+    label: "Promo Crew",
+    emoji: "📣",
+    description: "Keeps the event visible before doors open.",
+  },
 };
 
 const VENUE_STAFF_ROLES = {
@@ -191,12 +210,18 @@ const VENUE_STAFF_ROLES = {
 
 const VENUE_DEPARTMENTS = {
   bar: {
-    name: "Bar",
+    name: "Bar Program",
     emoji: "🍺",
     column: "bar_level",
     baseCost: 1_000,
     benefitPerLevel: 15,
     effect: "Boosts venue income",
+    levelNames: [
+      "No Bar Program",
+      "Beer & Wine Service",
+      "Full Bar",
+      "Premium Cocktail Program",
+    ],
   },
 
   security: {
