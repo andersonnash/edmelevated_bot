@@ -14,6 +14,7 @@ const { settleShowPayouts, getOwnedShow } = require("../services/showPayouts");
 
 const { addCash } = require("../services/economy");
 const { money } = require("../services/formatters");
+const { showStaffRole } = require("../services/showStaffRules");
 
 const {
   getVenueIncome,
@@ -44,7 +45,6 @@ const {
 } = require("../services/generators");
 
 const {
-  SHOW_STAFF_ROLES,
   SHOW_STAFF_VENUE_BOOST_PER_STAFF,
   SHOW_STAFF_VENUE_BOOST_CAP,
   SHOW_GENRES,
@@ -168,7 +168,7 @@ async function createShow(interaction) {
       {
         name: "🚀 Next Steps",
         value:
-          "Use the buttons below to promote the show, view the lineup, or hire staff.",
+          "Use the buttons below to promote the show, view the lineup, or hire show staff.",
       },
     )
     .setFooter({
@@ -188,7 +188,7 @@ async function createShow(interaction) {
 
     new ButtonBuilder()
       .setCustomId(`hire_show_${showId}`)
-      .setLabel("👷 Hire Staff")
+      .setLabel("👷 Hire Show Staff")
       .setStyle(ButtonStyle.Success),
   );
 
@@ -304,7 +304,12 @@ async function showLineup(interaction, buttonShowId = null) {
     name: `👷 Staff (${staff.length})`,
 
     value: staff.length
-      ? staff.map((s) => `${s.role} — ${money(s.pay)}`).join("\n")
+      ? staff
+          .map((s) => {
+            const assignment = showStaffRole(s.role);
+            return `${assignment.emoji} ${assignment.label} — ${money(s.pay)}`;
+          })
+          .join("\n")
       : "No staff assigned.",
   });
 
@@ -533,7 +538,7 @@ function buildShowPage(userId, status, page = 0) {
     .setFooter({
       text:
         status === "upcoming"
-          ? "Build your lineup, hire staff, and promote before show day."
+          ? "Build your lineup, hire show staff, and promote before show day."
           : "Use /collect_show to settle this completed show.",
     });
 
@@ -752,10 +757,13 @@ function buildRunShowEmbed(result) {
 
   const staffSummary = staff.length
     ? staff
-        .map(
-          (person) =>
-            `👷 ${person.hired_username} — ${person.role} — ${money(person.pay)}`,
-        )
+        .map((person) => {
+          const assignment = showStaffRole(person.role);
+          return (
+            `${assignment.emoji} ${person.hired_username} — ` +
+            `${assignment.label} — ${money(person.pay)}`
+          );
+        })
         .join("\n")
     : "None";
 

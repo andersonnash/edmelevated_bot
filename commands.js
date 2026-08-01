@@ -282,7 +282,7 @@ const commands = [
     ),
 
   new SlashCommandBuilder()
-    .setName("hire_staff")
+    .setName("hire_show_staff")
     .setDescription("Hire another user as show staff")
     .addStringOption((option) =>
       option

@@ -36,6 +36,9 @@ const { money } = require("../services/formatters");
 const {
   venueDepartmentUpgradeCost,
 } = require("../services/venueInvestmentRules");
+const {
+  venueDepartmentLevelName,
+} = require("../services/venueDepartmentRules");
 const { addSceneReputation } = require("../services/reputation");
 const {
   evaluateProgressionAchievements,
@@ -50,6 +53,11 @@ const {
 
 const { checkCooldown } = require("../services/cooldowns");
 const { getPromoterRatingStats } = require("../services/showRatingHistory");
+const {
+  calculateDjBookingFee,
+  getDjLevel,
+  getDjTitle,
+} = require("../services/djs");
 const {
   WORK_COOLDOWN_MINUTES,
   calculateWorkReward,
@@ -253,14 +261,14 @@ function nextObjective(user, venues, equipment, readyToCollect = 0) {
     if (cash < barUpgradeCost) {
       return (
         "Save for your first venue upgrade.\n\n" +
-        `Recommended: **${barUpgrade.emoji} ${barUpgrade.name} Lv1** (${money(barUpgradeCost)})\n` +
+        `Recommended: **${barUpgrade.emoji} ${venueDepartmentLevelName("bar", 1)}** (${money(barUpgradeCost)})\n` +
         `Progress: ${money(cash)} / ${money(barUpgradeCost)}`
       );
     }
 
     return (
       "Upgrade your venue.\n\n" +
-      `Recommended: **${barUpgrade.emoji} ${barUpgrade.name} Lv1**\n` +
+      `Recommended: **${barUpgrade.emoji} ${venueDepartmentLevelName("bar", 1)}**\n` +
       `Benefit: +${barBenefit}% venue income.`
     );
   }
@@ -307,13 +315,9 @@ async function profile(interaction) {
 
   const objective = nextObjective(user, venues, equipment, passiveTotal);
   const promoterStats = getPromoterRatingStats(userId);
-
-  const boostPercent =
-    venueIncome.baseHourly > 0
-      ? Math.round(
-          (venueIncome.staffBoostHourly / venueIncome.baseHourly) * 100,
-        )
-      : 0;
+  const djProfile = db
+    .prepare("SELECT * FROM dj_profiles WHERE user_id = ?")
+    .get(userId);
 
   const nextStep =
     passiveTotal > 0
@@ -382,8 +386,24 @@ async function profile(interaction) {
         `Average:      ${promoterStats.averageStars}/5 (${promoterStats.averageScore}/100)\n` +
         `Best:         ${promoterStats.bestStars}/5 (${promoterStats.bestScore}/100)\n` +
         `Strong Streak:${String(promoterStats.currentStreak).padStart(3)} (Best: ${promoterStats.bestStreak})\n` +
-        `Show Bonus: +${promoterStats.totalReputationBonus} Scene Reuputation` +
+        `Show Bonus: +${promoterStats.totalReputationBonus} Scene Reputation` +
         "```",
+    });
+  }
+
+  if (djProfile) {
+    const djLevel = getDjLevel(djProfile.dj_reputation);
+
+    profileFields.push({
+      name: "🎧 DJ CAREER",
+      value:
+        "```ansi\n" +
+        `${getDjTitle(djLevel)} • DJ Level ${djLevel}\n` +
+        `DJ Reputation: ${djProfile.dj_reputation}\n` +
+        `Completed Gigs: ${djProfile.bookings}\n` +
+        `Booking Fee: ${money(calculateDjBookingFee(djProfile))}` +
+        "```\n" +
+        "Use `/dj_profile` for full DJ career details.",
     });
   }
 
@@ -392,9 +412,12 @@ async function profile(interaction) {
       name: "🏢 PASSIVE INCOME",
       value:
         "```ansi\n" +
-        `Venues: ${venues.length} (${money(venueIncome.hourly)}/hr) ${
-          venueIncome.staffBoostHourly > 0 ? "👥" : ""
-        } +${money(venueIncome.total)}\n` +
+        `Venues: ${venues.length} (${money(venueIncome.hourly)}/hr) +${money(venueIncome.total)}\n` +
+        `  Base venues: ${money(venueIncome.baseHourly)}/hr\n` +
+        `  🍺 Bar upgrades: +${money(venueIncome.barBoostHourly)}/hr\n` +
+        `  👥 Venue staff: +${money(venueIncome.permanentStaffBoostHourly)}/hr\n` +
+        `  👷 Show staff: +${money(venueIncome.showStaffBoostHourly)}/hr\n` +
+        `  ⚡ Event boosts: +${money(venueIncome.eventBoostHourly)}/hr\n` +
         `Equipment: ${equipment.length} (${money(equipmentIncome.hourly)}/hr) +${money(equipmentIncome.total)}\n` +
         `Ready to Collect: ${money(passiveTotal)}\n` +
         "```",

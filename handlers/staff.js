@@ -1,6 +1,5 @@
 const db = require("../db");
 const {
-  SHOW_STAFF_ROLES,
   VENUE_STAFF_ROLES,
   SHOW_STAFF_PAYOUT,
   SHOW_STAFF_VENUE_BOOST_PER_STAFF,
@@ -9,6 +8,10 @@ const {
 const {
   venueStaffHiringCost,
 } = require("../services/venueInvestmentRules");
+const {
+  selectShowStaffAssignment,
+  showStaffRole,
+} = require("../services/showStaffRules");
 
 const { addRole } = require("../services/roles");
 
@@ -60,7 +63,7 @@ async function hireStaffForShow(interaction, showId, hiredUser) {
 
   if (!show) {
     return interaction.reply({
-      content: "You can only hire staff for your own upcoming shows.",
+      content: "You can only hire show staff for your own upcoming shows.",
       ephemeral: true,
     });
   }
@@ -99,6 +102,9 @@ async function hireStaffForShow(interaction, showId, hiredUser) {
     });
   }
 
+  const assignmentKey = selectShowStaffAssignment();
+  const assignment = showStaffRole(assignmentKey);
+
   db.prepare(
     `
     INSERT INTO show_staff (
@@ -109,9 +115,15 @@ async function hireStaffForShow(interaction, showId, hiredUser) {
       pay,
       status
     )
-    VALUES (?, ?, ?, 'staff', ?, 'assigned')
+    VALUES (?, ?, ?, ?, ?, 'assigned')
     `,
-  ).run(show.id, hiredUser.id, hiredUser.username, SHOW_STAFF_PAYOUT);
+  ).run(
+    show.id,
+    hiredUser.id,
+    hiredUser.username,
+    assignmentKey,
+    SHOW_STAFF_PAYOUT,
+  );
 
   addRole(hiredUser.id, "Show Staff");
 
@@ -136,8 +148,15 @@ async function hireStaffForShow(interaction, showId, hiredUser) {
         inline: true,
       },
       {
-        name: "👷 Staffing",
-        value: `${staffCount + 1}/${show.staff_limit}`,
+        name: `${assignment.emoji} Assignment`,
+        value: `${assignment.label}\n${assignment.description}`,
+        inline: true,
+      },
+      {
+        name: "👷 Show Staffing",
+        value:
+          `${staffCount + 1}/${show.staff_limit} slots filled\n` +
+          "Improves the show's staffing score.",
         inline: true,
       },
       {
@@ -192,7 +211,7 @@ async function handleHireStaffButton(interaction) {
 
   if (!show) {
     return interaction.reply({
-      content: "You can only hire staff for your own upcoming shows.",
+      content: "You can only hire show staff for your own upcoming shows.",
       ephemeral: true,
     });
   }
@@ -229,7 +248,8 @@ async function handleHireStaffButton(interaction) {
         name: "📈 Temporary Boost",
         value:
           `Each staff member adds **+${staffBoostPercent}%** venue income until the show runs.\n` +
-          `Show staff boost caps at **+${maxBoostPercent}%**.`,
+          `Show staff boost caps at **+${maxBoostPercent}%**.\n` +
+          "Each hire also fills a staffing slot used in the final show rating.",
         inline: false,
       },
       {
@@ -461,7 +481,7 @@ async function myJobs(interaction) {
     .setDescription("Your upcoming and recent staff gigs in the city.")
     .addFields(
       jobs.slice(0, 25).map((job) => {
-        const role = SHOW_STAFF_ROLES[job.role];
+        const role = showStaffRole(job.role);
 
         return {
           name: `${role?.emoji || "🎛️"} ${role?.label || job.role}`,

@@ -52,7 +52,7 @@ const commandMap = {
   promote_show: shows.promoteShow,
   show_lineup: shows.showLineup,
 
-  hire_staff: staff.hireStaff,
+  hire_show_staff: staff.hireStaff,
   my_jobs: staff.myJobs,
   hire_venue_staff: staff.hireVenueStaff,
 
