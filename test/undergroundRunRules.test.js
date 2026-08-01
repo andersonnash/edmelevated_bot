@@ -33,14 +33,22 @@ test("resolves safe and busted encounters deterministically", () => {
 
 test("diminishes rewards without putting the activity on cooldown", () => {
   assert.equal(dailyRewardMultiplier(0), 1);
-  assert.equal(dailyRewardMultiplier(3), 0.5);
-  assert.equal(dailyRewardMultiplier(6), 0.25);
+  assert.equal(dailyRewardMultiplier(3), 0.6);
+  assert.equal(dailyRewardMultiplier(6), 0.4);
   assert.deepEqual(scaledPayout(101, 11, 3), {
-    multiplier: 0.5,
-    cash: 50,
-    xp: 5,
+    multiplier: 0.6,
+    cash: 60,
+    xp: 6,
   });
   assert.equal(scaledPayout(0, 0, 0).xp, 0);
+});
+
+test("returns a successful stake before scaling earned profit", () => {
+  assert.deepEqual(scaledPayout(101, 11, 6, 25), {
+    multiplier: 0.4,
+    cash: 55,
+    xp: 4,
+  });
 });
 
 test("offers three distinct story scenarios for each run", () => {

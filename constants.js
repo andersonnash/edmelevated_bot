@@ -29,9 +29,9 @@ const VENUE_TYPES = {
 
   warehouse: {
     name: "Granary Warehouse",
-    cost: 10_000,
+    cost: 7_500,
     repRequired: 10,
-    passiveIncome: 350,
+    passiveIncome: 500,
     investmentMultiplier: 1,
     insuranceCost: 750,
     baseCapacity: 100,
@@ -43,9 +43,9 @@ const VENUE_TYPES = {
 
   underground_club: {
     name: "The Sub Room",
-    cost: 30_000,
+    cost: 22_500,
     repRequired: 25,
-    passiveIncome: 850,
+    passiveIncome: 1_500,
     investmentMultiplier: 2,
     insuranceCost: 2_000,
     baseCapacity: 250,
@@ -57,9 +57,9 @@ const VENUE_TYPES = {
 
   downtown_venue: {
     name: "Neon Rooftop",
-    cost: 75_000,
+    cost: 60_000,
     repRequired: 50,
-    passiveIncome: 1_500,
+    passiveIncome: 4_000,
     investmentMultiplier: 4,
     insuranceCost: 5_000,
     baseCapacity: 600,
@@ -71,9 +71,9 @@ const VENUE_TYPES = {
 
   festival_grounds: {
     name: "Desert Frequency",
-    cost: 250_000,
+    cost: 200_000,
     repRequired: 100,
-    passiveIncome: 4_000,
+    passiveIncome: 12_000,
     investmentMultiplier: 10,
     insuranceCost: 15_000,
     baseCapacity: 2_500,

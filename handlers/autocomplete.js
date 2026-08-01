@@ -10,6 +10,8 @@ const {
   venueDepartmentUpgradeCost,
   venueStaffHiringCost,
 } = require("../services/venueInvestmentRules");
+const { venueCapacity } = require("../services/venueEngine");
+const { canListTicketShow } = require("../services/ticketRules");
 
 async function handleAutocomplete(interaction) {
   const userId = interaction.user.id;
@@ -200,9 +202,51 @@ async function handleAutocomplete(interaction) {
 
     return interaction.respond(choices);
   }
+  if (interaction.commandName === "buy_ticket") {
+    const shows = db
+      .prepare(
+        `
+        SELECT
+          shows.id,
+          shows.owner_id,
+          shows.name,
+          shows.show_date,
+          shows.ticket_price,
+          shows.status,
+          venues.type,
+          venues.bar_level,
+          venues.security_level,
+          venues.production_level,
+          users.username AS promoter_name,
+          COUNT(show_tickets.id) AS ticket_count,
+          MAX(CASE WHEN show_tickets.user_id = ? THEN 1 ELSE 0 END) AS has_ticket
+        FROM shows
+        JOIN venues ON venues.id = shows.venue_id
+        LEFT JOIN users ON users.discord_id = shows.owner_id
+        LEFT JOIN show_tickets ON show_tickets.show_id = shows.id
+        WHERE shows.name LIKE ?
+        GROUP BY shows.id
+        ORDER BY shows.show_date ASC
+        `,
+      )
+      .all(userId, `%${focused}%`)
+      .filter((show) =>
+        canListTicketShow(show, userId, venueCapacity(show)),
+      )
+      .slice(0, 25);
+
+    return interaction.respond(
+      shows.map((show) => ({
+        name: (
+          `${show.name} — $${show.ticket_price.toLocaleString()} — ` +
+          `${show.promoter_name || "Unknown promoter"} — ${show.show_date}`
+        ).slice(0, 100),
+        value: String(show.id),
+      })),
+    );
+  }
   if (
     [
-      "buy_ticket",
       "force_run_show",
       "promote_show",
       "add_lineup",
