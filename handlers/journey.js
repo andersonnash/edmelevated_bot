@@ -50,8 +50,52 @@ function getJourneyState(userId) {
   };
 }
 
-function requirementLine(done, text) {
-  return `${done ? "✅" : "⬜"} ${text}`;
+const JOURNEY_STEPS = [
+  {
+    key: "equipment",
+    label: "Get your first controller",
+    command: "/buy_equipment",
+    objective:
+      "Buy your first controller. Owning gear unlocks DJ bookings and starts earning passive income.",
+  },
+  {
+    key: "openDecks",
+    label: "Play Open Decks",
+    command: "/bookings",
+    objective:
+      "Choose **Open Decks** in `/bookings` and complete the set to prove yourself behind the decks.",
+  },
+  {
+    key: "streetTeam",
+    label: "Help promote the night",
+    command: "/street_team",
+    objective:
+      "Run `/street_team` once to help find the crowd for your community showcase.",
+  },
+  {
+    key: "sceneActivity",
+    label: "Explore the scene",
+    command: "/crate_dig or /rave_story",
+    objective:
+      "Complete `/crate_dig` or `/rave_story` to give your first showcase its own story.",
+  },
+];
+
+function journeyDisplay(requirements) {
+  const currentIndex = JOURNEY_STEPS.findIndex(
+    (step) => !requirements[step.key],
+  );
+  const lines = JOURNEY_STEPS.map((step, index) => {
+    if (requirements[step.key]) return `✅ ${step.label}`;
+    if (index === currentIndex) return `▶ **${step.label}**`;
+    return `🔒 ${step.label}`;
+  });
+
+  return {
+    currentStepNumber: currentIndex + 1,
+    currentStep: currentIndex >= 0 ? JOURNEY_STEPS[currentIndex] : null,
+    lines,
+  };
 }
 
 function showcaseChoiceRow() {
@@ -96,31 +140,33 @@ async function journey(interaction) {
   }
 
   const { requirements } = state;
+  const display = journeyDisplay(requirements);
   const embed = new EmbedBuilder()
     .setColor(state.unlocked ? 0xfacc15 : 0x38bdf8)
-    .setTitle("🧭 YOUR OPENING JOURNEY")
+    .setTitle("🧭 YOUR JOURNEY")
     .setDescription(
       "Build the pieces for a one-time community showcase at a borrowed venue. " +
         "Complete the showcase to earn the backing needed for your first permanent venue.",
     )
     .addFields(
       {
-        name: "Journey Progress",
-        value: [
-          requirementLine(requirements.equipment, "Own your first controller"),
-          requirementLine(requirements.openDecks, "Complete Open Decks in `/bookings`"),
-          requirementLine(requirements.streetTeam, "Run Street Team once"),
-          requirementLine(
-            requirements.sceneActivity,
-            "Complete a Crate Dig or Rave Story",
-          ),
-        ].join("\n"),
+        name: state.unlocked
+          ? "Journey Progress • 4 of 4"
+          : `Journey Progress • Step ${display.currentStepNumber} of ${JOURNEY_STEPS.length}`,
+        value: display.lines.join("\n"),
       },
       {
-        name: state.unlocked ? "The Room Is Ready" : "Why These Steps Matter",
+        name: state.unlocked
+          ? "🎛️ The Room Is Ready"
+          : `Current Objective • ${display.currentStep.command}`,
         value: state.unlocked
           ? "The community room, crowd, and borrowed gear are ready. Choose how you want to lead the night."
-          : "Gear unlocks your DJ path, Open Decks proves you can perform, Street Team finds the crowd, and a scene activity gives the night its personality.",
+          : display.currentStep.objective,
+      },
+      {
+        name: "🎁 Your First Showcase",
+        value:
+          "Complete all four steps, lead the borrowed-venue showcase, and earn the backing for your first permanent venue.",
       },
     );
 
@@ -149,7 +195,7 @@ async function handleJourneyButton(interaction) {
   }
   if (!state.unlocked) {
     return interaction.update({
-      content: "Complete every opening Journey requirement first.",
+      content: "Complete every Journey requirement first.",
       embeds: [],
       components: [],
     });

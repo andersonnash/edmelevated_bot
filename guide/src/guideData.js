@@ -6,6 +6,7 @@ export const guideSections = [
     summary:
       "Your first few moves in the city. Start broke, get moving, buy gear, and begin building a name.",
     commands: [
+      "/journey",
       "/profile",
       "/help",
       "/work",
@@ -24,7 +25,8 @@ export const guideSections = [
       {
         heading: "Your first command",
         text: [
-          "Start with /profile. This is your home base. It shows your cash, XP, Scene Reputation, passive income, owned venues, owned equipment, and your next objective.",
+          "Every new player starts with /journey. It gives you one clear objective at a time and always resumes at your current step.",
+          "After that, /profile is your home base. It shows your cash, XP, Scene Reputation, passive income, owned venues, owned equipment, and your next objective.",
           "If you ever feel lost, run /profile again. The profile is designed to point you toward your next real move.",
         ],
       },
@@ -72,7 +74,7 @@ export const guideSections = [
       {
         heading: "1. Earn your start",
         text: [
-          "Use /journey to follow the guided opening path. It connects your first controller, Open Decks performance, Street Team run, and first scene activity to one clear objective.",
+          "Use /journey to follow the guided opening path. It connects your first controller, Open Decks appearance, Street Team run, and first scene activity to one clear objective at a time.",
           "Use /work for a random scene shift with a reliable payout, and use /crate_dig and /rave_story for other early rewards. When those activities are on cooldown, /underground_run remains playable.",
         ],
       },
@@ -100,7 +102,7 @@ export const guideSections = [
       {
         heading: "Your borrowed-venue showcase",
         text: [
-          "After completing the opening Journey requirements, you can run a one-time community showcase at a borrowed venue.",
+          "After completing the Journey requirements, you can play a one-time community showcase at a borrowed venue.",
           "Choose whether to focus on reading the crowd, polishing production, or building a community moment. The result introduces show-quality decisions and provides enough community backing to bridge a normal new player toward Garage Party.",
           "The borrowed room is not an owned asset and does not generate passive income. Buying Garage Party still marks the start of your real venue career.",
         ],

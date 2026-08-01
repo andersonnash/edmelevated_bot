@@ -13,7 +13,7 @@ const commands = [
 
   new SlashCommandBuilder()
     .setName("journey")
-    .setDescription("View your opening journey and borrowed-venue showcase"),
+    .setDescription("Start or continue your guided path through the city"),
 
   new SlashCommandBuilder()
     .setName("underground_run")
