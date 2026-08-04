@@ -15,6 +15,7 @@ const { settleShowPayouts, getOwnedShow } = require("../services/showPayouts");
 const { addCash } = require("../services/economy");
 const { money } = require("../services/formatters");
 const { showStaffRole } = require("../services/showStaffRules");
+const { ownedVenueLabel } = require("../services/venueDisplayRules");
 
 const {
   getVenueIncome,
@@ -80,6 +81,13 @@ async function createShow(interaction) {
     });
   }
 
+  const venueLabel = ownedVenueLabel(
+    db
+      .prepare("SELECT id, name, type FROM venues WHERE owner_id = ?")
+      .all(userId),
+    venue.id,
+  );
+
   const event = randomShowData();
   const showName = customName || event.name;
 
@@ -138,7 +146,7 @@ async function createShow(interaction) {
     .addFields(
       {
         name: "📍 Venue",
-        value: venue.name,
+        value: venueLabel,
         inline: true,
       },
       {
@@ -203,7 +211,7 @@ async function createShow(interaction) {
       fields: [
         {
           name: "Venue",
-          value: venue.name,
+          value: venueLabel,
           inline: true,
         },
         {

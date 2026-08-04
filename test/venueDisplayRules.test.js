@@ -3,6 +3,8 @@ const assert = require("node:assert/strict");
 const {
   numberOwnedVenues,
   venueOwnerNumber,
+  venueOwnerTypeNumber,
+  ownedVenueLabel,
 } = require("../services/venueDisplayRules");
 
 test("numbers venues within one owner's collection instead of globally", () => {
@@ -27,4 +29,16 @@ test("numbers venues within one owner's collection instead of globally", () => {
 
 test("returns no player-facing number for an unrelated venue", () => {
   assert.equal(venueOwnerNumber([{ id: 3 }], 99), null);
+});
+
+test("numbers matching venue types independently", () => {
+  const venues = [
+    { id: 8, name: "Garage Party", type: "garage_party" },
+    { id: 3, name: "Warehouse", type: "warehouse" },
+    { id: 11, name: "Garage Party", type: "garage_party" },
+  ];
+
+  assert.equal(venueOwnerTypeNumber(venues, 8), 1);
+  assert.equal(venueOwnerTypeNumber(venues, 11), 2);
+  assert.equal(ownedVenueLabel(venues, 11), "Garage Party #2");
 });

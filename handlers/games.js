@@ -14,7 +14,9 @@ const { addCash } = require("../services/economy");
 const { money } = require("../services/formatters");
 const { addSceneReputation } = require("../services/reputation");
 const { incrementActivity } = require("../services/progressionAchievements");
-const { calculateProjectedWalkins } = require("../services/showForecast");
+const {
+  boostRandomOwnedUpcomingShow,
+} = require("../services/showBoostTarget");
 
 const db = require("../db");
 
@@ -37,25 +39,17 @@ function pickWeighted(items) {
   return items[items.length - 1];
 }
 
-function projectedWalkins(show, baseWalkins = show.simulated_attendees) {
-  return calculateProjectedWalkins({
-    baseWalkins,
-    venue: show,
-    ticketCount: show.ticket_count || 0,
-  });
-}
+function showDemandResult(boost, amount) {
+  if (!boost.show) {
+    return boost.reason === "all_full"
+      ? "All of your upcoming shows are already projected at capacity."
+      : "No upcoming show to boost.";
+  }
 
-function showDemandResult(show, amount, before, after) {
-  if (!show) return "No upcoming show to boost.";
-  const capacityNote =
-    before === after
-      ? "\nThe show is already at projected capacity."
-      : "";
   return (
-    `**${show.name}**\n` +
+    `**${boost.show.name}**\n` +
     `Demand: **+${amount}**\n` +
-    `Projected walk-ins: **${before} → ${after}**` +
-    capacityNote
+    `Projected walk-ins: **${boost.projectedBefore} → ${boost.projectedAfter}**`
   );
 }
 
@@ -201,41 +195,10 @@ async function crateDig(interaction) {
   addRole(userId, "Scene Explorer");
   incrementActivity(userId, "crate_digs");
 
-  const show = db
-    .prepare(
-      `
-    SELECT
-      shows.id,
-      shows.name,
-      shows.simulated_attendees,
-      venues.base_capacity,
-      venues.security_level,
-      venues.production_level,
-      (SELECT COUNT(*) FROM show_tickets WHERE show_id = shows.id) AS ticket_count
-    FROM shows
-    JOIN venues ON venues.id = shows.venue_id
-    WHERE shows.owner_id = ?
-      AND shows.status = 'upcoming'
-    ORDER BY shows.show_date ASC
-    LIMIT 1
-    `,
-    )
-    .get(userId);
-
-  const projectedBefore = show ? projectedWalkins(show) : 0;
-
-  if (show && pull.attendance > 0) {
-    db.prepare(
-      `
-    UPDATE shows
-    SET simulated_attendees = simulated_attendees + ?
-    WHERE id = ?
-    `,
-    ).run(pull.attendance, show.id);
-  }
-  const projectedAfter = show
-    ? projectedWalkins(show, show.simulated_attendees + pull.attendance)
-    : 0;
+  const showBoost = boostRandomOwnedUpcomingShow(
+    userId,
+    pull.attendance,
+  );
 
   const finalEmbed = new EmbedBuilder()
     .setColor(pull.color)
@@ -248,12 +211,7 @@ async function crateDig(interaction) {
       },
       {
         name: "👥 Show Bonus",
-        value: showDemandResult(
-          show,
-          pull.attendance,
-          projectedBefore,
-          projectedAfter,
-        ),
+        value: showDemandResult(showBoost, pull.attendance),
         inline: true,
       },
       {
@@ -263,7 +221,7 @@ async function crateDig(interaction) {
       },
     )
     .setFooter({
-      text: show
+      text: showBoost.show
         ? "Rare finds can help build hype for upcoming shows."
         : "Schedule a show before crate digging to take advantage of show bonuses.",
     });
@@ -409,41 +367,7 @@ async function streetTeam(interaction) {
   addRole(userId, "Scene Explorer");
   incrementActivity(userId, "street_team_runs");
 
-  const show = db
-    .prepare(
-      `
-    SELECT
-      shows.id,
-      shows.name,
-      shows.simulated_attendees,
-      venues.base_capacity,
-      venues.security_level,
-      venues.production_level,
-      (SELECT COUNT(*) FROM show_tickets WHERE show_id = shows.id) AS ticket_count
-    FROM shows
-    JOIN venues ON venues.id = shows.venue_id
-    WHERE shows.owner_id = ?
-    AND shows.status = 'upcoming'
-    ORDER BY RANDOM()
-    LIMIT 1
-  `,
-    )
-    .get(userId);
-
-  const projectedBefore = show ? projectedWalkins(show) : 0;
-
-  if (show) {
-    db.prepare(
-      `
-    UPDATE shows
-    SET simulated_attendees = simulated_attendees + ?
-    WHERE id = ?
-  `,
-    ).run(reward.hype, show.id);
-  }
-  const projectedAfter = show
-    ? projectedWalkins(show, show.simulated_attendees + reward.hype)
-    : 0;
+  const showBoost = boostRandomOwnedUpcomingShow(userId, reward.hype);
 
   const xpUpdate = addXp(userId, xpEarned);
   await announceLevelUp(interaction, xpUpdate);
@@ -474,12 +398,7 @@ async function streetTeam(interaction) {
       },
       {
         name: "📈 Show Boost",
-        value: showDemandResult(
-          show,
-          reward.hype,
-          projectedBefore,
-          projectedAfter,
-        ),
+        value: showDemandResult(showBoost, reward.hype),
         inline: false,
       },
     )
