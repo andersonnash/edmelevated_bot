@@ -115,7 +115,7 @@ async function handleAutocomplete(interaction) {
         }
 
         return {
-          name: `${venue.name} • Your Venue ${venue.ownerVenueNumber} — ${details}`.slice(0, 100),
+          name: `${venue.name} #${venue.ownerVenueTypeNumber} — ${details}`.slice(0, 100),
           value: String(venue.id),
         };
       }),

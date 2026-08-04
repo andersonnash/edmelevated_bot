@@ -35,7 +35,10 @@ const {
   venueCapacity,
   getActiveShowStaffBoost,
 } = require("../services/venueEngine");
-const { numberOwnedVenues } = require("../services/venueDisplayRules");
+const {
+  numberOwnedVenues,
+  ownedVenueLabel,
+} = require("../services/venueDisplayRules");
 const {
   venueDepartmentLevelName,
   venueDepartmentBenefitLabel,
@@ -88,6 +91,13 @@ async function venueInsurance(interaction) {
     });
   }
 
+  const venueLabel = ownedVenueLabel(
+    db
+      .prepare("SELECT id, name, type FROM venues WHERE owner_id = ?")
+      .all(userId),
+    venue.id,
+  );
+
   const alreadyInsured =
     venue.insurance_expires_at &&
     new Date(venue.insurance_expires_at.replace(" ", "T") + "Z") > new Date();
@@ -95,7 +105,7 @@ async function venueInsurance(interaction) {
   if (alreadyInsured) {
     return interaction.reply({
       content:
-        `**${venue.name}** already has active insurance.\n` +
+        `**${venueLabel}** already has active insurance.\n` +
         `Coverage expires: ${discordTime(venue.insurance_expires_at)}`,
       ephemeral: true,
     });
@@ -141,7 +151,7 @@ async function venueInsurance(interaction) {
     .setColor(0x22c55e)
     .setTitle("🛡️ VENUE INSURANCE ACTIVE")
     .setDescription(
-      `**${venue.name}** is now covered by **${VENUE_INSURANCE.name}**.`,
+      `**${venueLabel}** is now covered by **${VENUE_INSURANCE.name}**.`,
     )
     .addFields(
       {
@@ -576,7 +586,7 @@ function buildVenuePage(userId, page = 0) {
     .setColor(color)
     .setTitle(`🏟 YOUR VENUES (${safePage + 1}/${totalPages})`)
     .setDescription(
-      `**${venue.name}** • Your Venue ${venue.ownerVenueNumber}\n\n**${venueStatusText(venue)}**`,
+      `**${venue.name} #${venue.ownerVenueTypeNumber}**\n\n**${venueStatusText(venue)}**`,
     )
     .addFields(fields)
     .setFooter({
@@ -718,6 +728,13 @@ async function upgradeVenue(interaction) {
     });
   }
 
+  const venueLabel = ownedVenueLabel(
+    db
+      .prepare("SELECT id, name, type FROM venues WHERE owner_id = ?")
+      .all(userId),
+    venue.id,
+  );
+
   const currentLevel = venue[department.column] || 0;
   const nextLevel = currentLevel + 1;
 
@@ -757,7 +774,7 @@ async function upgradeVenue(interaction) {
   const embed = new EmbedBuilder()
     .setColor(0x22c55e)
     .setTitle("🏟 VENUE DEPARTMENT UPGRADED")
-    .setDescription(`**${venue.name}**`)
+    .setDescription(`**${venueLabel}**`)
     .addFields(
       {
         name: "Department",

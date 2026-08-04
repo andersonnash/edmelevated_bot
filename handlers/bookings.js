@@ -14,6 +14,9 @@ const { addSceneReputation } = require("../services/reputation");
 const { getUser } = require("../services/roles");
 const { addXp, announceLevelUp } = require("../services/xp");
 const {
+  boostRandomOwnedUpcomingShow,
+} = require("../services/showBoostTarget");
+const {
   DJ_BOOKINGS,
   DJ_BOOKING_MILESTONES,
   DJ_REPEATABLE_BOOKINGS,
@@ -178,29 +181,6 @@ function approachRows(kind, bookingKey) {
   );
 
   return [new ActionRowBuilder().addComponents(buttons)];
-}
-
-function addDemandToNextShow(userId, amount) {
-  if (!amount) return null;
-
-  const show = db
-    .prepare(
-      `
-      SELECT id, name
-      FROM shows
-      WHERE owner_id = ? AND status = 'upcoming'
-      ORDER BY show_date ASC, id ASC
-      LIMIT 1
-      `,
-    )
-    .get(userId);
-
-  if (!show) return null;
-
-  db.prepare(
-    "UPDATE shows SET simulated_attendees = simulated_attendees + ? WHERE id = ?",
-  ).run(amount, show.id);
-  return show;
 }
 
 function bookingButton(customId, label, style = ButtonStyle.Secondary) {
@@ -649,8 +629,8 @@ async function completeCareerBooking(
       reward.showBonus,
     );
 
-    const boostedShow = addDemandToNextShow(userId, reward.showBonus);
-    return { feeBefore, feeAfter, xpUpdate, boostedShow };
+    const showBoost = boostRandomOwnedUpcomingShow(userId, reward.showBonus);
+    return { feeBefore, feeAfter, xpUpdate, showBoost };
   });
 
   const result = transaction();
@@ -682,9 +662,12 @@ async function completeCareerBooking(
       },
       {
         name: "Promoter Connection",
-        value: result.boostedShow
-          ? `+${reward.showBonus} demand added to **${result.boostedShow.name}**.`
-          : "Own an upcoming show next time to turn this booking into extra demand.",
+        value: result.showBoost.show
+          ? `+${reward.showBonus} demand added to **${result.showBoost.show.name}**.\n` +
+            `Projected walk-ins: **${result.showBoost.projectedBefore} → ${result.showBoost.projectedAfter}**`
+          : result.showBoost.reason === "all_full"
+            ? "All of your upcoming shows are already projected at capacity."
+            : "Own an upcoming show next time to turn this booking into extra demand.",
       },
     );
 

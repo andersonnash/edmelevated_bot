@@ -24,6 +24,7 @@ const {
 } = require("discord.js");
 
 const { getUser } = require("../services/roles");
+const { ownedVenueLabel } = require("../services/venueDisplayRules");
 
 function getOwnedUpcomingShow(showId, userId) {
   return db
@@ -313,6 +314,13 @@ async function hireVenueStaff(interaction) {
     });
   }
 
+  const venueLabel = ownedVenueLabel(
+    db
+      .prepare("SELECT id, name, type FROM venues WHERE owner_id = ?")
+      .all(userId),
+    venue.id,
+  );
+
   const staffCount = db
     .prepare(
       `
@@ -363,7 +371,7 @@ async function hireVenueStaff(interaction) {
     .setColor(0xffd000)
     .setTitle("👥 STAFF HIRED PERMANENTLY")
     .setDescription(
-      `**${npcUsername}** joined **${venue.name}** as ${roleData.label}`,
+      `**${npcUsername}** joined **${venueLabel}** as ${roleData.label}`,
     )
     .addFields(
       {
@@ -383,7 +391,7 @@ async function hireVenueStaff(interaction) {
       },
       {
         name: "🏢 Venue",
-        value: venue.name,
+        value: venueLabel,
         inline: true,
       },
       {
