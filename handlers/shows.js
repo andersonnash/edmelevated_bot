@@ -16,6 +16,7 @@ const { addCash } = require("../services/economy");
 const { money } = require("../services/formatters");
 const { showStaffRole } = require("../services/showStaffRules");
 const { ownedVenueLabel } = require("../services/venueDisplayRules");
+const { automatedTicketSummary } = require("../services/ticketSales");
 
 const {
   getVenueIncome,
@@ -41,7 +42,6 @@ const {
 
 const {
   randomShowData,
-  randomContestName,
   todayString,
 } = require("../services/generators");
 
@@ -326,7 +326,7 @@ async function showLineup(interaction, buttonShowId = null) {
 
     value:
       `Genre: ${SHOW_GENRES[show.genre] || "Mixed"}\n` +
-      `Ticket Holders: ${show.tickets_sold}\n` +
+      `Ticket Holders: ${getShowCounts(show.id).ticketCount}\n` +
       `Ticket Price: ${money(show.ticket_price)}`,
   });
 
@@ -396,6 +396,7 @@ function getShowCounts(showId) {
   const tickets = db
     .prepare("SELECT COUNT(*) AS count FROM show_tickets WHERE show_id = ?")
     .get(showId);
+  const advanceSales = automatedTicketSummary(showId);
   const unpaidPayouts = db
     .prepare(
       "SELECT COUNT(*) AS count FROM show_payouts WHERE show_id = ? AND paid = 0",
@@ -405,7 +406,10 @@ function getShowCounts(showId) {
   return {
     djCount: djs.count || 0,
     showStaffCount: staff.count || 0,
-    ticketCount: tickets.count || 0,
+    ticketCount:
+      (tickets.count || 0) + Number(advanceSales.quantity || 0),
+    advanceTicketCount: Number(advanceSales.quantity || 0),
+    advanceTicketRevenue: Number(advanceSales.revenue || 0),
     unpaidPayoutCount: unpaidPayouts.count || 0,
   };
 }
@@ -469,8 +473,14 @@ function buildShowPage(userId, status, page = 0) {
   const safePage = Math.max(0, Math.min(page, totalPages - 1));
   const show = shows[safePage];
 
-  const { djCount, showStaffCount, ticketCount, unpaidPayoutCount } =
-    getShowCounts(show.id);
+  const {
+    djCount,
+    showStaffCount,
+    ticketCount,
+    advanceTicketCount,
+    advanceTicketRevenue,
+    unpaidPayoutCount,
+  } = getShowCounts(show.id);
   const showStaffBoostPercent = getShowStaffBoostPercent(showStaffCount);
   const finalCapacity = venueCapacity(show);
 
@@ -525,7 +535,9 @@ function buildShowPage(userId, status, page = 0) {
       },
       {
         name: "🎫 Ticket Holders",
-        value: `${ticketCount}`,
+        value:
+          `${ticketCount} confirmed\n` +
+          `${advanceTicketCount} from advance sales`,
         inline: true,
       },
       {
@@ -552,6 +564,13 @@ function buildShowPage(userId, status, page = 0) {
 
   if (status === "upcoming") {
     embed.addFields(
+      {
+        name: "🎟 Advance Sales",
+        value:
+          advanceTicketCount > 0
+            ? `${advanceTicketCount} tickets • ${money(advanceTicketRevenue)} confirmed revenue`
+            : "No automated advance sales yet.",
+      },
       {
         name: "👥 Projected Walk-ins",
         value: `${projectedWalkins}`,
@@ -655,97 +674,10 @@ async function handleShowPage(interaction) {
   });
 }
 
-async function buyTicket(interaction) {
-  const userId = interaction.user.id;
-  const username = interaction.user.username;
-  const showId = interaction.options.getString("show");
-
-  const show = db
-    .prepare(
-      `
-      SELECT shows.*, venues.name AS venue_name
-      FROM shows
-      JOIN venues ON venues.id = shows.venue_id
-      WHERE shows.id = ?
-      AND shows.status = 'upcoming'
-    `,
-    )
-    .get(showId);
-
-  if (!show) {
-    return interaction.editReply({
-      content: "That show is not available.",
-      ephemeral: true,
-    });
-  }
-
-  const existing = db
-    .prepare("SELECT * FROM show_tickets WHERE show_id = ? AND user_id = ?")
-    .get(show.id, userId);
-
-  if (existing) {
-    return interaction.editReply({
-      content: "You already have a ticket to this show.",
-      ephemeral: true,
-    });
-  }
-
-  const ticketCount = db
-    .prepare("SELECT COUNT(*) AS count FROM show_tickets WHERE show_id = ?")
-    .get(show.id).count;
-
-  const venue = db.prepare("SELECT * FROM venues WHERE id = ?").get(show.venue_id);
-
-  if (ticketCount >= venueCapacity(venue)) {
-    return interaction.editReply({
-      content: "That show is sold out.",
-      ephemeral: true,
-    });
-  }
-
-  const buyer = getUser(userId);
-
-  if (buyer.cash < show.ticket_price) {
-    return interaction.editReply({
-      content: `You need $${show.ticket_price}.`,
-      ephemeral: true,
-    });
-  }
-
-  db.prepare("UPDATE users SET cash = cash - ? WHERE discord_id = ?").run(
-    show.ticket_price,
-    userId,
-  );
-
-  db.prepare(
-    `
-    INSERT INTO show_tickets (
-      show_id,
-      user_id,
-      username,
-      price_paid,
-      ticket_type
-    )
-    VALUES (?, ?, ?, ?, 'paid')
-  `,
-  ).run(show.id, userId, username, show.ticket_price);
-
-  db.prepare(
-    "UPDATE shows SET tickets_sold = tickets_sold + 1 WHERE id = ?",
-  ).run(show.id);
-
-  const xpUpdate = addXp(userId, 10);
-  await announceLevelUp(interaction, xpUpdate);
-
-  return interaction.reply(
-    `${username} bought a ticket to **${show.name}** for $${show.ticket_price}.`,
-  );
-}
-
 function buildRunShowEmbed(result) {
   const {
     show,
-    tickets,
+    confirmedTicketCount,
     staff,
     lineup,
     adjustedWalkins,
@@ -793,7 +725,7 @@ function buildRunShowEmbed(result) {
       {
         name: "👥 Attendance",
         value:
-          `**Ticket Holders:** ${tickets.length}\n` +
+          `**Ticket Holders:** ${confirmedTicketCount}\n` +
           `**Walk-ins:** ${adjustedWalkins}\n` +
           `**Total:** ${totalAttendance}`,
       },
@@ -1083,18 +1015,27 @@ async function promoteShowById(interaction, showId) {
   const ticketCount = db
     .prepare("SELECT COUNT(*) AS count FROM show_tickets WHERE show_id = ?")
     .get(show.id).count;
+  const advanceSales = automatedTicketSummary(show.id);
+  const confirmedTicketCount =
+    ticketCount + Number(advanceSales.quantity || 0);
   const baseWalkins = Number(show.simulated_attendees || 0);
   const projectedBeforePromotion = calculateProjectedWalkins({
     baseWalkins,
     venue,
-    ticketCount,
+    ticketCount: confirmedTicketCount,
   });
 
-  if (isProjectedSoldOut({ baseWalkins, venue, ticketCount })) {
+  if (
+    isProjectedSoldOut({
+      baseWalkins,
+      venue,
+      ticketCount: confirmedTicketCount,
+    })
+  ) {
     return interaction.reply({
       content:
         `🎟️ **${show.name}** is already projected to sell out.\n` +
-        `Capacity: **${venueCapacity(venue)}** • Tickets: **${ticketCount}** • ` +
+        `Capacity: **${venueCapacity(venue)}** • Tickets: **${confirmedTicketCount}** • ` +
         `Projected walk-ins: **${projectedBeforePromotion}**\n` +
         "No promotion was purchased and no cash was spent.",
       ephemeral: true,
@@ -1241,7 +1182,6 @@ async function promoteShow(interaction) {
 module.exports = {
   createShow,
   myShows,
-  buyTicket,
   runShow,
   collect,
   promoteShow,

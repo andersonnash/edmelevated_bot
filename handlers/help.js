@@ -87,8 +87,9 @@ function categoryEmbed(category) {
           value: "View DJs and staff assigned to a show.",
         },
         {
-          name: "`/buy_ticket`",
-          value: "Buy a ticket to an upcoming show.",
+          name: "Advance ticket sales",
+          value:
+            "Upcoming shows can receive automatic advance sales. Confirmed tickets, projected attendance, and revenue appear in `/my_shows`.",
         },
         {
           name: "`/collect_show`",
@@ -376,7 +377,7 @@ function categoryEmbed(category) {
       .setColor(0xf472b6)
       .setTitle("🌈 Social Commands")
       .setDescription(
-        "Create social items, gift kandi, run ticket contests, and make the city feel more alive.",
+        "Create social items, gift kandi, and make the city feel more alive.",
       )
       .addFields(
         {
@@ -387,13 +388,6 @@ function categoryEmbed(category) {
             "`/my_kandi` — View your kandi collection.",
         },
         {
-          name: "Ticket Contests",
-          value:
-            "`/start_contest` — Start a ticket contest for one of your shows.\n" +
-            "`/enter_contest` — Enter an active ticket contest.\n" +
-            "`/draw_winner` — Draw a winner for one of your contests.",
-        },
-        {
           name: "Why social systems matter",
           value:
             "These commands are not the main money path.\n" +
@@ -401,7 +395,7 @@ function categoryEmbed(category) {
         },
       )
       .setFooter({
-        text: "Tip: Kandi and contests are flavor systems. Use them to make events feel social.",
+        text: "Tip: Kandi is a flavor system. Use it to make the city feel social.",
       }),
 
     scene: new EmbedBuilder()

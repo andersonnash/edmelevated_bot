@@ -383,6 +383,9 @@ export const guideSections = [
         heading: "Before the show runs",
         text: [
           "Once a show exists, you can build it up before it happens.",
+          "The city can generate automatic advance ticket sales for eligible upcoming shows without charging another player.",
+          "When a show has room, sales add confirmed attendance and projected revenue. When a show is already projected at capacity, sales convert projected walk-ins into confirmed buyers without changing total attendance or projected revenue.",
+          "Use /my_shows to see confirmed tickets, advance-sale revenue, projected walk-ins, and total projected attendance.",
           "Use /promote_show to increase walk-ins.",
           "Use /add_lineup to add DJs.",
           "Use /hire_show_staff to bring in people who help the event run better.",

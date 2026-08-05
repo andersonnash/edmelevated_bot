@@ -5,6 +5,7 @@ const { runShowById } = require("./showRunner");
 const { EmbedBuilder } = require("discord.js");
 const { postSceneFeed } = require("./sceneFeed");
 const { processVenueEvents } = require("./venueIncidents");
+const { processTicketSales } = require("./ticketSales");
 
 const SCENE_FEED_CHANNEL_ID = process.env.SCENE_FEED_CHANNEL_ID;
 
@@ -47,7 +48,7 @@ function startShowScheduler(client) {
           {
             name: "👥 Attendance",
             value:
-              `**Ticket Holders:** ${result.tickets.length}\n` +
+              `**Ticket Holders:** ${result.confirmedTicketCount}\n` +
               `**Walk-ins:** ${result.adjustedWalkins}\n` +
               `**Total:** ${result.totalAttendance}`,
           },
@@ -99,6 +100,16 @@ function startShowScheduler(client) {
     "0 0,6,12,18 * * *",
     async () => {
       await processVenueEvents(client);
+    },
+    {
+      timezone: "America/Denver",
+    },
+  );
+
+  cron.schedule(
+    "15 0,6,12,18 * * *",
+    async () => {
+      await processTicketSales(client);
     },
     {
       timezone: "America/Denver",

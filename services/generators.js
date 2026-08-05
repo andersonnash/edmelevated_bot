@@ -56,38 +56,6 @@ function randomShowData() {
   };
 }
 
-function randomContestName(showName) {
-  const prefixes = [
-    "VIP",
-    "Backstage",
-    "Last Minute",
-    "Guest List",
-    "Golden Ticket",
-    "Bass Drop",
-    "Flash",
-    "Lucky",
-    "Afterhours",
-    "Warehouse",
-  ];
-
-  const endings = [
-    "Giveaway",
-    "Drawing",
-    "Drop",
-    "Contest",
-    "Challenge",
-    "Pass",
-    "Experience",
-    "Entry",
-    "Sweepstakes",
-  ];
-
-  const prefix = prefixes[Math.floor(Math.random() * prefixes.length)];
-  const ending = endings[Math.floor(Math.random() * endings.length)];
-
-  return `${prefix} ${ending} — ${showName}`;
-}
-
 function todayString() {
   const today = new Date();
 
@@ -100,6 +68,5 @@ function todayString() {
 
 module.exports = {
   randomShowData,
-  randomContestName,
   todayString,
 };

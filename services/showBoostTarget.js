@@ -15,7 +15,12 @@ function ownedUpcomingShows(userId) {
         venues.base_capacity,
         venues.security_level,
         venues.production_level,
-        (SELECT COUNT(*) FROM show_tickets WHERE show_id = shows.id) AS ticket_count
+        (SELECT COUNT(*) FROM show_tickets WHERE show_id = shows.id) +
+        COALESCE((
+          SELECT SUM(quantity)
+          FROM automated_ticket_sales
+          WHERE show_id = shows.id
+        ), 0) AS ticket_count
       FROM shows
       JOIN venues ON venues.id = shows.venue_id
       WHERE shows.owner_id = ?
