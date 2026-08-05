@@ -519,6 +519,7 @@ function buildVenuePage(userId, page = 0) {
       `👥 Permanent staff: **+${money(incomeBreakdown.permanentStaffBoostHourly)}/hr**\n` +
       `👷 Show staff: **+${money(incomeBreakdown.showStaffBoostHourly)}/hr**\n` +
       `⚡ Event boost: **+${money(incomeBreakdown.eventBoostHourly)}/hr**\n` +
+      `🎛 Installed gear: **+${money(incomeBreakdown.equipmentIncome)}/hr**\n` +
       `Total: **${money(incomeBreakdown.hourly)}/hr**`,
     inline: false,
   });
@@ -553,6 +554,28 @@ function buildVenuePage(userId, page = 0) {
       : "No permanent staff hired.",
     inline: false,
   });
+
+  const installedGear = db
+    .prepare(
+      `SELECT equipment_type, quantity
+       FROM venue_equipment WHERE venue_id = ? ORDER BY id`,
+    )
+    .all(venue.id);
+  if (installedGear.length) {
+    const { EQUIPMENT_TYPES } = require("../constants");
+    fields.push({
+      name: "🎛 Installed Equipment",
+      value: installedGear
+        .map((item) => {
+          const type = EQUIPMENT_TYPES[item.equipment_type];
+          return type
+            ? `**${type.name} x${item.quantity}** — +${money(type.installedIncome * item.quantity)}/hr, +${Math.round(type.attendanceBonus * item.quantity * 100)}% attendance, +${type.productionBonus * item.quantity} production`
+            : item.equipment_type;
+        })
+        .join("\n"),
+      inline: false,
+    });
+  }
 
   if (activeShowStaffCount > 0) {
     fields.push({

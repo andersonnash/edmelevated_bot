@@ -22,7 +22,12 @@ function productionScore(show) {
     Number(show.dj_equipment_level || 0) * 10 +
     Number(show.stage_level || 0) * 15;
 
-  return clampScore(40 + modernProduction + legacyProduction);
+  return clampScore(
+    40 +
+      modernProduction +
+      legacyProduction +
+      Number(show.installed_equipment_production_bonus || 0),
+  );
 }
 
 function crowdReaction(overallScore, attendanceScore) {

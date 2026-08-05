@@ -22,6 +22,7 @@ const {
   getVenueIncome,
   getEquipmentIncome,
   venueCapacity,
+  getInstalledEquipmentEffects,
 } = require("../services/venueEngine");
 
 const {
@@ -91,14 +92,19 @@ async function createShow(interaction) {
   const event = randomShowData();
   const showName = customName || event.name;
 
-  const initialWalkins = generateInitialWalkins(venue);
+  const equipmentEffects = getInstalledEquipmentEffects(venue.id);
+  const venueWithEquipment = {
+    ...venue,
+    installed_equipment_attendance_bonus: equipmentEffects.attendanceBonus,
+  };
+  const initialWalkins = generateInitialWalkins(venueWithEquipment);
   const baseWalkins = applyTicketPriceDemand(initialWalkins, ticketPrice);
 
   const projectedWalkins = calculateProjectedWalkins({
     baseWalkins,
-    venue,
+    venue: venueWithEquipment,
   });
-  const capacity = venueCapacity(venue);
+  const capacity = venueCapacity(venueWithEquipment);
 
   const created = db
     .prepare(
@@ -171,7 +177,8 @@ async function createShow(interaction) {
           `Projected Walk-ins: **${projectedWalkins}**\n` +
           `Projected Attendance: **${projectedWalkins} / ${capacity}**\n` +
           `Price Effect: **${ticketPriceDemandLabel(ticketPrice)}**\n` +
-          `Venue Boost: **+${attendanceBonusPercent(venue)}%**`,
+          `Venue Boost: **+${attendanceBonusPercent(venueWithEquipment)}%**\n` +
+          `Installed Gear: **+${Math.round(equipmentEffects.attendanceBonus * 100)}% attendance, +${equipmentEffects.productionBonus} production**`,
       },
       {
         name: "🚀 Next Steps",
@@ -347,7 +354,7 @@ async function showLineup(interaction, buttonShowId = null) {
 }
 
 function getUserShows(userId) {
-  return db
+  const shows = db
     .prepare(
       `
      SELECT
@@ -375,6 +382,14 @@ function getUserShows(userId) {
     `,
     )
     .all(userId);
+  return shows.map((show) => {
+    const effects = getInstalledEquipmentEffects(show.venue_id);
+    return {
+      ...show,
+      installed_equipment_attendance_bonus: effects.attendanceBonus,
+      installed_equipment_production_bonus: effects.productionBonus,
+    };
+  });
 }
 
 function getShowStaffBoostPercent(showStaffCount) {
@@ -583,7 +598,9 @@ function buildShowPage(userId, status, page = 0) {
       },
       {
         name: "📈 Attendance Boost",
-        value: `+${attendanceBoostPercent}% from venue upgrades`,
+        value:
+          `+${attendanceBoostPercent}% total\n` +
+          `Installed gear: +${Math.round(Number(show.installed_equipment_attendance_bonus || 0) * 100)}% attendance • +${Number(show.installed_equipment_production_bonus || 0)} production`,
         inline: true,
       },
     );
@@ -877,7 +894,9 @@ async function collect(interaction) {
       ).run(userId);
 
       db.prepare(
-        `UPDATE user_equipment SET last_collected_at = datetime('now') WHERE user_id = ?`,
+        `UPDATE user_equipment
+         SET last_collected_at = datetime('now'), accrued_income = 0
+         WHERE user_id = ?`,
       ).run(userId);
     });
 
@@ -1012,6 +1031,8 @@ async function promoteShowById(interaction, showId) {
   }
 
   const venue = db.prepare("SELECT * FROM venues WHERE id = ?").get(show.venue_id);
+  const equipmentEffects = getInstalledEquipmentEffects(venue.id);
+  venue.installed_equipment_attendance_bonus = equipmentEffects.attendanceBonus;
   const ticketCount = db
     .prepare("SELECT COUNT(*) AS count FROM show_tickets WHERE show_id = ?")
     .get(show.id).count;

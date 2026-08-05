@@ -94,6 +94,10 @@ client.on("interactionCreate", async (interaction) => {
   if (interaction.isUserSelectMenu()) {
     return handleCommandSafely(interaction);
   }
+
+  if (interaction.isStringSelectMenu()) {
+    return handleCommandSafely(interaction);
+  }
 });
 
 registerCommands()

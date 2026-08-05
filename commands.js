@@ -53,7 +53,7 @@ const commands = [
 
   new SlashCommandBuilder()
     .setName("my_equipment")
-    .setDescription("View your owned equipment"),
+    .setDescription("View, install, move, or rent out your owned equipment"),
 
   new SlashCommandBuilder()
     .setName("rave_story")
