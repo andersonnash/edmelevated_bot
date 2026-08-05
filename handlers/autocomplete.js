@@ -11,7 +11,6 @@ const {
   venueStaffHiringCost,
 } = require("../services/venueInvestmentRules");
 const { venueCapacity } = require("../services/venueEngine");
-const { canListTicketShow } = require("../services/ticketRules");
 const { numberOwnedVenues } = require("../services/venueDisplayRules");
 const {
   venueDepartmentLevelName,
@@ -212,50 +211,6 @@ async function handleAutocomplete(interaction) {
 
     return interaction.respond(choices);
   }
-  if (interaction.commandName === "buy_ticket") {
-    const shows = db
-      .prepare(
-        `
-        SELECT
-          shows.id,
-          shows.owner_id,
-          shows.name,
-          shows.show_date,
-          shows.ticket_price,
-          shows.status,
-          venues.type,
-          venues.base_capacity,
-          venues.bar_level,
-          venues.security_level,
-          venues.production_level,
-          users.username AS promoter_name,
-          COUNT(show_tickets.id) AS ticket_count,
-          MAX(CASE WHEN show_tickets.user_id = ? THEN 1 ELSE 0 END) AS has_ticket
-        FROM shows
-        JOIN venues ON venues.id = shows.venue_id
-        LEFT JOIN users ON users.discord_id = shows.owner_id
-        LEFT JOIN show_tickets ON show_tickets.show_id = shows.id
-        WHERE shows.name LIKE ?
-        GROUP BY shows.id
-        ORDER BY shows.show_date ASC
-        `,
-      )
-      .all(userId, `%${focused}%`)
-      .filter((show) =>
-        canListTicketShow(show, userId, venueCapacity(show)),
-      )
-      .slice(0, 25);
-
-    return interaction.respond(
-      shows.map((show) => ({
-        name: (
-          `${show.name} — $${show.ticket_price.toLocaleString()} — ` +
-          `${show.promoter_name || "Unknown promoter"} — ${show.show_date}`
-        ).slice(0, 100),
-        value: String(show.id),
-      })),
-    );
-  }
   if (
     [
       "force_run_show",
@@ -311,80 +266,6 @@ async function handleAutocomplete(interaction) {
     );
   }
 
-  if (interaction.commandName === "start_contest") {
-    const shows = db
-      .prepare(
-        `
-      SELECT id, name, show_date
-      FROM shows
-      WHERE owner_id = ?
-      AND status = 'upcoming'
-      ORDER BY show_date ASC
-      LIMIT 25
-    `,
-      )
-      .all(interaction.user.id);
-
-    return interaction.respond(
-      shows.map((show) => ({
-        name: `${show.name} — ${show.show_date}`,
-        value: String(show.id),
-      })),
-    );
-  }
-  if (interaction.commandName === "enter_contest") {
-    const contests = db
-      .prepare(
-        `
-      SELECT
-        ticket_contests.id,
-        ticket_contests.name,
-        shows.name AS show_name
-      FROM ticket_contests
-      JOIN shows
-        ON shows.id = ticket_contests.show_id
-      WHERE ticket_contests.active = 1
-      AND ticket_contests.name LIKE ?
-      LIMIT 25
-    `,
-      )
-      .all(`%${focused}%`);
-
-    return interaction.respond(
-      contests.map((contest) => ({
-        name: `${contest.name} — ${contest.show_name}`,
-        value: String(contest.id),
-      })),
-    );
-  }
-  if (interaction.commandName === "draw_winner") {
-    const userId = interaction.user.id;
-
-    const contests = db
-      .prepare(
-        `
-      SELECT
-        ticket_contests.id,
-        ticket_contests.name,
-        shows.name AS show_name
-      FROM ticket_contests
-      JOIN shows
-        ON shows.id = ticket_contests.show_id
-      WHERE ticket_contests.owner_id = ?
-      AND ticket_contests.active = 1
-      AND ticket_contests.name LIKE ?
-      LIMIT 25
-    `,
-      )
-      .all(userId, `%${focused}%`);
-
-    return interaction.respond(
-      contests.map((contest) => ({
-        name: `${contest.name} — ${contest.show_name}`,
-        value: String(contest.id),
-      })),
-    );
-  }
   if (interaction.commandName === "collect_show") {
     const focused = interaction.options.getFocused();
 

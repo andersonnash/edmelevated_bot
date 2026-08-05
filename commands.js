@@ -271,17 +271,6 @@ const commands = [
     .setDescription("Manage your upcoming and completed shows"),
 
   new SlashCommandBuilder()
-    .setName("buy_ticket")
-    .setDescription("Buy a ticket to an upcoming show")
-    .addStringOption((option) =>
-      option
-        .setName("show")
-        .setDescription("Choose a show")
-        .setRequired(true)
-        .setAutocomplete(true),
-    ),
-
-  new SlashCommandBuilder()
     .setName("hire_show_staff")
     .setDescription("Hire another user as show staff")
     .addStringOption((option) =>
@@ -312,45 +301,6 @@ const commands = [
       option
         .setName("role")
         .setDescription("Staff role to hire")
-        .setRequired(true)
-        .setAutocomplete(true),
-    ),
-
-  new SlashCommandBuilder()
-    .setName("start_contest")
-    .setDescription("Start a free ticket contest for your show")
-    .addStringOption((option) =>
-      option
-        .setName("show")
-        .setDescription("Choose one of your shows")
-        .setRequired(true)
-        .setAutocomplete(true),
-    )
-    .addIntegerOption((option) =>
-      option
-        .setName("tickets")
-        .setDescription("Number of tickets to give away")
-        .setRequired(true),
-    ),
-
-  new SlashCommandBuilder()
-    .setName("enter_contest")
-    .setDescription("Enter an active ticket contest")
-    .addStringOption((option) =>
-      option
-        .setName("contest")
-        .setDescription("Choose a contest")
-        .setRequired(true)
-        .setAutocomplete(true),
-    ),
-
-  new SlashCommandBuilder()
-    .setName("draw_winner")
-    .setDescription("Draw a winner for one of your contests")
-    .addStringOption((option) =>
-      option
-        .setName("contest")
-        .setDescription("Choose one of your contests")
         .setRequired(true)
         .setAutocomplete(true),
     ),
@@ -418,6 +368,11 @@ const commands = [
   new SlashCommandBuilder()
     .setName("bookings")
     .setDescription("View DJ career booking opportunities"),
+
+  new SlashCommandBuilder()
+    .setName("test_ticket_sale")
+    .setDescription("Admin only: force an advance ticket-sale event")
+    .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
 
   new SlashCommandBuilder()
     .setName("leaderboard")

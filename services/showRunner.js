@@ -11,6 +11,7 @@ const { calculateShowRating } = require("./showRatings");
 const { addSceneReputation } = require("./reputation");
 const { addXp } = require("./xp");
 const { SHOW_COMPLETION_XP } = require("../constants");
+const { automatedTicketSummary } = require("./ticketSales");
 
 async function runShowById(showId) {
   const show = db
@@ -25,8 +26,6 @@ async function runShowById(showId) {
         shows.show_date,
         shows.ticket_price,
         shows.status,
-        shows.tickets_sold,
-        shows.free_tickets_given,
         shows.simulated_attendees,
         venues.name AS venue_name,
         venues.base_capacity,
@@ -54,6 +53,7 @@ async function runShowById(showId) {
   const tickets = db
     .prepare("SELECT * FROM show_tickets WHERE show_id = ?")
     .all(show.show_id);
+  const advanceSales = automatedTicketSummary(show.show_id);
 
   const staff = db
     .prepare(
@@ -67,23 +67,26 @@ async function runShowById(showId) {
 
   const finalCapacity = venueCapacity(show);
   const admittedTickets = tickets.slice(0, finalCapacity);
+  const confirmedTicketCount =
+    admittedTickets.length + Number(advanceSales.quantity || 0);
   const projectedWalkins = calculateProjectedWalkins({
     baseWalkins: Number(show.simulated_attendees || 0),
     venue: show,
-    ticketCount: admittedTickets.length,
+    ticketCount: confirmedTicketCount,
   });
   const adjustedWalkins = projectedWalkins;
 
-  const paidRevenue = admittedTickets.reduce(
-    (sum, ticket) => sum + (ticket.price_paid || 0),
-    0,
-  );
+  const paidRevenue =
+    admittedTickets.reduce(
+      (sum, ticket) => sum + (ticket.price_paid || 0),
+      0,
+    ) + Number(advanceSales.revenue || 0);
 
   const simulatedRevenue = Math.floor(
     adjustedWalkins * (show.ticket_price || 0),
   );
 
-  const totalAttendance = admittedTickets.length + adjustedWalkins;
+  const totalAttendance = confirmedTicketCount + adjustedWalkins;
   const totalRevenue = paidRevenue + simulatedRevenue;
 
   const staffCost = staff.reduce((sum, person) => sum + (person.pay || 0), 0);
@@ -230,6 +233,8 @@ async function runShowById(showId) {
   return {
     show,
     tickets,
+    advanceSales,
+    confirmedTicketCount,
     staff,
     lineup,
     adjustedWalkins,

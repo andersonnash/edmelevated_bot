@@ -3,7 +3,6 @@ const venues = require("./venues");
 const shows = require("./shows");
 const staff = require("./staff");
 const lineup = require("./lineup");
-const contests = require("./contests");
 const kandi = require("./kandi");
 const djs = require("./djs");
 const help = require("./help");
@@ -13,6 +12,7 @@ const shop = require("./shop");
 const bookings = require("./bookings");
 const journey = require("./journey");
 const undergroundRun = require("./undergroundRun");
+const ticketSales = require("./ticketSales");
 
 const { getUser } = require("../services/roles");
 
@@ -45,7 +45,6 @@ const commandMap = {
 
   create_show: shows.createShow,
   my_shows: shows.myShows,
-  buy_ticket: shows.buyTicket,
   force_run_show: shows.runShow,
   collect: shows.collect,
   collect_show: shows.collectShow,
@@ -58,9 +57,6 @@ const commandMap = {
 
   add_lineup: lineup.addLineup,
 
-  start_contest: contests.startContest,
-  enter_contest: contests.enterContest,
-  draw_winner: contests.drawWinner,
 
   create_kandi: kandi.createKandi,
   give_kandi: kandi.giveKandi,
@@ -68,6 +64,7 @@ const commandMap = {
 
   test_venue_event: venues.testVenueEvent,
   run_venue_events: venues.runVenueEvents,
+  test_ticket_sale: ticketSales.testTicketSale,
 
   shop: shop.shop,
   equip_title: shop.equipTitle,

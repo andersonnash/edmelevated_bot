@@ -179,6 +179,18 @@ CREATE TABLE IF NOT EXISTS contest_entries (
   username TEXT
 );
 
+CREATE TABLE IF NOT EXISTS automated_ticket_sales (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  show_id INTEGER NOT NULL,
+  quantity INTEGER NOT NULL,
+  price_each INTEGER NOT NULL,
+  scenario_key TEXT NOT NULL,
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_automated_ticket_sales_show
+ON automated_ticket_sales(show_id, created_at);
+
 CREATE TABLE IF NOT EXISTS kandi (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   creator_id TEXT,
