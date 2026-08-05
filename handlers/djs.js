@@ -7,6 +7,8 @@ const {
   calculateDjBookingFee,
   getDjLevel,
   getDjTitle,
+  DJ_REPUTATION_FEE_INCREMENT,
+  COMPLETED_GIG_FEE_INCREMENT,
 } = require("../services/djs");
 
 async function djProfile(interaction) {
@@ -58,7 +60,7 @@ async function djProfile(interaction) {
         name: "📈 How to Grow",
         value:
           "Build DJ reputation through `/bookings` and show lineups.\n" +
-          "Higher DJ reputation and completed gigs increase your booking fee and status.\n\n" +
+          `Each DJ Reputation adds **$${DJ_REPUTATION_FEE_INCREMENT}** and each completed gig adds **$${COMPLETED_GIG_FEE_INCREMENT}** to your booking fee.\n\n` +
           "**Tip:** Buy gear, take bookings, then get added to shows.",
       },
     )

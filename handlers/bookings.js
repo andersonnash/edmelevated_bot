@@ -34,6 +34,8 @@ const {
   calculateDjBookingFee,
   findOrCreateDjProfile,
   recordCompletedGig,
+  DJ_REPUTATION_FEE_INCREMENT,
+  COMPLETED_GIG_FEE_INCREMENT,
 } = require("../services/djs");
 
 const OPEN_DECKS = DJ_BOOKINGS.openDecks;
@@ -269,6 +271,13 @@ async function bookings(interaction) {
   const repeatableOffers = DJ_REPEATABLE_BOOKINGS.filter(
     (offer) => isRepeatableUnlocked(interaction.user.id, offer),
   );
+  const djProfile = db
+    .prepare("SELECT * FROM dj_profiles WHERE user_id = ?")
+    .get(interaction.user.id) || {
+      base_fee: 100,
+      dj_reputation: 0,
+      bookings: 0,
+    };
 
   const embed = new EmbedBuilder()
     .setColor(0x00d4ff)
@@ -276,28 +285,38 @@ async function bookings(interaction) {
     .setDescription(
       "Career bookings are completed once. Repeatable gigs can be played again and use a shared cooldown.",
     )
-    .addFields({
-      name: `🏆 Career Progress — ${careerProgress}/4 Completed`,
-      value: !completed
-        ? "**ONE-TIME • No cooldown**\n" +
-          "Next: **Open Decks Guest Slot**\n" +
-          "Requirement: Own any equipment\n" +
-          `Completing it unlocks: **${milestoneUnlockText(OPEN_DECKS_KEY)}**`
-        : milestone
+    .addFields(
+      {
+        name: `🏆 Career Progress — ${careerProgress}/4 Completed`,
+        value: !completed
           ? "**ONE-TIME • No cooldown**\n" +
-            `Next: **${milestone.name}**\n` +
-            "**Requirements**\n" +
-            `${currentMilestoneStatus.prerequisiteComplete ? "✅" : "⬜"} Previous career milestone completed\n` +
-            `${currentMilestoneStatus.repeatableRuns >= milestone.repeatableRunsRequired ? "✅" : "⬜"} ` +
-            `Repeatable gigs: ${currentMilestoneStatus.repeatableRuns}/${milestone.repeatableRunsRequired}\n` +
-            `${currentMilestoneStatus.currentDjReputation >= milestone.djReputationRequired ? "✅" : "⬜"} ` +
-            `DJ reputation: ${currentMilestoneStatus.currentDjReputation}/${milestone.djReputationRequired}\n` +
-            `First-clear reward: ${money(milestone.cash)}+\n` +
-            (currentMilestoneStatus.unlocked
-              ? `Completing it unlocks: **${milestoneUnlockText(milestone.key)}**`
-              : "Complete repeatable gigs to unlock this career booking.")
-          : "✅ All four career milestones completed.",
-    });
+            "Next: **Open Decks Guest Slot**\n" +
+            "Requirement: Own any equipment\n" +
+            `Completing it unlocks: **${milestoneUnlockText(OPEN_DECKS_KEY)}**`
+          : milestone
+            ? "**ONE-TIME • No cooldown**\n" +
+              `Next: **${milestone.name}**\n` +
+              "**Requirements**\n" +
+              `${currentMilestoneStatus.prerequisiteComplete ? "✅" : "⬜"} Previous career milestone completed\n` +
+              `${currentMilestoneStatus.repeatableRuns >= milestone.repeatableRunsRequired ? "✅" : "⬜"} ` +
+              `Repeatable gigs: ${currentMilestoneStatus.repeatableRuns}/${milestone.repeatableRunsRequired}\n` +
+              `${currentMilestoneStatus.currentDjReputation >= milestone.djReputationRequired ? "✅" : "⬜"} ` +
+              `DJ reputation: ${currentMilestoneStatus.currentDjReputation}/${milestone.djReputationRequired}\n` +
+              `First-clear reward: ${money(milestone.cash)}+\n` +
+              (currentMilestoneStatus.unlocked
+                ? `Completing it unlocks: **${milestoneUnlockText(milestone.key)}**`
+                : "Complete repeatable gigs to unlock this career booking.")
+            : "✅ All four career milestones completed.",
+      },
+      {
+        name: "💵 Your Booking Fee",
+        value:
+          `Current Fee: **${money(calculateDjBookingFee(djProfile))}**\n` +
+          `Each DJ Reputation: **+$${DJ_REPUTATION_FEE_INCREMENT}**\n` +
+          `Each Completed Gig: **+$${COMPLETED_GIG_FEE_INCREMENT}**\n` +
+          "Your fee is what promoters pay when they add you to a show lineup.",
+      },
+    );
 
   if (completed) {
     const repeatableMessage = !repeatableOffers.length
