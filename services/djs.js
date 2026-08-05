@@ -1,5 +1,8 @@
 const db = require("../db");
 
+const DJ_REPUTATION_FEE_INCREMENT = 4;
+const COMPLETED_GIG_FEE_INCREMENT = 15;
+
 function findOrCreateDjProfile(user) {
   const existing = db
     .prepare("SELECT * FROM dj_profiles WHERE user_id = ?")
@@ -24,7 +27,11 @@ function findOrCreateDjProfile(user) {
 }
 
 function calculateDjBookingFee(profile) {
-  return profile.base_fee + profile.dj_reputation * 10 + profile.bookings * 25;
+  return (
+    profile.base_fee +
+    profile.dj_reputation * DJ_REPUTATION_FEE_INCREMENT +
+    profile.bookings * COMPLETED_GIG_FEE_INCREMENT
+  );
 }
 
 function getDjLevel(reputation) {
@@ -101,4 +108,6 @@ module.exports = {
   getDjLevel,
   getDjTitle,
   recordCompletedGig,
+  DJ_REPUTATION_FEE_INCREMENT,
+  COMPLETED_GIG_FEE_INCREMENT,
 };
