@@ -12,6 +12,7 @@ const { addSceneReputation } = require("./reputation");
 const { addXp } = require("./xp");
 const { SHOW_COMPLETION_XP } = require("../constants");
 const { automatedTicketSummary } = require("./ticketSales");
+const { getInstalledEquipmentEffects } = require("./venueEngine");
 
 async function runShowById(showId) {
   const show = db
@@ -49,6 +50,10 @@ async function runShowById(showId) {
   if (!show) {
     return null;
   }
+
+  const equipmentEffects = getInstalledEquipmentEffects(show.venue_id);
+  show.installed_equipment_attendance_bonus = equipmentEffects.attendanceBonus;
+  show.installed_equipment_production_bonus = equipmentEffects.productionBonus;
 
   const tickets = db
     .prepare("SELECT * FROM show_tickets WHERE show_id = ?")

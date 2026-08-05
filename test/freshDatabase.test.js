@@ -20,6 +20,8 @@ test("initializes a fresh database with required tables and columns", () => {
       show_payouts: ["show_id", "role", "amount", "paid"],
       show_ratings: ["show_id", "overall_score", "star_rating"],
       automated_ticket_sales: ["show_id", "quantity", "price_each", "scenario_key"],
+      user_equipment: ["user_id", "equipment_type", "quantity", "accrued_income"],
+      venue_equipment: ["user_id", "venue_id", "equipment_type", "quantity"],
     };
 
     for (const [table, columns] of Object.entries(required)) {

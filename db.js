@@ -279,6 +279,19 @@ CREATE TABLE IF NOT EXISTS dj_profiles (
     last_collected_at TEXT DEFAULT CURRENT_TIMESTAMP
   );
 
+  CREATE TABLE IF NOT EXISTS venue_equipment (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id TEXT NOT NULL,
+    venue_id INTEGER NOT NULL,
+    equipment_type TEXT NOT NULL,
+    quantity INTEGER DEFAULT 1,
+    installed_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(venue_id, equipment_type)
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_venue_equipment_user
+  ON venue_equipment(user_id, venue_id);
+
   CREATE TABLE IF NOT EXISTS user_cosmetics (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id TEXT NOT NULL,
@@ -309,5 +322,6 @@ addColumnIfMissing("venues", "insurance_expires_at", "TEXT");
 addColumnIfMissing("shows", "genre", "TEXT DEFAULT 'mixed'");
 addColumnIfMissing("underground_run_state", "scenario_key", "TEXT");
 addColumnIfMissing("underground_run_state", "phase", "TEXT DEFAULT 'choose'");
+addColumnIfMissing("user_equipment", "accrued_income", "INTEGER DEFAULT 0");
 
 module.exports = db;

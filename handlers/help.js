@@ -264,21 +264,21 @@ function categoryEmbed(category) {
       .setColor(0x14b8a6)
       .setTitle("🎛 Equipment Commands")
       .setDescription(
-        "Buy gear, build equipment rental income, and stack earnings while you work toward venues.",
+        "Rent out stored gear or install it at your venues to strengthen their income and shows.",
       )
       .addFields(
         {
           name: "Why equipment matters",
           value:
             "Equipment is the easiest way for new players to start earning equipment rental income.\n" +
-            "Multiple copies increase hourly rental income.\n" +
-            "Better gear earns more over time.",
+            "Stored copies generate equipment rental income.\n" +
+            "Installed copies improve one venue's income, show attendance, and production.",
         },
         {
           name: "Equipment vs venues",
           value:
-            "Equipment is cheaper and helps you get moving early.\n" +
-            "Venues cost more, but they unlock shows, staff, upgrades, insurance, and bigger long-term income.",
+            "Before you own a venue, gear remains in rentals.\n" +
+            "After buying a venue, use /my_equipment to install, move, or return gear without another command.",
         },
         {
           name: "`/buy_equipment`",
@@ -287,7 +287,7 @@ function categoryEmbed(category) {
         {
           name: "`/my_equipment`",
           value:
-            "View your owned equipment, hourly income, and uncollected rental income.",
+            "View stored and installed gear, its location and effects, and manage each loadout.",
         },
         {
           name: "`/collect`",

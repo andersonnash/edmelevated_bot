@@ -64,6 +64,24 @@ test("caps scores and assigns reputation bonuses by rating tier", () => {
   assert.equal(ratingReputationBonus(90), 10);
 });
 
+test("installed equipment improves production without exceeding the score cap", () => {
+  const rating = calculateShowRating({
+    show: {
+      capacity: 100,
+      production_level: 1,
+      installed_equipment_production_bonus: 14,
+      dj_limit: 1,
+      staff_limit: 1,
+    },
+    totalAttendance: 50,
+    totalRevenue: 1000,
+    netProfit: 0,
+    djCount: 1,
+    staffCount: 1,
+  });
+  assert.equal(rating.production, 74);
+});
+
 test("calculates promoter averages and successful-show streaks", () => {
   const stats = calculatePromoterStats([
     { overall_score: 80, reputation_bonus: 5 },

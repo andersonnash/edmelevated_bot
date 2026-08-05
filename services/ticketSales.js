@@ -2,7 +2,7 @@ const { EmbedBuilder } = require("discord.js");
 const db = require("../db");
 const { money } = require("./formatters");
 const { calculateProjectedWalkins } = require("./showForecast");
-const { venueCapacity } = require("./venueEngine");
+const { venueCapacity, getInstalledEquipmentEffects } = require("./venueEngine");
 
 const TICKET_SALE_CHANCE = 0.4;
 const TICKET_SALE_COOLDOWN_HOURS = 12;
@@ -125,6 +125,7 @@ function eligibleShowsForOwner(ownerId, { ignoreCooldown = false } = {}) {
         shows.show_date,
         shows.ticket_price,
         shows.simulated_attendees,
+        shows.venue_id,
         users.username AS promoter_name,
         venues.base_capacity,
         venues.security_level,
@@ -157,9 +158,14 @@ function eligibleShowsForOwner(ownerId, { ignoreCooldown = false } = {}) {
       `,
   );
 
-  return ignoreCooldown
+  const shows = ignoreCooldown
     ? statement.all(ownerId)
     : statement.all(ownerId, `-${TICKET_SALE_COOLDOWN_HOURS} hours`);
+  return shows.map((show) => ({
+    ...show,
+    installed_equipment_attendance_bonus:
+      getInstalledEquipmentEffects(show.venue_id).attendanceBonus,
+  }));
 }
 
 function recordTicketSale(show, random = Math.random) {

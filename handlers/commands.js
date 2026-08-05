@@ -133,6 +133,10 @@ async function handleCommand(interaction) {
       return bookings.handleBookingButton(interaction);
     }
 
+    if (interaction.customId === "equipment_manage") {
+      return equipment.handleManageButton(interaction);
+    }
+
     return interaction.reply({
       content: "Unknown button.",
       ephemeral: true,
@@ -148,6 +152,19 @@ async function handleCommand(interaction) {
       content: "Unknown selection menu.",
       ephemeral: true,
     });
+  }
+
+  if (interaction.isStringSelectMenu()) {
+    if (interaction.customId === "equipment_type") {
+      return equipment.handleEquipmentTypeSelect(interaction);
+    }
+    if (interaction.customId.startsWith("equipment_venue:")) {
+      return equipment.handleVenueSelect(interaction);
+    }
+    if (interaction.customId.startsWith("equipment_return_venue:")) {
+      return equipment.handleReturnSelect(interaction);
+    }
+    return interaction.reply({ content: "Unknown selection menu.", ephemeral: true });
   }
 
   if (!interaction.isChatInputCommand()) return;

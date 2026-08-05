@@ -10,7 +10,8 @@ function venueAttendanceBonus(venue) {
   const productionLevel = Number(venue?.production_level || 0);
   return (
     productionLevel *
-    (VENUE_DEPARTMENTS.production.benefitPerLevel / 100)
+      (VENUE_DEPARTMENTS.production.benefitPerLevel / 100) +
+    Number(venue?.installed_equipment_attendance_bonus || 0)
   );
 }
 

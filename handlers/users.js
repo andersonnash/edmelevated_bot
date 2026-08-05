@@ -360,7 +360,8 @@ async function profile(interaction) {
         `  👥 Venue staff: +${money(venueIncome.permanentStaffBoostHourly)}/hr\n` +
         `  👷 Show staff: +${money(venueIncome.showStaffBoostHourly)}/hr\n` +
         `  ⚡ Event boosts: +${money(venueIncome.eventBoostHourly)}/hr\n` +
-        `Equipment: ${equipment.length} (${money(equipmentIncome.hourly)}/hr) +${money(equipmentIncome.total)}\n` +
+        `  🎛 Installed gear: +${money(venueIncome.equipmentIncome)}/hr\n` +
+        `Stored equipment rentals: ${money(equipmentIncome.hourly)}/hr +${money(equipmentIncome.total)}\n` +
         `Ready to Collect: ${money(passiveTotal)}\n` +
         "```",
     },
