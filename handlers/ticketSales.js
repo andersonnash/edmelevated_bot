@@ -2,7 +2,9 @@ const { PermissionFlagsBits } = require("discord.js");
 const { isBotAdmin } = require("../constants");
 const {
   buildTicketSaleEmbed,
-  forceTicketSaleForOwner,
+  forceRandomTicketSale,
+  forceTicketSaleForShow,
+  notifyTicketSaleOwner,
 } = require("../services/ticketSales");
 
 async function testTicketSale(interaction) {
@@ -22,7 +24,10 @@ async function testTicketSale(interaction) {
     });
   }
 
-  const result = forceTicketSaleForOwner(interaction.user.id);
+  const showId = interaction.options.getString("show");
+  const result = showId
+    ? forceTicketSaleForShow(showId)
+    : forceRandomTicketSale();
   if (!result) {
     return interaction.reply({
       content:
@@ -31,7 +36,12 @@ async function testTicketSale(interaction) {
     });
   }
 
+  const dmSent = await notifyTicketSaleOwner(interaction.client, result);
+
   return interaction.reply({
+    content: dmSent
+      ? `Admin test complete. **${result.show.name}** was updated and the promoter was notified by DM.`
+      : `Admin test complete. **${result.show.name}** was updated, but the promoter DM could not be delivered.`,
     embeds: [buildTicketSaleEmbed(result)],
     ephemeral: true,
   });

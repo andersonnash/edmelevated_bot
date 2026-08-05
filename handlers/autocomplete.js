@@ -13,6 +13,10 @@ const {
 const { venueCapacity } = require("../services/venueEngine");
 const { numberOwnedVenues } = require("../services/venueDisplayRules");
 const {
+  allEligibleShows,
+  saleQuantity,
+} = require("../services/ticketSales");
+const {
   venueDepartmentLevelName,
   venueDepartmentBenefitLabel,
 } = require("../services/venueDepartmentRules");
@@ -20,6 +24,27 @@ const {
 async function handleAutocomplete(interaction) {
   const userId = interaction.user.id;
   const focused = interaction.options.getFocused();
+  if (
+    interaction.commandName === "test_ticket_sale" &&
+    interaction.options.getFocused(true).name === "show"
+  ) {
+    const focusedLower = focused.toLowerCase();
+    const shows = allEligibleShows({ ignoreCooldown: true })
+      .filter((show) => saleQuantity(show, () => 0) > 0)
+      .filter((show) =>
+        `${show.name} ${show.promoter_name || ""}`
+          .toLowerCase()
+          .includes(focusedLower),
+      )
+      .slice(0, 25);
+
+    return interaction.respond(
+      shows.map((show) => ({
+        name: `${show.name} — ${show.promoter_name || "Unknown promoter"} — ${show.show_date}`.slice(0, 100),
+        value: String(show.id),
+      })),
+    );
+  }
   if (
     interaction.commandName === "equip_title" &&
     interaction.options.getFocused(true).name === "title"

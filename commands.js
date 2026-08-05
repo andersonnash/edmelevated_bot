@@ -372,7 +372,14 @@ const commands = [
   new SlashCommandBuilder()
     .setName("test_ticket_sale")
     .setDescription("Admin only: force an advance ticket-sale event")
-    .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
+    .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+    .addStringOption((option) =>
+      option
+        .setName("show")
+        .setDescription("Optional: choose any eligible upcoming show")
+        .setRequired(false)
+        .setAutocomplete(true),
+    ),
 
   new SlashCommandBuilder()
     .setName("leaderboard")

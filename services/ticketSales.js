@@ -125,6 +125,7 @@ function eligibleShowsForOwner(ownerId, { ignoreCooldown = false } = {}) {
         shows.show_date,
         shows.ticket_price,
         shows.simulated_attendees,
+        users.username AS promoter_name,
         venues.base_capacity,
         venues.security_level,
         venues.production_level,
@@ -147,6 +148,7 @@ function eligibleShowsForOwner(ownerId, { ignoreCooldown = false } = {}) {
         ), 0) AS automated_ticket_revenue
       FROM shows
       JOIN venues ON venues.id = shows.venue_id
+      LEFT JOIN users ON users.discord_id = shows.owner_id
       WHERE shows.owner_id = ?
         AND shows.status = 'upcoming'
         AND shows.show_date > date('now')
@@ -241,9 +243,42 @@ function runTicketSalesCheck(random = Math.random) {
   return results;
 }
 
+function allEligibleShows({ ignoreCooldown = false } = {}) {
+  const ownerIds = db
+    .prepare(
+      `
+      SELECT DISTINCT owner_id
+      FROM shows
+      WHERE status = 'upcoming'
+        AND show_date > date('now')
+      `,
+    )
+    .all()
+    .map((row) => row.owner_id);
+
+  return ownerIds.flatMap((ownerId) =>
+    eligibleShowsForOwner(ownerId, { ignoreCooldown }),
+  );
+}
+
 function forceTicketSaleForOwner(ownerId, random = Math.random) {
   const show = selectRandomShow(
     eligibleShowsForOwner(ownerId, { ignoreCooldown: true }),
+    random,
+  );
+  return show ? recordTicketSale(show, random) : null;
+}
+
+function forceTicketSaleForShow(showId, random = Math.random) {
+  const show = allEligibleShows({ ignoreCooldown: true }).find(
+    (candidate) => String(candidate.id) === String(showId),
+  );
+  return show ? recordTicketSale(show, random) : null;
+}
+
+function forceRandomTicketSale(random = Math.random) {
+  const show = selectRandomShow(
+    allEligibleShows({ ignoreCooldown: true }),
     random,
   );
   return show ? recordTicketSale(show, random) : null;
@@ -294,16 +329,22 @@ function buildTicketSaleEmbed(result) {
     });
 }
 
+async function notifyTicketSaleOwner(client, result) {
+  try {
+    const user = await client.users.fetch(result.ownerId);
+    await user.send({ embeds: [buildTicketSaleEmbed(result)] });
+    return true;
+  } catch (error) {
+    console.error("Advance ticket-sale DM failed:", error);
+    return false;
+  }
+}
+
 async function processTicketSales(client) {
   const results = runTicketSalesCheck();
 
   for (const result of results) {
-    try {
-      const user = await client.users.fetch(result.ownerId);
-      await user.send({ embeds: [buildTicketSaleEmbed(result)] });
-    } catch (error) {
-      console.error("Advance ticket-sale DM failed:", error);
-    }
+    await notifyTicketSaleOwner(client, result);
   }
 
   return results;
@@ -313,9 +354,13 @@ module.exports = {
   TICKET_SALE_CHANCE,
   TICKET_SALE_COOLDOWN_HOURS,
   TICKET_SALE_SCENARIOS,
+  allEligibleShows,
   automatedTicketSummary,
   buildTicketSaleEmbed,
+  forceRandomTicketSale,
   forceTicketSaleForOwner,
+  forceTicketSaleForShow,
+  notifyTicketSaleOwner,
   processTicketSales,
   projectedAttendance,
   runTicketSalesCheck,

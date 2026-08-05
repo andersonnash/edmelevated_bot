@@ -86,6 +86,7 @@ test("records one sale batch and enforces the per-show cooldown", () => {
     const db = require(${JSON.stringify(databaseModule)});
     const {
       forceTicketSaleForOwner,
+      forceTicketSaleForShow,
       runTicketSalesCheck,
     } = require(${JSON.stringify(salesModule)});
 
@@ -128,6 +129,25 @@ test("records one sale batch and enforces the per-show cooldown", () => {
     }
     if (!saved || saved.batches !== 2 || saved.quantity !== 2 || saved.price_each !== 25) {
       throw new Error('Sale batch was not stored correctly');
+    }
+
+    db.prepare("INSERT INTO users (discord_id, username) VALUES ('owner-2', 'Second Promoter')").run();
+    const secondVenue = db.prepare(\`
+      INSERT INTO venues (
+        owner_id, name, type, base_capacity, security_level, production_level
+      ) VALUES ('owner-2', 'Second Garage', 'garage_party', 25, 0, 0)
+    \`).run();
+    const secondShow = db.prepare(\`
+      INSERT INTO shows (
+        owner_id, venue_id, name, show_date, ticket_price,
+        simulated_attendees, status
+      ) VALUES (
+        'owner-2', ?, 'Second Night', date('now', '+6 days'), 30, 10, 'upcoming'
+      )
+    \`).run(secondVenue.lastInsertRowid);
+    const selected = forceTicketSaleForShow(secondShow.lastInsertRowid, () => 0);
+    if (!selected || selected.ownerId !== 'owner-2' || selected.show.name !== 'Second Night') {
+      throw new Error('Admin show selection did not target the chosen promoter');
     }
 
     db.close();
