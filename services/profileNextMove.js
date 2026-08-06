@@ -5,7 +5,6 @@ const { venueDepartmentUpgradeCost } = require("./venueInvestmentRules");
 
 const STARTER_CONTROLLER_COST = 500;
 const FIRST_VENUE_COST = 2_500;
-const PROMOTION_COST = 100;
 
 function withCollectionNote(message, readyToCollect) {
   if (readyToCollect < 1) return message;
@@ -100,7 +99,9 @@ function buildProfileNextMove({
     (show) => show.staffCount < show.staffLimit,
   );
   const showMissingPromotion = showsToPrepare.find(
-    (show) => show.promotionCount === 0,
+    (show) =>
+      show.promotionNeeded ??
+      (show.promotionCount === 0 && !show.projectedFull),
   );
 
   if (showsToPrepare.length) {
@@ -119,10 +120,11 @@ function buildProfileNextMove({
     }
 
     if (showMissingPromotion) {
+      const promotionCost = Number(showMissingPromotion.promotionCost || 100);
       message =
-        cash >= PROMOTION_COST
-          ? `**Promote ${showMissingPromotion.name}**\nPromotion costs ${money(PROMOTION_COST)} and you can afford it. Use \`/promote_show\`.`
-          : `**Save to promote ${showMissingPromotion.name}**\nYou need ${money(PROMOTION_COST - cash)} more for promotion. ${earningCommands()}`;
+        cash >= promotionCost
+          ? `**Promote ${showMissingPromotion.name}**\nIts one campaign costs ${money(promotionCost)} and you can afford it. Use \`/promote_show\`.`
+          : `**Save to promote ${showMissingPromotion.name}**\nYou need ${money(promotionCost - cash)} more for its one campaign. ${earningCommands()}`;
       return withCollectionNote(message, readyToCollect);
     }
 

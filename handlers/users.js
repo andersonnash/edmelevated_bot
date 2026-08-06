@@ -41,7 +41,11 @@ const {
   equipmentMinuteIncome,
   venuePendingIncome,
   equipmentPendingIncome,
+  getInstalledEquipmentEffects,
+  venueCapacity,
 } = require("../services/venueEngine");
+const { calculateProjectedWalkins } = require("../services/showForecast");
+const { promotionCampaign } = require("../services/promotionRules");
 
 const { checkCooldown } = require("../services/cooldowns");
 const { getPromoterRatingStats } = require("../services/showRatingHistory");
@@ -227,12 +231,22 @@ async function profile(interaction) {
     .prepare(
       `
       SELECT
+        shows.id,
         shows.name,
+        shows.venue_id,
+        shows.simulated_attendees,
+        shows.promotion_used,
+        venues.type,
+        venues.base_capacity,
+        venues.security_level,
+        venues.production_level,
         venues.dj_limit,
         venues.staff_limit,
         (SELECT COUNT(*) FROM show_lineup WHERE show_id = shows.id) AS lineup_count,
         (SELECT COUNT(*) FROM show_staff WHERE show_id = shows.id) AS staff_count,
-        (SELECT COUNT(*) FROM show_promotions WHERE show_id = shows.id) AS promotion_count
+        (SELECT COUNT(*) FROM show_promotions WHERE show_id = shows.id) AS promotion_count,
+        (SELECT COUNT(*) FROM show_tickets WHERE show_id = shows.id) AS player_ticket_count,
+        COALESCE((SELECT SUM(quantity) FROM automated_ticket_sales WHERE show_id = shows.id), 0) AS automated_ticket_count
       FROM shows
       JOIN venues ON venues.id = shows.venue_id
       WHERE shows.owner_id = ?
@@ -241,14 +255,37 @@ async function profile(interaction) {
       `,
     )
     .all(userId);
-  const upcomingShows = upcomingShowRows.map((show) => ({
-    name: show.name,
-    lineupCount: show.lineup_count || 0,
-    djLimit: show.dj_limit || 0,
-    staffCount: show.staff_count || 0,
-    staffLimit: show.staff_limit || 0,
-    promotionCount: show.promotion_count || 0,
-  }));
+  const upcomingShows = upcomingShowRows.map((show) => {
+    const effects = getInstalledEquipmentEffects(show.venue_id);
+    const venue = {
+      ...show,
+      installed_equipment_attendance_bonus: effects.attendanceBonus,
+    };
+    const ticketCount =
+      Number(show.player_ticket_count || 0) +
+      Number(show.automated_ticket_count || 0);
+    const projectedWalkins = calculateProjectedWalkins({
+      baseWalkins: Number(show.simulated_attendees || 0),
+      venue,
+      ticketCount,
+    });
+    const projectedFull =
+      ticketCount + projectedWalkins >= venueCapacity(venue);
+    const campaign = promotionCampaign(venue);
+
+    return {
+      name: show.name,
+      lineupCount: show.lineup_count || 0,
+      djLimit: show.dj_limit || 0,
+      staffCount: show.staff_count || 0,
+      staffLimit: show.staff_limit || 0,
+      promotionCount: show.promotion_count || 0,
+      projectedFull,
+      promotionNeeded:
+        Number(show.promotion_used || 0) === 0 && !projectedFull,
+      promotionCost: campaign.cost,
+    };
+  });
   const nextMove = buildProfileNextMove({
     cash: user.cash || 0,
     journeyComplete: !!journeyProgress?.showcase_completed,

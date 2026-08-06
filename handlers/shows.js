@@ -17,6 +17,8 @@ const { money } = require("../services/formatters");
 const { showStaffRole } = require("../services/showStaffRules");
 const { ownedVenueLabel } = require("../services/venueDisplayRules");
 const { automatedTicketSummary } = require("../services/ticketSales");
+const { promotionCampaign } = require("../services/promotionRules");
+const { purchasePromotion } = require("../services/promotionPurchase");
 
 const {
   getVenueIncome,
@@ -105,6 +107,7 @@ async function createShow(interaction) {
     venue: venueWithEquipment,
   });
   const capacity = venueCapacity(venueWithEquipment);
+  const campaign = promotionCampaign(venue);
 
   const created = db
     .prepare(
@@ -185,6 +188,12 @@ async function createShow(interaction) {
         value:
           "Use the buttons below to promote the show, view the lineup, or hire show staff.",
       },
+      {
+        name: "📣 Promotion Campaign",
+        value:
+          `One campaign available • **${money(campaign.cost)}**\n` +
+          `Adds **+${campaign.demand} base demand** and cannot be repeated.`,
+      },
     )
     .setFooter({
       text: "Use the buttons below to keep building",
@@ -193,7 +202,7 @@ async function createShow(interaction) {
   const row = new ActionRowBuilder().addComponents(
     new ButtonBuilder()
       .setCustomId(`promote_show_${showId}`)
-      .setLabel("📣 Promote")
+      .setLabel(`📣 Promote • ${money(campaign.cost)}`)
       .setStyle(ButtonStyle.Primary),
 
     new ButtonBuilder()
@@ -360,6 +369,7 @@ function getUserShows(userId) {
      SELECT
         shows.*,
         venues.name AS venue_name,
+        venues.type,
         venues.base_capacity,
         venues.staff_limit,
         venues.dj_limit,
@@ -507,6 +517,9 @@ function buildShowPage(userId, status, page = 0) {
   });
   const attendanceBoostPercent = attendanceBonusPercent(show);
   const projectedAttendance = ticketCount + projectedWalkins;
+  const campaign = promotionCampaign(show);
+  const promotionUsed = Number(show.promotion_used || 0) === 1;
+  const projectedFull = projectedAttendance >= finalCapacity;
   const closureEndsAt = show.closed_until
     ? new Date(show.closed_until.replace(" ", "T") + "Z")
     : null;
@@ -603,6 +616,18 @@ function buildShowPage(userId, status, page = 0) {
           `Installed gear: +${Math.round(Number(show.installed_equipment_attendance_bonus || 0) * 100)}% attendance • +${Number(show.installed_equipment_production_bonus || 0)} production`,
         inline: true,
       },
+      {
+        name: promotionUsed
+          ? "✅ Promotion Complete"
+          : projectedFull
+            ? "✅ Campaign Unnecessary"
+            : "📣 Promotion Available",
+        value: promotionUsed
+          ? `This show's one campaign has been used.`
+          : projectedFull
+            ? "The show is already projected to reach capacity through organic demand."
+            : `${money(campaign.cost)} • +${campaign.demand} base demand • one use`,
+      },
     );
   } else {
     embed.addFields({
@@ -652,6 +677,22 @@ function buildShowPage(userId, status, page = 0) {
       .setStyle(ButtonStyle.Primary)
       .setDisabled(safePage === totalPages - 1),
   );
+
+  if (status === "upcoming") {
+    row.addComponents(
+      new ButtonBuilder()
+        .setCustomId(`promote_show_${show.id}`)
+        .setLabel(
+          promotionUsed
+            ? "✅ Promoted"
+            : projectedFull
+              ? "✅ Projected Full"
+              : `📣 Promote • ${money(campaign.cost)}`,
+        )
+        .setStyle(promotionUsed || projectedFull ? ButtonStyle.Secondary : ButtonStyle.Success)
+        .setDisabled(promotionUsed || projectedFull),
+    );
+  }
 
   return { embed, row };
 }
@@ -1030,7 +1071,21 @@ async function promoteShowById(interaction, showId) {
     });
   }
 
+  if (Number(show.promotion_used || 0) === 1) {
+    return interaction.reply({
+      content: `**${show.name}** has already used its one promotion campaign. No cash was spent.`,
+      ephemeral: true,
+    });
+  }
+
   const venue = db.prepare("SELECT * FROM venues WHERE id = ?").get(show.venue_id);
+  if (!venue) {
+    return interaction.reply({
+      content: "This show's venue could not be found.",
+      ephemeral: true,
+    });
+  }
+  const campaign = promotionCampaign(venue);
   const equipmentEffects = getInstalledEquipmentEffects(venue.id);
   venue.installed_equipment_attendance_bonus = equipmentEffects.attendanceBonus;
   const ticketCount = db
@@ -1063,11 +1118,6 @@ async function promoteShowById(interaction, showId) {
     });
   }
 
-  const promo = {
-    text: "posted flyers around downtown",
-    cost: 100,
-    hype: 15,
-  };
   const user = getUser(userId);
 
   if (!user) {
@@ -1077,56 +1127,51 @@ async function promoteShowById(interaction, showId) {
     });
   }
 
-  if ((user.cash || 0) < promo.cost) {
+  if ((user.cash || 0) < campaign.cost) {
     return interaction.reply({
       content:
-        `You need **${money(promo.cost)}** for this promotion.\n` +
+        `You need **${money(campaign.cost)}** for this campaign.\n` +
         `Your cash: **${money(user.cash || 0)}**`,
       ephemeral: true,
     });
   }
 
-  const promoteTransaction = db.transaction(() => {
-    db.prepare(
-      `
-      UPDATE users
-      SET cash = cash - ?
-      WHERE discord_id = ?
-      `,
-    ).run(promo.cost, userId);
-
-    db.prepare(
-      `
-      INSERT INTO show_promotions (
-        show_id,
-        promoter_id,
-        promoter_username,
-        promo_text,
-        hype_gain
-      )
-      VALUES (?, ?, ?, ?, ?)
-      `,
-    ).run(show.id, userId, username, promo.text, promo.hype);
-
-    db.prepare(
-      `
-      UPDATE shows
-      SET simulated_attendees = simulated_attendees + ?
-      WHERE id = ?
-      `,
-    ).run(promo.hype, show.id);
-  });
-
-  promoteTransaction();
+  let remainingCash;
+  try {
+    remainingCash = purchasePromotion({
+      db,
+      showId: show.id,
+      userId,
+      username,
+      cost: campaign.cost,
+      demand: campaign.demand,
+    });
+  } catch (error) {
+    if (error.message === "PROMOTION_ALREADY_USED") {
+      return interaction.reply({
+        content: `**${show.name}** has already used its one promotion campaign. No cash was spent.`,
+        ephemeral: true,
+      });
+    }
+    if (error.message === "INSUFFICIENT_PROMOTION_CASH") {
+      return interaction.reply({
+        content: "Your balance changed before the campaign completed. No campaign was used and no cash was spent.",
+        ephemeral: true,
+      });
+    }
+    throw error;
+  }
 
   const projectedAfterPromotion = calculateProjectedWalkins({
-    baseWalkins: baseWalkins + promo.hype,
+    baseWalkins: baseWalkins + campaign.demand,
     venue,
-    ticketCount,
+    ticketCount: confirmedTicketCount,
   });
   const capacity = venueCapacity(venue);
-  const attendanceBeforePromotion = ticketCount + projectedBeforePromotion;
-  const attendanceAfterPromotion = ticketCount + projectedAfterPromotion;
+  const attendanceBeforePromotion =
+    confirmedTicketCount + projectedBeforePromotion;
+  const attendanceAfterPromotion =
+    confirmedTicketCount + projectedAfterPromotion;
   const effectiveAttendanceGain =
     attendanceAfterPromotion - attendanceBeforePromotion;
   const isProjectedSellout = attendanceAfterPromotion >= capacity;
@@ -1145,13 +1190,13 @@ async function promoteShowById(interaction, showId) {
         inline: true,
       },
       {
-        name: "🔥 Promo Move",
-        value: promo.text,
+        name: "📣 Campaign",
+        value: "One venue-scaled city campaign",
         inline: false,
       },
       {
-        name: "📈 Demand Added",
-        value: `+${promo.hype}`,
+        name: "📈 Base Demand Added",
+        value: `+${campaign.demand}`,
         inline: true,
       },
       {
@@ -1173,25 +1218,39 @@ async function promoteShowById(interaction, showId) {
       },
       {
         name: "💸 Promo Cost",
-        value: money(promo.cost),
+        value: money(campaign.cost),
         inline: true,
       },
       {
         name: "💰 Remaining Cash",
-        value: money((user.cash || 0) - promo.cost),
+        value: money(remainingCash),
         inline: true,
       },
     )
     .setFooter({
       text:
-        effectiveAttendanceGain < promo.hype
-          ? `Promotion added ${promo.hype} demand. Venue capacity limited the attendance forecast to ${capacity}.`
-          : `Promotion added ${promo.hype} demand to this show's attendance forecast.`,
+        effectiveAttendanceGain < campaign.demand
+          ? `Campaign complete. It added ${campaign.demand} base demand, while venue capacity limited the effective attendance gain.`
+          : "Campaign complete. This show cannot be promoted again.",
     });
+
+  if (interaction.isButton?.()) {
+    const updatedRows = interaction.message.components.map((messageRow) => {
+      const components = messageRow.components.map((component) => {
+        const button = ButtonBuilder.from(component);
+        if (component.customId === `promote_show_${show.id}`) {
+          button.setLabel("✅ Promoted").setStyle(ButtonStyle.Secondary).setDisabled(true);
+        }
+        return button;
+      });
+      return new ActionRowBuilder().addComponents(components);
+    });
+    await interaction.update({ components: updatedRows });
+    return interaction.followUp({ embeds: [embed], ephemeral: true });
+  }
 
   return interaction.reply({
     embeds: [embed],
-    ephemeral: interaction.isButton?.() ? true : false,
   });
 }
 

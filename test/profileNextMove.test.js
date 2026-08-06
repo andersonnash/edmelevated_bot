@@ -124,6 +124,55 @@ test("walks an upcoming show through lineup, staffing, and promotion", () => {
   );
 });
 
+test("uses the selected show's scaled campaign price", () => {
+  const result = buildProfileNextMove({
+    cash: 500,
+    journeyComplete: true,
+    hasEquipment: true,
+    openDecksComplete: true,
+    venueCount: 1,
+    showCount: 1,
+    upcomingShows: [
+      {
+        name: "Warehouse Night",
+        lineupCount: 2,
+        djLimit: 2,
+        staffCount: 3,
+        staffLimit: 3,
+        promotionNeeded: true,
+        promotionCost: 900,
+      },
+    ],
+  });
+
+  assert.match(result, /\$400 more/);
+});
+
+test("does not recommend promotion when organic demand fills the show", () => {
+  const result = buildProfileNextMove({
+    cash: 500,
+    journeyComplete: true,
+    hasEquipment: true,
+    openDecksComplete: true,
+    venueCount: 1,
+    showCount: 1,
+    upcomingShows: [
+      {
+        name: "Full Room",
+        lineupCount: 1,
+        djLimit: 1,
+        staffCount: 1,
+        staffLimit: 1,
+        promotionNeeded: false,
+        projectedFull: true,
+      },
+    ],
+  });
+
+  assert.doesNotMatch(result, /Promote Full Room/);
+  assert.match(result, /Keep an eye on Full Room/);
+});
+
 test("finds an unprepared show after an earlier prepared show", () => {
   const result = move({
     cash: 500,

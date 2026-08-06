@@ -1,4 +1,5 @@
 const db = require("../db");
+const { money } = require("../services/formatters");
 const {
   SHOP_ITEMS,
   VENUE_TYPES,
@@ -10,7 +11,12 @@ const {
   venueDepartmentUpgradeCost,
   venueStaffHiringCost,
 } = require("../services/venueInvestmentRules");
-const { venueCapacity } = require("../services/venueEngine");
+const {
+  venueCapacity,
+  getInstalledEquipmentEffects,
+} = require("../services/venueEngine");
+const { isProjectedSoldOut } = require("../services/showForecast");
+const { promotionCampaign } = require("../services/promotionRules");
 const { numberOwnedVenues } = require("../services/venueDisplayRules");
 const {
   allEligibleShows,
@@ -24,6 +30,57 @@ const {
 async function handleAutocomplete(interaction) {
   const userId = interaction.user.id;
   const focused = interaction.options.getFocused();
+  if (
+    interaction.commandName === "promote_show" &&
+    interaction.options.getFocused(true).name === "show"
+  ) {
+    const shows = db
+      .prepare(
+        `SELECT
+           shows.id,
+           shows.name,
+           shows.venue_id,
+           shows.simulated_attendees,
+           venues.name AS venue_name,
+           venues.type,
+           venues.base_capacity,
+           venues.security_level,
+           venues.production_level,
+           (SELECT COUNT(*) FROM show_tickets WHERE show_id = shows.id) AS player_ticket_count,
+           COALESCE((SELECT SUM(quantity) FROM automated_ticket_sales WHERE show_id = shows.id), 0) AS automated_ticket_count
+         FROM shows
+         JOIN venues ON venues.id = shows.venue_id
+         WHERE shows.owner_id = ?
+           AND shows.status = 'upcoming'
+           AND COALESCE(shows.promotion_used, 0) = 0
+           AND shows.name LIKE ?
+         ORDER BY shows.show_date ASC, shows.id ASC
+         LIMIT 25`,
+      )
+      .all(userId, `%${focused}%`)
+      .filter((show) => {
+        const effects = getInstalledEquipmentEffects(show.venue_id);
+        show.installed_equipment_attendance_bonus = effects.attendanceBonus;
+        const ticketCount =
+          Number(show.player_ticket_count || 0) +
+          Number(show.automated_ticket_count || 0);
+        return !isProjectedSoldOut({
+          baseWalkins: Number(show.simulated_attendees || 0),
+          venue: show,
+          ticketCount,
+        });
+      });
+
+    return interaction.respond(
+      shows.map((show) => {
+        const campaign = promotionCampaign(show);
+        return {
+          name: `${show.name} — ${show.venue_name} — ${money(campaign.cost)} / +${campaign.demand} demand`.slice(0, 100),
+          value: String(show.id),
+        };
+      }),
+    );
+  }
   if (
     interaction.commandName === "test_ticket_sale" &&
     interaction.options.getFocused(true).name === "show"
@@ -239,7 +296,6 @@ async function handleAutocomplete(interaction) {
   if (
     [
       "force_run_show",
-      "promote_show",
       "add_lineup",
       "hire_show_staff",
       "show_lineup",
