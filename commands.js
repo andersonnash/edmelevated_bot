@@ -132,7 +132,7 @@ const commands = [
 
   new SlashCommandBuilder()
     .setName("promote_show")
-    .setDescription("Promote one of your upcoming shows")
+    .setDescription("Run the one venue-scaled campaign for an upcoming show")
     .addStringOption((option) =>
       option
         .setName("show")

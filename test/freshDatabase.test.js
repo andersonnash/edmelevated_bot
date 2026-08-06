@@ -16,7 +16,7 @@ test("initializes a fresh database with required tables and columns", () => {
     const required = {
       users: ["discord_id", "cash", "reputation", "xp"],
       venues: ["owner_id", "insurance_expires_at", "closed_until"],
-      shows: ["owner_id", "genre", "show_date", "status"],
+      shows: ["owner_id", "genre", "show_date", "status", "promotion_used"],
       show_payouts: ["show_id", "role", "amount", "paid"],
       show_ratings: ["show_id", "overall_score", "star_rating"],
       automated_ticket_sales: ["show_id", "quantity", "price_each", "scenario_key"],

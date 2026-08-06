@@ -71,7 +71,7 @@ function categoryEmbed(category) {
         {
           name: "`/promote_show`",
           value:
-            "Promote one of your upcoming shows for more projected walk-ins.",
+            "Run a show's one promotional campaign. Its price and demand gain scale with venue size; projected-full shows do not need one.",
         },
         {
           name: "`/add_lineup`",

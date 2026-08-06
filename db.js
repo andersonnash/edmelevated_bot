@@ -320,8 +320,18 @@ addColumnIfMissing("venues", "closed_at", "TEXT");
 addColumnIfMissing("users", "active_cosmetic_title", "TEXT");
 addColumnIfMissing("venues", "insurance_expires_at", "TEXT");
 addColumnIfMissing("shows", "genre", "TEXT DEFAULT 'mixed'");
+addColumnIfMissing("shows", "promotion_used", "INTEGER DEFAULT 0");
 addColumnIfMissing("underground_run_state", "scenario_key", "TEXT");
 addColumnIfMissing("underground_run_state", "phase", "TEXT DEFAULT 'choose'");
 addColumnIfMissing("user_equipment", "accrued_income", "INTEGER DEFAULT 0");
+
+db.prepare(
+  `UPDATE shows
+   SET promotion_used = 1
+   WHERE COALESCE(promotion_used, 0) = 0
+     AND EXISTS (
+       SELECT 1 FROM show_promotions WHERE show_promotions.show_id = shows.id
+     )`,
+).run();
 
 module.exports = db;
