@@ -43,6 +43,9 @@ const {
   venueDepartmentLevelName,
   venueDepartmentBenefitLabel,
 } = require("../services/venueDepartmentRules");
+const {
+  summarizeVenueStaff,
+} = require("../services/venueStaffDisplayRules");
 
 function discordTime(timestamp) {
   if (!timestamp) return "Unknown";
@@ -463,6 +466,10 @@ function buildVenuePage(userId, page = 0) {
     )
     .all(venue.id);
   const venueStaffCount = venueStaff.length;
+  const venueStaffSummary = summarizeVenueStaff(
+    venueStaff,
+    VENUE_STAFF_ROLES,
+  );
 
   let color = 0x06b6d4;
 
@@ -540,17 +547,16 @@ function buildVenuePage(userId, page = 0) {
   });
 
   fields.push({
-    name: "👥 Permanent Venue Staff",
+    name: `👥 Permanent Venue Staff — ${venueStaffCount}/${venue.staff_limit} Slots`,
     value: venueStaff.length
-      ? venueStaff
-          .map((member) => {
-            const role = VENUE_STAFF_ROLES[member.role];
-            return role
-              ? `${role.emoji} ${role.label}: **+${Math.round(role.incomeBoost * 100)}% income**`
-              : `👤 ${member.username || member.role}`;
-          })
+      ? venueStaffSummary.groups
+          .map(
+            (group) =>
+              `${group.emoji} ${group.label} ×${group.quantity} — **+${group.boostPercent}% income**`,
+          )
           .join("\n") +
-        `\nCombined contribution: **+${money(incomeBreakdown.permanentStaffBoostHourly)}/hr**`
+        `\n\n**Total Staff Boost:** +${venueStaffSummary.totalBoostPercent}%` +
+        `\n**Hourly Contribution:** +${money(incomeBreakdown.permanentStaffBoostHourly)}/hr`
       : "No permanent staff hired.",
     inline: false,
   });
