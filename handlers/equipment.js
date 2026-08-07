@@ -137,6 +137,77 @@ function manageButton(disabled = false) {
   );
 }
 
+function installVenueButton(userId, type) {
+  return new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
+      .setCustomId(`equipment_install:${userId}:${type}`)
+      .setLabel("Choose Venue")
+      .setEmoji("🏟️")
+      .setStyle(ButtonStyle.Primary),
+  );
+}
+
+function equipmentVenueSelection(userId, type) {
+  const item = db
+    .prepare("SELECT * FROM user_equipment WHERE user_id = ? AND equipment_type = ?")
+    .get(userId, type);
+  if (!item || !EQUIPMENT_TYPES[type]) {
+    return {
+      content: "That equipment is no longer available.",
+      components: [],
+    };
+  }
+
+  const venues = numberOwnedVenues(
+    db
+      .prepare("SELECT id, name, type FROM venues WHERE owner_id = ? ORDER BY id LIMIT 25")
+      .all(userId),
+  );
+  if (!venues.length) {
+    return {
+      content: "Buy a venue before installing gear. It will continue earning rental income while stored.",
+      components: [],
+    };
+  }
+
+  const installed = installedQuantity(userId, type);
+  const stored = storedQuantity(item.quantity, installed);
+  const venueSelect = new StringSelectMenuBuilder()
+    .setCustomId(`equipment_venue:${type}`)
+    .setPlaceholder(stored > 0 ? "Choose a venue to install one" : "Return a copy before installing elsewhere")
+    .setDisabled(stored <= 0)
+    .addOptions(
+      venues.map((venue) => ({
+        label: `${venue.name} #${venue.ownerVenueTypeNumber}`.slice(0, 100),
+        value: String(venue.id),
+      })),
+    );
+  const allocations = allocationRows(userId).filter(
+    (row) => row.equipment_type === type,
+  );
+  const returnSelect = allocations.length
+    ? new StringSelectMenuBuilder()
+        .setCustomId(`equipment_return_venue:${type}`)
+        .setPlaceholder("Return one copy from a venue")
+        .addOptions(
+          allocations.map((row) => ({
+            label: `${row.venue_name} — ${row.quantity} installed`.slice(0, 100),
+            value: String(row.venue_id),
+          })),
+        )
+    : null;
+
+  return {
+    content: `**${item.name}** — ${stored} stored, ${installed} installed.\nChoose where this gear should work.`,
+    components: [
+      new ActionRowBuilder().addComponents(venueSelect),
+      ...(returnSelect
+        ? [new ActionRowBuilder().addComponents(returnSelect)]
+        : []),
+    ],
+  };
+}
+
 async function buyEquipment(interaction) {
   const userId = interaction.user.id;
   const type = interaction.options.getString("type");
@@ -182,6 +253,12 @@ async function buyEquipment(interaction) {
   });
   transaction();
 
+  const ownsVenue = Boolean(
+    db
+      .prepare("SELECT 1 FROM venues WHERE owner_id = ? LIMIT 1")
+      .get(userId),
+  );
+
   const embed = new EmbedBuilder()
     .setColor(0x8b5cf6)
     .setTitle("🎛 EQUIPMENT PURCHASED")
@@ -199,10 +276,23 @@ async function buyEquipment(interaction) {
           `+${money(equipment.installedIncome)}/hr for its venue\n` +
           `+${Math.round(equipment.attendanceBonus * 100)}% show attendance • +${equipment.productionBonus} production`,
       },
+      {
+        name: ownsVenue ? "📍 Where Should It Work?" : "📦 Currently Stored",
+        value: ownsVenue
+          ? "This copy is currently earning rental income. Install it at one of your venues to use its venue and show bonuses instead."
+          : "This gear will earn rental income until you own a venue. Install it later through `/my_equipment`.",
+      },
     )
-    .setFooter({ text: "Use /my_equipment to manage where your gear works." });
+    .setFooter({
+      text: ownsVenue
+        ? "Choose a venue now, or manage this gear later with /my_equipment."
+        : "Stored gear continues earning rental income.",
+    });
 
-  return interaction.reply({ embeds: [embed] });
+  return interaction.reply({
+    embeds: [embed],
+    components: ownsVenue ? [installVenueButton(userId, type)] : [],
+  });
 }
 
 async function myEquipment(interaction) {
@@ -247,54 +337,21 @@ async function handleManageButton(interaction) {
 async function handleEquipmentTypeSelect(interaction) {
   const userId = interaction.user.id;
   const type = interaction.values[0];
-  const item = db
-    .prepare("SELECT * FROM user_equipment WHERE user_id = ? AND equipment_type = ?")
-    .get(userId, type);
-  if (!item || !EQUIPMENT_TYPES[type]) {
-    return interaction.update({ content: "That equipment is no longer available.", components: [] });
+  return interaction.update(equipmentVenueSelection(userId, type));
+}
+
+async function handleInstallVenueButton(interaction) {
+  const [, ownerId, type] = interaction.customId.split(":");
+  if (interaction.user.id !== ownerId) {
+    return interaction.reply({
+      content: "Only the buyer can choose where this equipment is installed.",
+      ephemeral: true,
+    });
   }
-  const venues = numberOwnedVenues(
-    db
-      .prepare("SELECT id, name, type FROM venues WHERE owner_id = ? ORDER BY id LIMIT 25")
-      .all(userId),
-  );
-  if (!venues.length) {
-    return interaction.update({ content: "Buy a venue before installing gear.", components: [] });
-  }
-  const installed = installedQuantity(userId, type);
-  const stored = storedQuantity(item.quantity, installed);
-  const venueSelect = new StringSelectMenuBuilder()
-    .setCustomId(`equipment_venue:${type}`)
-    .setPlaceholder(stored > 0 ? "Choose a venue to install one" : "Return a copy before installing elsewhere")
-    .setDisabled(stored <= 0)
-    .addOptions(
-      venues.map((venue) => ({
-        label: `${venue.name} #${venue.ownerVenueTypeNumber}`.slice(0, 100),
-        value: String(venue.id),
-      })),
-    );
-  const allocations = allocationRows(userId).filter(
-    (row) => row.equipment_type === type,
-  );
-  const returnSelect = allocations.length
-    ? new StringSelectMenuBuilder()
-        .setCustomId(`equipment_return_venue:${type}`)
-        .setPlaceholder("Return one copy from a venue")
-        .addOptions(
-          allocations.map((row) => ({
-            label: `${row.venue_name} — ${row.quantity} installed`.slice(0, 100),
-            value: String(row.venue_id),
-          })),
-        )
-    : null;
-  return interaction.update({
-    content: `**${item.name}** — ${stored} stored, ${installed} installed.`,
-    components: [
-      new ActionRowBuilder().addComponents(venueSelect),
-      ...(returnSelect
-        ? [new ActionRowBuilder().addComponents(returnSelect)]
-        : []),
-    ],
+
+  return interaction.reply({
+    ...equipmentVenueSelection(ownerId, type),
+    ephemeral: true,
   });
 }
 
@@ -379,6 +436,7 @@ module.exports = {
   buyEquipment,
   myEquipment,
   handleManageButton,
+  handleInstallVenueButton,
   handleEquipmentTypeSelect,
   handleVenueSelect,
   handleReturnSelect,
