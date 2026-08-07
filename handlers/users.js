@@ -196,6 +196,10 @@ async function profile(interaction) {
   const equipment = db
     .prepare("SELECT * FROM user_equipment WHERE user_id = ?")
     .all(userId);
+  const equipmentCount = equipment.reduce(
+    (sum, item) => sum + Number(item.quantity || 0),
+    0,
+  );
 
   const passiveTotal =
     venues.reduce((sum, venue) => sum + venuePendingIncome(venue), 0) +
@@ -391,14 +395,14 @@ async function profile(interaction) {
       name: "🏢 PASSIVE INCOME",
       value:
         "```ansi\n" +
-        `Venues: ${venues.length} (${money(venueIncome.hourly)}/hr) +${money(venueIncome.total)}\n` +
+        `Venues: ${venues.length} (${money(venueIncome.hourly)}/hr)\n` +
         `  Base venues: ${money(venueIncome.baseHourly)}/hr\n` +
         `  🍺 Bar upgrades: +${money(venueIncome.barBoostHourly)}/hr\n` +
         `  👥 Venue staff: +${money(venueIncome.permanentStaffBoostHourly)}/hr\n` +
         `  👷 Show staff: +${money(venueIncome.showStaffBoostHourly)}/hr\n` +
         `  ⚡ Event boosts: +${money(venueIncome.eventBoostHourly)}/hr\n` +
         `  🎛 Installed gear: +${money(venueIncome.equipmentIncome)}/hr\n` +
-        `Stored equipment rentals: ${money(equipmentIncome.hourly)}/hr +${money(equipmentIncome.total)}\n` +
+        `Equipment: ${equipmentCount} (${money(equipmentIncome.hourly)}/hr)\n` +
         `Ready to Collect: ${money(passiveTotal)}\n` +
         "```",
     },

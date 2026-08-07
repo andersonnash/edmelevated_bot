@@ -137,6 +137,10 @@ async function handleCommand(interaction) {
       return equipment.handleManageButton(interaction);
     }
 
+    if (interaction.customId.startsWith("equipment_install:")) {
+      return equipment.handleInstallVenueButton(interaction);
+    }
+
     return interaction.reply({
       content: "Unknown button.",
       ephemeral: true,
