@@ -13,7 +13,10 @@ const {
   equipmentPendingIncome,
   hoursSince,
 } = require("../services/venueEngine");
-const { storedQuantity } = require("../services/equipmentRules");
+const {
+  equipmentLoadoutSummary,
+  storedQuantity,
+} = require("../services/equipmentRules");
 const { numberOwnedVenues } = require("../services/venueDisplayRules");
 
 function installedQuantity(userId, type) {
@@ -172,6 +175,7 @@ function equipmentVenueSelection(userId, type) {
 
   const installed = installedQuantity(userId, type);
   const stored = storedQuantity(item.quantity, installed);
+  const allAllocations = allocationRows(userId);
   const venueSelect = new StringSelectMenuBuilder()
     .setCustomId(`equipment_venue:${type}`)
     .setPlaceholder(stored > 0 ? "Choose a venue to install one" : "Return a copy before installing elsewhere")
@@ -179,10 +183,13 @@ function equipmentVenueSelection(userId, type) {
     .addOptions(
       venues.map((venue) => ({
         label: `${venue.name} #${venue.ownerVenueTypeNumber}`.slice(0, 100),
+        description: equipmentLoadoutSummary(
+          allAllocations.filter((row) => row.venue_id === venue.id),
+        ).slice(0, 100),
         value: String(venue.id),
       })),
     );
-  const allocations = allocationRows(userId).filter(
+  const allocations = allAllocations.filter(
     (row) => row.equipment_type === type,
   );
   const returnSelect = allocations.length
@@ -198,7 +205,9 @@ function equipmentVenueSelection(userId, type) {
     : null;
 
   return {
-    content: `**${item.name}** — ${stored} stored, ${installed} installed.\nChoose where this gear should work.`,
+    content:
+      `**${item.name}** — ${stored} stored, ${installed} installed.\n` +
+      "Choose where this gear should work. Installing another copy at the same venue stacks its bonuses.",
     components: [
       new ActionRowBuilder().addComponents(venueSelect),
       ...(returnSelect
