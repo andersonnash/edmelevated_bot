@@ -25,4 +25,21 @@ function storedQuantity(ownedQuantity, installedQuantity) {
   );
 }
 
-module.exports = { installedEquipmentEffects, storedQuantity };
+function equipmentLoadoutSummary(rows = []) {
+  const equipment = rows
+    .filter((row) => Number(row.quantity || 0) > 0)
+    .map((row) => {
+      const type = EQUIPMENT_TYPES[row.equipment_type];
+      return `${type?.name || row.equipment_type} ×${Number(row.quantity)}`;
+    });
+
+  return equipment.length
+    ? equipment.join(" • ")
+    : "No equipment installed";
+}
+
+module.exports = {
+  installedEquipmentEffects,
+  storedQuantity,
+  equipmentLoadoutSummary,
+};
