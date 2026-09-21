@@ -3,6 +3,7 @@ const assert = require("node:assert/strict");
 const {
   venueDepartmentLevelName,
   venueDepartmentBenefitLabel,
+  venueDepartmentLevel,
 } = require("../services/venueDepartmentRules");
 
 test("gives each early bar program level a player-facing identity", () => {
@@ -15,11 +16,9 @@ test("gives each early bar program level a player-facing identity", () => {
   );
 });
 
-test("keeps the premium name available for unlimited later levels", () => {
-  assert.equal(
-    venueDepartmentLevelName("bar", 8),
-    "Premium Cocktail Program",
-  );
+test("caps venue departments at their final level", () => {
+  assert.equal(venueDepartmentLevel("bar", 8), 3);
+  assert.equal(venueDepartmentBenefitLabel("bar", 8), "+45% venue income");
 });
 
 test("describes each department benefit with its actual mechanic", () => {

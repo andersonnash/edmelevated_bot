@@ -98,7 +98,7 @@ function equipmentSummaryEmbed(userId) {
         `🎛 **${item.name}** — Owned: **${item.quantity}**`,
         `Stored: **${stored}** • Installed: **${installed}**`,
         `Rental Income: **${money(type.passiveIncome * stored)}/hr**`,
-        `Installed Effect (each): **+${money(type.installedIncome)}/hr**, **+${Math.round(type.attendanceBonus * 100)}% attendance**, **+${type.productionBonus} production**`,
+        `Installed Show Effect: **+${Math.round(type.attendanceBonus * 100)}% attendance**, **+${type.productionBonus} production**`,
         ...locations,
         `Uncollected Rentals: **${money(equipmentPendingIncome(item))}**`,
       ].join("\n");
@@ -207,7 +207,7 @@ function equipmentVenueSelection(userId, type) {
   return {
     content:
       `**${item.name}** — ${stored} stored, ${installed} installed.\n` +
-      "Choose where this gear should work. Installing another copy at the same venue stacks its bonuses.",
+      "Install it at one venue to improve shows there, or return it to rentals when you want its rental income instead.",
     components: [
       new ActionRowBuilder().addComponents(venueSelect),
       ...(returnSelect
@@ -228,6 +228,20 @@ async function buyEquipment(interaction) {
   if (!equipment) {
     return interaction.reply({ content: "Unknown equipment type.", ephemeral: true });
   }
+  const existing = db
+    .prepare(
+      `SELECT id FROM user_equipment
+       WHERE user_id = ? AND equipment_type = ?`,
+    )
+    .get(userId, type);
+  if (existing) {
+    return interaction.reply({
+      content:
+        `You already own **${equipment.name}**. ` +
+        "Use `/my_equipment` to install it at a venue or return it to rentals.",
+      ephemeral: true,
+    });
+  }
   if (user.cash < equipment.cost) {
     return interaction.reply({
       content: `You need ${money(equipment.cost)}. You currently have ${money(user.cash)}.`,
@@ -236,29 +250,15 @@ async function buyEquipment(interaction) {
   }
 
   const transaction = db.transaction(() => {
-    const existing = db
-      .prepare(
-        `SELECT * FROM user_equipment
-         WHERE user_id = ? AND equipment_type = ?`,
-      )
-      .get(userId, type);
-    if (existing) settleEquipmentRental(existing);
-
     db.prepare("UPDATE users SET cash = cash - ? WHERE discord_id = ?").run(
       equipment.cost,
       userId,
     );
-    if (existing) {
-      db.prepare("UPDATE user_equipment SET quantity = quantity + 1 WHERE id = ?").run(
-        existing.id,
-      );
-    } else {
-      db.prepare(
-        `INSERT INTO user_equipment
-         (user_id, equipment_type, name, quantity, last_collected_at)
-         VALUES (?, ?, ?, 1, CURRENT_TIMESTAMP)`,
-      ).run(userId, type, equipment.name);
-    }
+    db.prepare(
+      `INSERT INTO user_equipment
+       (user_id, equipment_type, name, quantity, last_collected_at)
+       VALUES (?, ?, ?, 1, CURRENT_TIMESTAMP)`,
+    ).run(userId, type, equipment.name);
   });
   transaction();
 
@@ -282,13 +282,13 @@ async function buyEquipment(interaction) {
       {
         name: "🏟 Installed Effect",
         value:
-          `+${money(equipment.installedIncome)}/hr for its venue\n` +
-          `+${Math.round(equipment.attendanceBonus * 100)}% show attendance • +${equipment.productionBonus} production`,
+          `+${Math.round(equipment.attendanceBonus * 100)}% show attendance\n` +
+          `+${equipment.productionBonus} production for shows at its venue`,
       },
       {
         name: ownsVenue ? "📍 Where Should It Work?" : "📦 Currently Stored",
         value: ownsVenue
-          ? "This copy is currently earning rental income. Install it at one of your venues to use its venue and show bonuses instead."
+          ? "This gear is currently earning rental income. Install it at one venue to use its show bonuses instead."
           : "This gear will earn rental income until you own a venue. Install it later through `/my_equipment`.",
       },
     )
@@ -383,11 +383,16 @@ async function handleVenueSelect(interaction) {
     const installed = installedQuantity(userId, type);
     const stored = storedQuantity(item.quantity, installed);
     if (stored <= 0) throw new Error("NO_STORED_GEAR");
+    const installedAtVenue = db
+      .prepare(
+        `SELECT id FROM venue_equipment
+         WHERE user_id = ? AND equipment_type = ? AND venue_id = ?`,
+      )
+      .get(userId, type, venueId);
+    if (installedAtVenue) throw new Error("ALREADY_INSTALLED");
     db.prepare(
       `INSERT INTO venue_equipment (user_id, venue_id, equipment_type, quantity)
-       VALUES (?, ?, ?, 1)
-       ON CONFLICT(venue_id, equipment_type)
-       DO UPDATE SET quantity = quantity + 1`,
+       VALUES (?, ?, ?, 1)`,
     ).run(userId, venueId, type);
   });
 
@@ -397,6 +402,12 @@ async function handleVenueSelect(interaction) {
     if (error.message === "NO_STORED_GEAR") {
       return interaction.update({
         content: "Every copy is installed. Return one from its current venue before installing it elsewhere.",
+        components: [],
+      });
+    }
+    if (error.message === "ALREADY_INSTALLED") {
+      return interaction.update({
+        content: "That equipment is already installed at this venue.",
         components: [],
       });
     }

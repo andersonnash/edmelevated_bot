@@ -17,7 +17,7 @@ const VENUE_TYPES = {
     name: "Garage Party",
     cost: 2_500,
     repRequired: 0,
-    passiveIncome: 150,
+    passiveIncome: 125,
     investmentMultiplier: 0.5,
     insuranceCost: 250,
     baseCapacity: 25,
@@ -31,7 +31,7 @@ const VENUE_TYPES = {
     name: "Granary Warehouse",
     cost: 7_500,
     repRequired: 10,
-    passiveIncome: 500,
+    passiveIncome: 350,
     investmentMultiplier: 1,
     insuranceCost: 750,
     baseCapacity: 100,
@@ -45,7 +45,7 @@ const VENUE_TYPES = {
     name: "The Sub Room",
     cost: 22_500,
     repRequired: 25,
-    passiveIncome: 1_500,
+    passiveIncome: 900,
     investmentMultiplier: 2,
     insuranceCost: 2_000,
     baseCapacity: 250,
@@ -59,7 +59,7 @@ const VENUE_TYPES = {
     name: "Neon Rooftop",
     cost: 60_000,
     repRequired: 50,
-    passiveIncome: 4_000,
+    passiveIncome: 2_000,
     investmentMultiplier: 4,
     insuranceCost: 5_000,
     baseCapacity: 600,
@@ -73,7 +73,7 @@ const VENUE_TYPES = {
     name: "Desert Frequency",
     cost: 200_000,
     repRequired: 100,
-    passiveIncome: 12_000,
+    passiveIncome: 5_000,
     investmentMultiplier: 10,
     insuranceCost: 15_000,
     baseCapacity: 2_500,
@@ -89,7 +89,6 @@ const EQUIPMENT_TYPES = {
     name: "Pioneer DDJ-FLX4",
     cost: 500,
     passiveIncome: 15,
-    installedIncome: 20,
     attendanceBonus: 0.02,
     productionBonus: 2,
     rarity: "Common",
@@ -100,7 +99,6 @@ const EQUIPMENT_TYPES = {
     name: "Pioneer XDJ-RX3",
     cost: 2500,
     passiveIncome: 60,
-    installedIncome: 80,
     attendanceBonus: 0.04,
     productionBonus: 4,
     rarity: "Rare",
@@ -111,7 +109,6 @@ const EQUIPMENT_TYPES = {
     name: "CDJ-3000 Pair",
     cost: 6000,
     passiveIncome: 250,
-    installedIncome: 325,
     attendanceBonus: 0.06,
     productionBonus: 7,
     rarity: "Epic",
@@ -122,7 +119,6 @@ const EQUIPMENT_TYPES = {
     name: "Sound System",
     cost: 15000,
     passiveIncome: 500,
-    installedIncome: 650,
     attendanceBonus: 0.08,
     productionBonus: 10,
     rarity: "Epic",
@@ -133,7 +129,6 @@ const EQUIPMENT_TYPES = {
     name: "Laser Rig",
     cost: 40000,
     passiveIncome: 900,
-    installedIncome: 1150,
     attendanceBonus: 0.1,
     productionBonus: 14,
     rarity: "Legendary",
@@ -151,9 +146,6 @@ const VENUE_INSURANCE = {
 };
 
 const SHOW_STAFF_PAYOUT = 150;
-const SHOW_STAFF_VENUE_BOOST_PER_STAFF = 0.05;
-const SHOW_STAFF_VENUE_BOOST_CAP = 0.25;
-
 const SHOW_GENRES = {
   house: "House",
   techno: "Techno",
@@ -167,7 +159,7 @@ const SHOW_STAFF_ROLES = {
   staff: {
     label: "Show Staff",
     emoji: "👷",
-    description: "Boosts venue income until the show runs.",
+    description: "Helps the show run smoothly and improves its staffing score.",
   },
   door_crew: {
     label: "Door Crew",
@@ -230,6 +222,7 @@ const VENUE_DEPARTMENTS = {
     column: "bar_level",
     baseCost: 1_000,
     benefitPerLevel: 15,
+    maxLevel: 3,
     effect: "Boosts venue income",
     levelNames: [
       "No Bar Program",
@@ -245,6 +238,7 @@ const VENUE_DEPARTMENTS = {
     column: "security_level",
     baseCost: 2_500,
     benefitPerLevel: 20,
+    maxLevel: 3,
     effect: "Boosts venue capacity",
   },
 
@@ -254,6 +248,7 @@ const VENUE_DEPARTMENTS = {
     column: "production_level",
     baseCost: 5_000,
     benefitPerLevel: 15,
+    maxLevel: 3,
     effect: "Boosts show attendance",
   },
 };
@@ -860,8 +855,6 @@ module.exports = {
   BOT_ADMIN_ID,
   SHOW_STAFF_ROLES,
   SHOW_STAFF_PAYOUT,
-  SHOW_STAFF_VENUE_BOOST_PER_STAFF,
-  SHOW_STAFF_VENUE_BOOST_CAP,
   SHOW_GENRES,
   DJ_BOOKINGS,
   DJ_BOOKING_MILESTONES,

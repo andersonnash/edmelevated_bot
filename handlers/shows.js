@@ -48,13 +48,7 @@ const {
   todayString,
 } = require("../services/generators");
 
-const {
-  SHOW_STAFF_VENUE_BOOST_PER_STAFF,
-  SHOW_STAFF_VENUE_BOOST_CAP,
-  SHOW_GENRES,
-  SHOW_CREATION_XP,
-  isOwner,
-} = require("../constants");
+const { SHOW_GENRES, SHOW_CREATION_XP, isOwner } = require("../constants");
 
 const { isBotAdmin } = require("../constants");
 
@@ -91,7 +85,22 @@ async function createShow(interaction) {
     venue.id,
   );
 
-  const event = randomShowData();
+  const bookedDates = db
+    .prepare(
+      `SELECT show_date FROM shows
+       WHERE venue_id = ? AND status = 'upcoming'`,
+    )
+    .all(venue.id)
+    .map((show) => show.show_date);
+  const event = randomShowData({ unavailableDates: bookedDates });
+  if (!event) {
+    return interaction.editReply({
+      content:
+        `**${venueLabel}** is fully booked for the next two weeks. ` +
+        "Complete a show or choose another venue before creating another event.",
+      ephemeral: true,
+    });
+  }
   const showName = customName || event.name;
 
   const equipmentEffects = getInstalledEquipmentEffects(venue.id);
@@ -402,13 +411,6 @@ function getUserShows(userId) {
   });
 }
 
-function getShowStaffBoostPercent(showStaffCount) {
-  const rawBoost = showStaffCount * SHOW_STAFF_VENUE_BOOST_PER_STAFF;
-  const cappedBoost = Math.min(rawBoost, SHOW_STAFF_VENUE_BOOST_CAP);
-
-  return Math.round(cappedBoost * 100);
-}
-
 function getShowCounts(showId) {
   const djs = db
     .prepare("SELECT COUNT(*) AS count FROM show_lineup WHERE show_id = ?")
@@ -506,7 +508,6 @@ function buildShowPage(userId, status, page = 0) {
     advanceTicketRevenue,
     unpaidPayoutCount,
   } = getShowCounts(show.id);
-  const showStaffBoostPercent = getShowStaffBoostPercent(showStaffCount);
   const finalCapacity = venueCapacity(show);
 
   const baseProjectedWalkins = Number(show.simulated_attendees || 0);
@@ -576,10 +577,8 @@ function buildShowPage(userId, status, page = 0) {
       {
         name: "👷 Show Staff",
         value:
-          status === "upcoming"
-            ? `${showStaffCount}/${show.staff_limit || 0} hired\n` +
-              `Venue Income Boost: +${showStaffBoostPercent}% until showtime`
-            : `${showStaffCount}/${show.staff_limit || 0} hired`,
+          `${showStaffCount}/${show.staff_limit || 0} hired\n` +
+          "Improves the final staffing score",
         inline: true,
       },
     )

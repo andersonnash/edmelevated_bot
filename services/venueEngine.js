@@ -2,16 +2,14 @@ const db = require("../db");
 const {
   VENUE_TYPES,
   EQUIPMENT_TYPES,
-  VENUE_DEPARTMENTS,
   VENUE_STAFF_ROLES,
-  SHOW_STAFF_VENUE_BOOST_PER_STAFF,
-  SHOW_STAFF_VENUE_BOOST_CAP,
 } = require("../constants");
 const {
   venueCapacity,
   venueAttendanceBonus,
 } = require("./showMath");
 const { installedEquipmentEffects, storedQuantity } = require("./equipmentRules");
+const { venueDepartmentLevel } = require("./venueDepartmentRules");
 
 function getInstalledEquipment(venueId) {
   return db
@@ -62,7 +60,7 @@ function getVenueIncomeMultiplier(venueId) {
   const staff = db
     .prepare(
       `
-    SELECT role FROM venue_staff 
+    SELECT DISTINCT role FROM venue_staff
     WHERE venue_id = ? AND status = 'active'
   `,
     )
@@ -79,27 +77,6 @@ function getVenueIncomeMultiplier(venueId) {
   return 1 + totalBoost;
 }
 
-function getActiveShowStaffBoost(venueId) {
-  const row = db
-    .prepare(
-      `
-      SELECT COUNT(show_staff.id) AS count
-      FROM show_staff
-      JOIN shows
-        ON shows.id = show_staff.show_id
-      WHERE shows.venue_id = ?
-        AND shows.status = 'upcoming'
-        AND show_staff.status = 'assigned'
-      `,
-    )
-    .get(venueId);
-
-  const staffCount = row?.count || 0;
-  const rawBoost = staffCount * SHOW_STAFF_VENUE_BOOST_PER_STAFF;
-
-  return Math.min(rawBoost, SHOW_STAFF_VENUE_BOOST_CAP);
-}
-
 function venueHourlyIncome(venue) {
   const baseIncome = VENUE_TYPES[venue.type]?.passiveIncome || 0;
 
@@ -109,31 +86,26 @@ function venueHourlyIncome(venue) {
 
   const staffMultiplier = getVenueIncomeMultiplier(venue.id);
 
-  const showStaffBoost = getActiveShowStaffBoost(venue.id);
-  const showStaffMultiplier = 1 + showStaffBoost;
-
   const eventMultiplier = isActiveUntil(venue.boosted_until)
     ? venue.income_multiplier || 1
     : 1;
 
-  const barLevel = venue.bar_level || 0;
+  const barLevel = venueDepartmentLevel("bar", venue.bar_level);
   const barMultiplier = 1 + barLevel * 0.15;
 
   const operatingIncome = Math.floor(
     baseIncome *
       barMultiplier *
       staffMultiplier *
-      showStaffMultiplier *
       eventMultiplier,
   );
-  return operatingIncome + getInstalledEquipmentEffects(venue.id).income;
+  return operatingIncome;
 }
 
 function calculateVenueIncomeBreakdown({
   baseIncome,
   barLevel = 0,
   staffMultiplier = 1,
-  showStaffBoost = 0,
   eventMultiplier = 1,
   closed = false,
 }) {
@@ -142,26 +114,21 @@ function calculateVenueIncomeBreakdown({
       baseHourly: 0,
       barBoostHourly: 0,
       permanentStaffBoostHourly: 0,
-      showStaffBoostHourly: 0,
       eventBoostHourly: 0,
       hourly: 0,
     };
   }
 
-  const barMultiplier = 1 + barLevel * 0.15;
-  const showStaffMultiplier = 1 + showStaffBoost;
+  const cappedBarLevel = venueDepartmentLevel("bar", barLevel);
+  const barMultiplier = 1 + cappedBarLevel * 0.15;
 
   const baseStage = Math.floor(baseIncome);
   const barStage = Math.floor(baseIncome * barMultiplier);
   const staffStage = Math.floor(baseIncome * barMultiplier * staffMultiplier);
-  const showStaffStage = Math.floor(
-    baseIncome * barMultiplier * staffMultiplier * showStaffMultiplier,
-  );
   const eventStage = Math.floor(
     baseIncome *
       barMultiplier *
       staffMultiplier *
-      showStaffMultiplier *
       eventMultiplier,
   );
 
@@ -169,8 +136,7 @@ function calculateVenueIncomeBreakdown({
     baseHourly: baseStage,
     barBoostHourly: barStage - baseStage,
     permanentStaffBoostHourly: staffStage - barStage,
-    showStaffBoostHourly: showStaffStage - staffStage,
-    eventBoostHourly: eventStage - showStaffStage,
+    eventBoostHourly: eventStage - staffStage,
     hourly: eventStage,
   };
 }
@@ -180,19 +146,14 @@ function venueIncomeBreakdown(venue) {
     baseIncome: VENUE_TYPES[venue.type]?.passiveIncome || 0,
     barLevel: venue.bar_level || 0,
     staffMultiplier: getVenueIncomeMultiplier(venue.id),
-    showStaffBoost: getActiveShowStaffBoost(venue.id),
     eventMultiplier: isActiveUntil(venue.boosted_until)
       ? venue.income_multiplier || 1
       : 1,
     closed: isActiveUntil(venue.closed_until),
   });
-  const equipmentIncome = isActiveUntil(venue.closed_until)
-    ? 0
-    : getInstalledEquipmentEffects(venue.id).income;
   return {
     ...breakdown,
-    equipmentIncome,
-    hourly: breakdown.hourly + equipmentIncome,
+    hourly: breakdown.hourly,
   };
 }
 
@@ -292,9 +253,7 @@ function getVenueIncome(userId) {
   let baseHourly = 0;
   let barBoostHourly = 0;
   let permanentStaffBoostHourly = 0;
-  let showStaffBoostHourly = 0;
   let eventBoostHourly = 0;
-  let equipmentIncome = 0;
   let hourly = 0;
   let total = 0;
 
@@ -304,9 +263,7 @@ function getVenueIncome(userId) {
     baseHourly += breakdown.baseHourly;
     barBoostHourly += breakdown.barBoostHourly;
     permanentStaffBoostHourly += breakdown.permanentStaffBoostHourly;
-    showStaffBoostHourly += breakdown.showStaffBoostHourly;
     eventBoostHourly += breakdown.eventBoostHourly;
-    equipmentIncome += breakdown.equipmentIncome;
     hourly += breakdown.hourly;
     total += venuePendingIncome(venue);
   });
@@ -318,9 +275,7 @@ function getVenueIncome(userId) {
     baseHourly,
     barBoostHourly,
     permanentStaffBoostHourly,
-    showStaffBoostHourly,
     eventBoostHourly,
-    equipmentIncome,
     staffBoostHourly: Math.max(0, hourly - baseHourly),
   };
 }
@@ -364,5 +319,4 @@ module.exports = {
   getInstalledEquipmentEffects,
   equipmentMinuteIncome,
   nowString,
-  getActiveShowStaffBoost,
 };

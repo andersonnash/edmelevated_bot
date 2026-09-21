@@ -1,6 +1,6 @@
 const { VENUE_DEPARTMENTS } = require("../constants");
 
-function venueDepartmentLevelName(departmentKey, level) {
+function venueDepartmentLevel(departmentKey, level) {
   const department = VENUE_DEPARTMENTS[departmentKey];
 
   if (!department) {
@@ -8,6 +8,17 @@ function venueDepartmentLevelName(departmentKey, level) {
   }
 
   const safeLevel = Math.max(0, Number(level) || 0);
+  return Math.min(safeLevel, department.maxLevel ?? Infinity);
+}
+
+function venueDepartmentLevelName(departmentKey, level) {
+  const department = VENUE_DEPARTMENTS[departmentKey];
+
+  if (!department) {
+    throw new Error(`Unknown venue department: ${departmentKey}`);
+  }
+
+  const safeLevel = venueDepartmentLevel(departmentKey, level);
   const names = department.levelNames;
 
   if (!names?.length) {
@@ -24,7 +35,8 @@ function venueDepartmentBenefitLabel(departmentKey, level) {
     throw new Error(`Unknown venue department: ${departmentKey}`);
   }
 
-  const totalBenefit = department.benefitPerLevel * Math.max(0, level);
+  const totalBenefit =
+    department.benefitPerLevel * venueDepartmentLevel(departmentKey, level);
 
   if (departmentKey === "bar") {
     return `+${totalBenefit}% venue income`;
@@ -38,6 +50,7 @@ function venueDepartmentBenefitLabel(departmentKey, level) {
 }
 
 module.exports = {
+  venueDepartmentLevel,
   venueDepartmentLevelName,
   venueDepartmentBenefitLabel,
 };

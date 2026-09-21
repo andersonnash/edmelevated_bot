@@ -80,7 +80,7 @@ function categoryEmbed(category) {
         {
           name: "`/hire_show_staff`",
           value:
-            "Hire another user for an automatically assigned show job. Each hire fills a staffing slot, improves the staffing score, adds +5% temporary venue income, and pays $150 when the show is settled.",
+            "Hire another user for an automatically assigned show job. Each hire fills a staffing slot, improves the staffing score, and pays $150 when the show is settled.",
         },
         {
           name: "`/show_lineup`",
@@ -156,13 +156,13 @@ function categoryEmbed(category) {
             "🍺 **Bar Program** — grows from Beer & Wine Service to a Full Bar and Premium Cocktail Program; increases venue income\n" +
             "🚪 **Security** — increases venue capacity\n" +
             "🎛 **Production** — boosts show attendance\n\n" +
-            "Prices scale with the venue and increase as that department levels up.",
+            "Each department has three levels. Prices scale with the venue and increase as that department levels up.",
         },
         {
           name: "Venue staff vs show staff",
           value:
             "`/hire_venue_staff` = permanent staff for one venue. They increase that venue's income, and hiring prices scale with venue size.\n" +
-            "`/hire_show_staff` = temporary show staff. They boost venue income only until that show runs.",
+            "`/hire_show_staff` = temporary staff for one show. They improve its final staffing score.",
         },
         {
           name: "`/venue_insurance`",
@@ -245,7 +245,7 @@ function categoryEmbed(category) {
         {
           name: "`/hire_show_staff`",
           value:
-            "Hire another user for an automatically assigned show job. Each hire fills a staffing slot, adds +5% temporary venue income until showtime, and pays $150 after settlement.",
+            "Hire another user for an automatically assigned show job. Each hire fills a staffing slot, improves the final staffing score, and pays $150 after settlement.",
         },
         {
           name: "`/my_jobs`",
@@ -264,7 +264,7 @@ function categoryEmbed(category) {
       .setColor(0x14b8a6)
       .setTitle("🎛 Equipment Commands")
       .setDescription(
-        "Rent out stored gear or install it at your venues to strengthen their income and shows.",
+        "Rent out stored gear or install it at a venue to strengthen its shows.",
       )
       .addFields(
         {
@@ -272,13 +272,13 @@ function categoryEmbed(category) {
           value:
             "Equipment is the easiest way for new players to start earning equipment rental income.\n" +
             "Stored copies generate equipment rental income.\n" +
-            "Installed copies improve one venue's income, show attendance, and production.",
+            "Installed gear improves one venue's show attendance and production.",
         },
         {
           name: "Equipment vs venues",
           value:
             "Before you own a venue, gear remains in rentals.\n" +
-            "After buying a venue, use /my_equipment to install, move, or return gear without another command.",
+            "You can own one of each gear type. After buying a venue, use /my_equipment to install, move, or return gear without another command.",
         },
         {
           name: "`/buy_equipment`",

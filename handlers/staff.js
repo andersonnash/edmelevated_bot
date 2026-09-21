@@ -2,8 +2,6 @@ const db = require("../db");
 const {
   VENUE_STAFF_ROLES,
   SHOW_STAFF_PAYOUT,
-  SHOW_STAFF_VENUE_BOOST_PER_STAFF,
-  SHOW_STAFF_VENUE_BOOST_CAP,
 } = require("../constants");
 const {
   venueStaffHiringCost,
@@ -128,9 +126,6 @@ async function hireStaffForShow(interaction, showId, hiredUser) {
 
   addRole(hiredUser.id, "Show Staff");
 
-  const staffBoostPercent = Math.round(SHOW_STAFF_VENUE_BOOST_PER_STAFF * 100);
-  const maxBoostPercent = Math.round(SHOW_STAFF_VENUE_BOOST_CAP * 100);
-
   const embed = new EmbedBuilder()
     .setColor(0x00ff88)
     .setTitle("👷 SHOW STAFF HIRED")
@@ -161,21 +156,12 @@ async function hireStaffForShow(interaction, showId, hiredUser) {
         inline: true,
       },
       {
-        name: "📈 Venue Income Boost",
-        value:
-          `+${staffBoostPercent}% venue income until this show runs.\n` +
-          `Temporary show staff boost caps at +${maxBoostPercent}%.`,
-        inline: false,
-      },
-      {
         name: "💵 Staff Payout",
         value: `${hiredUser.username} will receive **$${SHOW_STAFF_PAYOUT}** when the owner settles the completed show.`,
         inline: false,
       },
     )
-    .setFooter({
-      text: "Use /collect before showtime to take advantage of the temporary staff boost.",
-    });
+    .setFooter({ text: "Show staff improves the event's final staffing score." });
 
   const row = new ActionRowBuilder().addComponents(
     new ButtonBuilder()
@@ -227,9 +213,6 @@ async function handleHireStaffButton(interaction) {
     });
   }
 
-  const staffBoostPercent = Math.round(SHOW_STAFF_VENUE_BOOST_PER_STAFF * 100);
-  const maxBoostPercent = Math.round(SHOW_STAFF_VENUE_BOOST_CAP * 100);
-
   const embed = new EmbedBuilder()
     .setColor(0x00ff88)
     .setTitle("👷 Hire Show Staff")
@@ -246,11 +229,8 @@ async function handleHireStaffButton(interaction) {
         inline: true,
       },
       {
-        name: "📈 Temporary Boost",
-        value:
-          `Each staff member adds **+${staffBoostPercent}%** venue income until the show runs.\n` +
-          `Show staff boost caps at **+${maxBoostPercent}%**.\n` +
-          "Each hire also fills a staffing slot used in the final show rating.",
+        name: "⭐ Show Effect",
+        value: "Each hire fills a staffing slot used in the final show rating.",
         inline: false,
       },
       {
@@ -329,17 +309,23 @@ async function hireVenueStaff(interaction) {
     )
     .get(venueId).count;
 
-  if (staffCount >= venue.staff_limit) {
-    return interaction.reply({
-      content: `Your venue only has ${venue.staff_limit} staff slots. Fire someone first!`,
-      ephemeral: true,
-    });
-  }
-
   const roleData = VENUE_STAFF_ROLES[role];
   if (!roleData) {
     return interaction.reply({
       content: "Invalid role selected.",
+      ephemeral: true,
+    });
+  }
+
+  const existingRole = db
+    .prepare(
+      `SELECT id FROM venue_staff
+       WHERE venue_id = ? AND role = ? AND status = 'active'`,
+    )
+    .get(venueId, role);
+  if (existingRole) {
+    return interaction.reply({
+      content: `**${venueLabel}** already has a ${roleData.label} leading operations.`,
       ephemeral: true,
     });
   }
@@ -395,8 +381,8 @@ async function hireVenueStaff(interaction) {
         inline: true,
       },
       {
-        name: "👷 Staff Slots",
-        value: `${staffCount + 1}/${venue.staff_limit}`,
+        name: "👥 Operations Roles",
+        value: `${staffCount + 1}/${Object.keys(VENUE_STAFF_ROLES).length}`,
         inline: true,
       },
       {
@@ -501,7 +487,7 @@ async function myJobs(interaction) {
             `**Status:** ${statusEmoji[job.status] || "•"} ${formatJobStatus(job)}\n` +
             `**Effect:** ${
               job.status === "assigned"
-                ? "Boosting venue income until showtime."
+                ? "Assigned to help the show run smoothly."
                 : "Staff work has been completed for this show."
             }`,
           inline: false,
