@@ -1,4 +1,4 @@
-function randomShowData() {
+function randomShowData({ unavailableDates = [], now = new Date(), random = Math.random } = {}) {
   const adjectives = [
     "Midnight",
     "Subspace",
@@ -27,27 +27,32 @@ function randomShowData() {
 
   const prices = [20, 25, 30, 35, 40, 50];
 
-  const now = new Date();
   const minDays = 3;
   const maxDays = 14;
+  const blockedDates = new Set(unavailableDates);
+  const availableDates = [];
 
-  const randomDays =
-    Math.floor(Math.random() * (maxDays - minDays + 1)) + minDays;
+  for (let days = minDays; days <= maxDays; days += 1) {
+    const futureDate = new Date(now);
+    futureDate.setDate(futureDate.getDate() + days);
+    const formattedDate = [
+      futureDate.getFullYear(),
+      String(futureDate.getMonth() + 1).padStart(2, "0"),
+      String(futureDate.getDate()).padStart(2, "0"),
+    ].join("-");
+    if (!blockedDates.has(formattedDate)) availableDates.push(formattedDate);
+  }
 
-  const futureDate = new Date(now);
-  futureDate.setDate(futureDate.getDate() + randomDays);
+  if (!availableDates.length) return null;
 
-  const formattedDate = [
-    futureDate.getFullYear(),
-    String(futureDate.getMonth() + 1).padStart(2, "0"),
-    String(futureDate.getDate()).padStart(2, "0"),
-  ].join("-");
+  const formattedDate =
+    availableDates[Math.floor(random() * availableDates.length)];
 
   const name =
-    `${adjectives[Math.floor(Math.random() * adjectives.length)]} ` +
-    `${nouns[Math.floor(Math.random() * nouns.length)]}`;
+    `${adjectives[Math.floor(random() * adjectives.length)]} ` +
+    `${nouns[Math.floor(random() * nouns.length)]}`;
 
-  const price = prices[Math.floor(Math.random() * prices.length)];
+  const price = prices[Math.floor(random() * prices.length)];
 
   return {
     name,

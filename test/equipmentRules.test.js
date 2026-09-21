@@ -6,13 +6,13 @@ const {
   storedQuantity,
 } = require("../services/equipmentRules");
 
-test("combines installed income and show effects by quantity", () => {
+test("uses one installed copy of each type for show effects", () => {
   assert.deepEqual(
     installedEquipmentEffects([
       { equipment_type: "flx4", quantity: 2 },
       { equipment_type: "sound_system", quantity: 1 },
     ]),
-    { income: 690, attendanceBonus: 0.12, productionBonus: 14 },
+    { attendanceBonus: 0.1, productionBonus: 12 },
   );
 });
 

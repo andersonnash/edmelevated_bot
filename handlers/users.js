@@ -399,9 +399,7 @@ async function profile(interaction) {
         `  Base venues: ${money(venueIncome.baseHourly)}/hr\n` +
         `  🍺 Bar upgrades: +${money(venueIncome.barBoostHourly)}/hr\n` +
         `  👥 Venue staff: +${money(venueIncome.permanentStaffBoostHourly)}/hr\n` +
-        `  👷 Show staff: +${money(venueIncome.showStaffBoostHourly)}/hr\n` +
         `  ⚡ Event boosts: +${money(venueIncome.eventBoostHourly)}/hr\n` +
-        `  🎛 Installed gear: +${money(venueIncome.equipmentIncome)}/hr\n` +
         `Equipment: ${equipmentCount} (${money(equipmentIncome.hourly)}/hr)\n` +
         `Ready to Collect: ${money(passiveTotal)}\n` +
         "```",
