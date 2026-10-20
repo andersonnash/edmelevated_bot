@@ -60,21 +60,21 @@ function calculateShowRating({
   totalAttendance,
   totalRevenue,
   netProfit,
-  djCount,
+  artistBooked,
   staffCount,
 }) {
   const capacity = Math.max(1, Number(show.capacity || show.base_capacity || 1));
   const attendance = clampScore((totalAttendance / capacity) * 100);
   const profitability = profitabilityScore(totalRevenue, netProfit);
   const production = productionScore(show);
-  const lineup = coverageScore(djCount, Number(show.dj_limit || 0));
+  const artist = artistBooked ? 100 : 0;
   const staffing = coverageScore(staffCount, Number(show.staff_limit || 0));
 
   const overallScore = clampScore(
     attendance * 0.3 +
       profitability * 0.25 +
       production * 0.15 +
-      lineup * 0.15 +
+      artist * 0.15 +
       staffing * 0.15,
   );
 
@@ -82,7 +82,7 @@ function calculateShowRating({
     attendance,
     profitability,
     production,
-    lineup,
+    artist,
     staffing,
     overallScore,
     stars: Number((overallScore / 20).toFixed(1)),

@@ -1,10 +1,4 @@
 const db = require("../db");
-const {
-  addDjReputation,
-  calculateDjBookingFee,
-  recordCompletedGig,
-} = require("./djs");
-const { addCash } = require("./economy");
 const { venueCapacity } = require("./venueEngine");
 const { calculateProjectedWalkins } = require("./showForecast");
 const { calculateShowRating } = require("./showRatings");
@@ -31,7 +25,6 @@ async function runShowById(showId) {
         venues.name AS venue_name,
         venues.base_capacity,
         venues.staff_limit,
-        venues.dj_limit,
         venues.bar_level,
         venues.security_level,
         venues.production_level,
@@ -66,9 +59,9 @@ async function runShowById(showId) {
     )
     .all(show.show_id);
 
-  const lineup = db
-    .prepare("SELECT * FROM show_lineup WHERE show_id = ?")
-    .all(show.show_id);
+  const artist = db
+    .prepare("SELECT * FROM show_artists WHERE show_id = ?")
+    .get(show.show_id);
 
   const finalCapacity = venueCapacity(show);
   const admittedTickets = tickets.slice(0, finalCapacity);
@@ -78,6 +71,7 @@ async function runShowById(showId) {
     baseWalkins: Number(show.simulated_attendees || 0),
     venue: show,
     ticketCount: confirmedTicketCount,
+    artistDemand: Number(artist?.demand_bonus || 0),
   });
   const adjustedWalkins = projectedWalkins;
 
@@ -95,7 +89,7 @@ async function runShowById(showId) {
   const totalRevenue = paidRevenue + simulatedRevenue;
 
   const staffCost = staff.reduce((sum, person) => sum + (person.pay || 0), 0);
-  const lineupCost = lineup.reduce((sum, dj) => sum + (dj.pay || 0), 0);
+  const artistFee = Number(artist?.booking_fee || 0);
 
   const operatingCost =
     Math.floor(finalCapacity * 0.5) + Math.floor(totalAttendance * 1);
@@ -108,15 +102,15 @@ async function runShowById(showId) {
 
   const bonusRevenue = Math.floor(totalRevenue * upgradeBonus);
 
-  const netProfit =
-    totalRevenue + bonusRevenue - staffCost - lineupCost - operatingCost;
+  const settlementPayout = totalRevenue + bonusRevenue - staffCost - operatingCost;
+  const eventProfit = settlementPayout - artistFee;
 
   const rating = calculateShowRating({
     show: { ...show, capacity: finalCapacity },
     totalAttendance,
     totalRevenue: totalRevenue + bonusRevenue,
-    netProfit,
-    djCount: lineup.length,
+    netProfit: eventProfit,
+    artistBooked: Boolean(artist),
     staffCount: staff.length,
   });
 
@@ -134,7 +128,7 @@ async function runShowById(showId) {
         attendance_score,
         profitability_score,
         production_score,
-        lineup_score,
+        artist_score,
         staffing_score,
         overall_score,
         star_rating,
@@ -149,33 +143,13 @@ async function runShowById(showId) {
       rating.attendance,
       rating.profitability,
       rating.production,
-      rating.lineup,
+      rating.artist,
       rating.staffing,
       rating.overallScore,
       rating.stars,
       rating.reputationBonus,
       rating.reaction,
     );
-
-    for (const dj of lineup) {
-      db.prepare(
-        `
-        INSERT INTO show_payouts (
-          show_id,
-          user_id,
-          username,
-          role,
-          amount,
-          paid
-        )
-        VALUES (?, ?, ?, 'dj', ?, 0)
-        `,
-      ).run(show.show_id, dj.dj_user_id, dj.dj_username, dj.pay);
-
-      const djRepGain = Math.max(1, Math.floor(totalAttendance / 75));
-      addDjReputation(dj.dj_user_id, djRepGain);
-      recordCompletedGig(dj.dj_user_id);
-    }
 
     for (const person of staff) {
       db.prepare(
@@ -219,7 +193,7 @@ async function runShowById(showId) {
       )
       VALUES (?, ?, ?, 'owner', ?, 0)
       `,
-    ).run(show.show_id, show.owner_id, null, netProfit);
+    ).run(show.show_id, show.owner_id, null, settlementPayout);
 
     addSceneReputation(show.owner_id, reputationGain);
     xpUpdate = addXp(show.owner_id, SHOW_COMPLETION_XP);
@@ -241,28 +215,24 @@ async function runShowById(showId) {
     advanceSales,
     confirmedTicketCount,
     staff,
-    lineup,
+    artist,
     adjustedWalkins,
     rawWalkinDemand: Number(show.simulated_attendees || 0),
     paidRevenue,
     simulatedRevenue,
     totalAttendance,
     staffCost,
-    lineupCost,
+    artistFee,
     operatingCost,
     bonusRevenue,
-    netProfit,
+    settlementPayout,
+    eventProfit,
     rating,
     baseReputationGain,
     reputationGain,
     xpUpdate,
     payouts: {
-      owner: netProfit,
-      djs: lineup.map((dj) => ({
-        userId: dj.dj_user_id,
-        username: dj.dj_username,
-        amount: dj.pay,
-      })),
+      owner: settlementPayout,
       staff: staff.map((person) => ({
         userId: person.hired_user_id,
         username: person.hired_username,

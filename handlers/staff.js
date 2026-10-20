@@ -165,8 +165,8 @@ async function hireStaffForShow(interaction, showId, hiredUser) {
 
   const row = new ActionRowBuilder().addComponents(
     new ButtonBuilder()
-      .setCustomId(`show_lineup_${show.id}`)
-      .setLabel("🎧 View Lineup")
+      .setCustomId(`book_artist_${show.id}`)
+      .setLabel("🎧 Book Featured Artist")
       .setStyle(ButtonStyle.Secondary),
   );
 

@@ -18,7 +18,6 @@ function test(name, fn) {
 test("unlocks the showcase only after the opening journey requirements", () => {
   const input = {
     equipmentCount: 1,
-    openDecksComplete: true,
     activities: { street_team_runs: 1, crate_digs: 1 },
   };
   assert.equal(showcaseUnlocked(input), true);
@@ -28,7 +27,6 @@ test("unlocks the showcase only after the opening journey requirements", () => {
 test("accepts either crate digging or a rave story as the scene activity", () => {
   const requirements = journeyRequirements({
     equipmentCount: 1,
-    openDecksComplete: true,
     activities: { street_team_runs: 1, rave_stories: 1 },
   });
   assert.equal(requirements.sceneActivity, true);

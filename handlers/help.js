@@ -22,12 +22,12 @@ function mainHelpEmbed() {
       {
         name: "01 // BUILD YOUR SOUND",
         value:
-          "Start unknown. Find gear, take bookings, earn trust, and develop an identity behind the decks.",
+          "Start unknown. Find gear, build community momentum, and lay the foundation for your first venue.",
       },
       {
         name: "02 // CREATE THE NIGHT",
         value:
-          "Secure a room. Build the lineup. Move tickets. Staff the floor. Open the doors and live with the result.",
+          "Secure a room. Book an artist. Move tickets. Staff the floor. Open the doors and live with the result.",
       },
       {
         name: "03 // SHAPE THE CITY",
@@ -43,7 +43,7 @@ function mainHelpEmbed() {
       {
         name: "EXPLORE THE CITY",
         value:
-          "Use the controls below to tune into shows, venues, artists, crews, equipment, progression, and the wider scene.",
+          "Use the controls below to tune into shows, venues, crews, equipment, progression, and the wider scene.",
       },
     )
     .setFooter({
@@ -66,7 +66,7 @@ function categoryEmbed(category) {
         {
           name: "`/my_shows`",
           value:
-            "View upcoming shows and saved ratings for completed shows. Use the buttons to promote, view the lineup, hire show staff, or collect payouts.",
+            "View upcoming shows and saved ratings for completed shows. Use the buttons to book an artist, promote, hire show staff, or collect payouts.",
         },
         {
           name: "`/promote_show`",
@@ -74,17 +74,13 @@ function categoryEmbed(category) {
             "Run a show's one promotional campaign. Its price and demand gain scale with venue size; projected-full shows do not need one.",
         },
         {
-          name: "`/add_lineup`",
-          value: "Add another Discord user as a DJ on your show lineup.",
+          name: "Featured artists",
+          value: "Use **Book Artist** in `/my_shows` to choose from the roster available for that venue. The fee is paid upfront and the artist improves projected walk-ins.",
         },
         {
           name: "`/hire_show_staff`",
           value:
             "Hire another user for an automatically assigned show job. Each hire fills a staffing slot, improves the staffing score, and pays $150 when the show is settled.",
-        },
-        {
-          name: "`/show_lineup`",
-          value: "View DJs and staff assigned to a show.",
         },
         {
           name: "Advance ticket sales",
@@ -94,7 +90,7 @@ function categoryEmbed(category) {
         {
           name: "`/collect_show`",
           value:
-            "Collect profits and settle payouts. Completed show reports rate attendance, profit, production, lineup, and staffing.",
+            "Collect the owner settlement and pay show staff. Completed show reports rate attendance, profit, production, artist, and staffing.",
         },
       ),
 
@@ -108,7 +104,7 @@ function categoryEmbed(category) {
         {
           name: "`/underground_run` • Always Available",
           value:
-            "Choose one of several story scenarios, watch it unfold, then make one safe, balanced, or risky decision for the final reward. The run ends after that scenario. Daily diminishing returns keep it playable without replacing jobs, bookings, or shows.",
+            "Choose one of several story scenarios, watch it unfold, then make one safe, balanced, or risky decision for the final reward. The run ends after that scenario. Daily diminishing returns keep it playable without replacing jobs or shows.",
         },
         {
           name: "`/crate_dig`",
@@ -197,44 +193,6 @@ function categoryEmbed(category) {
         text: "Tip: Venue staff are permanent. Show staff are temporary and tied to upcoming shows.",
       }),
 
-    djs: new EmbedBuilder()
-      .setColor(0xa78bfa)
-      .setTitle("🎧 DJs & Lineup Commands")
-      .setDescription(
-        "Take DJ bookings, add DJs to shows, view lineups, and track who is building a name in the scene.",
-      )
-      .addFields(
-        {
-          name: "`/bookings`",
-          value:
-            "Career bookings are one-time milestones unlocked by DJ reputation and repeatable-gig experience. Every booking has its own choices. Repeatable gigs share a 6-hour cooldown and a limit of 3 per day.",
-        },
-        {
-          name: "`/add_lineup`",
-          value:
-            "Add another Discord user as a DJ on one of your upcoming shows.",
-        },
-        {
-          name: "`/show_lineup`",
-          value: "View the DJs and staff assigned to a show.",
-        },
-        {
-          name: "`/dj_profile`",
-          value:
-            "View another user's DJ Reputation, level, Completed Gigs, and booking fee.",
-        },
-        {
-          name: "`/top_djs`",
-          value: "View the top DJs in the city.",
-        },
-        {
-          name: "How DJs fit into shows",
-          value:
-            "DJs can build their own career through `/bookings` after buying gear.\n" +
-            "Promoters can use `/add_lineup` before showtime to build a lineup around an event.",
-        },
-      ),
-
     staff: new EmbedBuilder()
       .setColor(0xf97316)
       .setTitle("👷 Staff Commands")
@@ -256,7 +214,7 @@ function categoryEmbed(category) {
           name: "How staff payouts work",
           value:
             "Staff do not collect payouts directly.\n" +
-            "When the show owner runs `/collect_show`, the completed show is settled and staff/DJ payouts are marked paid.",
+            "When the show owner runs `/collect_show`, the completed show is settled and staff payouts are marked paid.",
         },
       ),
 
@@ -322,7 +280,7 @@ function categoryEmbed(category) {
         {
           name: "`/collect_show`",
           value:
-            "Owner collects profits from one completed show. This also settles DJ and staff payouts for that show.",
+            "Owner collects the settlement from one completed show. This also settles staff payouts for that show.",
         },
         {
           name: "`/leaderboard`",
@@ -340,16 +298,14 @@ function categoryEmbed(category) {
         {
           name: "`/journey` • Start Here",
           value:
-            "Every new player starts here. Follow one clear objective at a time: buy a controller, complete Open Decks, build community momentum, and finish with a borrowed-venue showcase that funds your move toward Garage Party.",
+            "Every new player starts here. Follow one clear objective at a time: buy a controller, build community momentum, and finish with a borrowed-venue showcase that funds your move toward Garage Party.",
         },
         {
           name: "How progression works",
           value:
             "**XP & Level** — unlimited player progression; activities and shows award XP.\n" +
             "**Scene Reputation** — citywide credibility used for venue and progression unlocks.\n" +
-            "**DJ Reputation** — artist credibility that raises DJ status and booking value.\n" +
-            "**Completed Gigs** — bookings and show-lineup appearances; also raises booking value.\n" +
-            "**Show Rating** — event quality across attendance, profit, production, lineup, and staffing.\n" +
+            "**Show Rating** — event quality across attendance, profit, production, artist choice, and staffing.\n" +
             "**Venue Reputation** — planned as a separate future venue measurement; not yet tracked.\n" +
             "**Cash** — buys equipment, venues, upgrades, insurance, and promotions.",
         },
@@ -423,14 +379,6 @@ function categoryEmbed(category) {
           value:
             "Check your venues, passive income, upgrades, insurance, staff, and active boosts.",
         },
-        {
-          name: "`/show_lineup`",
-          value: "See the DJs and staff assigned to a show.",
-        },
-        {
-          name: "`/dj_profile`",
-          value: "Check another user's DJ profile and scene progress.",
-        },
       )
       .setFooter({
         text: "Tip: Use /profile when you need direction. Use /my_shows and /my_venues to check your current city activity.",
@@ -459,12 +407,6 @@ function helpButtons(active = "home") {
       .setLabel("Venues")
       .setStyle(ButtonStyle.Primary)
       .setDisabled(active === "venues"),
-
-    new ButtonBuilder()
-      .setCustomId("help_djs")
-      .setLabel("DJs")
-      .setStyle(ButtonStyle.Secondary)
-      .setDisabled(active === "djs"),
 
     new ButtonBuilder()
       .setCustomId("help_staff")

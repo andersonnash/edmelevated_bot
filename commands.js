@@ -68,31 +68,6 @@ const commands = [
     .setDescription("Dig for rare tracks"),
 
   new SlashCommandBuilder()
-    .setName("add_lineup")
-    .setDescription("Add a Discord user to your show lineup")
-    .addStringOption((option) =>
-      option
-        .setName("show")
-        .setDescription("Choose one of your shows")
-        .setRequired(true)
-        .setAutocomplete(true),
-    )
-    .addUserOption((option) =>
-      option.setName("dj").setDescription("DJ to add").setRequired(true),
-    ),
-
-  new SlashCommandBuilder()
-    .setName("dj_profile")
-    .setDescription("View DJ stats")
-    .addUserOption((option) =>
-      option.setName("dj").setDescription("Choose DJ").setRequired(true),
-    ),
-
-  new SlashCommandBuilder()
-    .setName("top_djs")
-    .setDescription("Top DJs in the city"),
-
-  new SlashCommandBuilder()
     .setName("create_kandi")
     .setDescription("Create a custom kandi bracelet")
     .addStringOption((option) =>
@@ -256,17 +231,6 @@ const commands = [
     ),
 
   new SlashCommandBuilder()
-    .setName("show_lineup")
-    .setDescription("View lineup and staff for a show")
-    .addStringOption((option) =>
-      option
-        .setName("show")
-        .setDescription("Choose show")
-        .setRequired(true)
-        .setAutocomplete(true),
-    ),
-
-  new SlashCommandBuilder()
     .setName("my_shows")
     .setDescription("Manage your upcoming and completed shows"),
 
@@ -364,10 +328,6 @@ const commands = [
         .setRequired(true)
         .setAutocomplete(true),
     ),
-
-  new SlashCommandBuilder()
-    .setName("bookings")
-    .setDescription("View DJ career booking opportunities"),
 
   new SlashCommandBuilder()
     .setName("test_ticket_sale")

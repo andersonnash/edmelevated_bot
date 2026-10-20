@@ -36,6 +36,14 @@ test("adds installed equipment attendance to venue production", () => {
   assert.equal(calculateProjectedWalkins({ baseWalkins: 50, venue }), 61);
 });
 
+test("adds a booked artist's draw before venue attendance bonuses", () => {
+  const venue = { base_capacity: 100, production_level: 2 };
+  assert.equal(
+    calculateProjectedWalkins({ baseWalkins: 50, artistDemand: 20, venue }),
+    91,
+  );
+});
+
 test("maps every ticket-price boundary to the intended demand tier", () => {
   assert.equal(ticketPriceDemandModifier(10), 1.2);
   assert.equal(ticketPriceDemandModifier(20), 1.2);

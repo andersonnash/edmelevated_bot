@@ -1,8 +1,15 @@
 const { venueAttendanceBonus, venueCapacity } = require("./showMath");
 
-function calculateProjectedWalkins({ baseWalkins, venue, ticketCount = 0 }) {
+function calculateProjectedWalkins({
+  baseWalkins,
+  venue,
+  ticketCount = 0,
+  artistDemand = 0,
+}) {
   const bonus = venueAttendanceBonus(venue);
-  const boostedWalkins = Math.floor(baseWalkins * (1 + bonus));
+  const boostedWalkins = Math.floor(
+    (Number(baseWalkins || 0) + Number(artistDemand || 0)) * (1 + bonus),
+  );
 
 
   const remainingCapacity = Math.max(0, venueCapacity(venue) - ticketCount);
@@ -59,11 +66,17 @@ function applyTicketPriceDemand(baseWalkins, ticketPrice) {
   );
 }
 
-function isProjectedSoldOut({ baseWalkins, venue, ticketCount = 0 }) {
+function isProjectedSoldOut({
+  baseWalkins,
+  venue,
+  ticketCount = 0,
+  artistDemand = 0,
+}) {
   const projectedWalkins = calculateProjectedWalkins({
     baseWalkins,
     venue,
     ticketCount,
+    artistDemand,
   });
 
   return ticketCount + projectedWalkins >= venueCapacity(venue);

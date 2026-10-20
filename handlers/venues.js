@@ -253,7 +253,6 @@ async function buyVenue(interaction) {
     level,
     staff_limit,
     base_capacity,
-    dj_limit,
     last_collected_at,
     insurance_tier,
     bar_level,
@@ -261,7 +260,7 @@ async function buyVenue(interaction) {
     production_level,
     created_at
   )
-  VALUES (?, ?, ?, 1, ?, ?, ?, CURRENT_TIMESTAMP, 'none', 0, 0, 0, CURRENT_TIMESTAMP)
+  VALUES (?, ?, ?, 1, ?, ?, CURRENT_TIMESTAMP, 'none', 0, 0, 0, CURRENT_TIMESTAMP)
   `,
   ).run(
     userId,
@@ -269,7 +268,6 @@ async function buyVenue(interaction) {
     type,
     venueType.staffLimit,
     venueType.baseCapacity,
-    venueType.djLimit,
   );
 
   addRole(userId, "Venue Owner");
@@ -297,11 +295,6 @@ async function buyVenue(interaction) {
       {
         name: "👷 Show Staff Slots",
         value: `${venueType.staffLimit}`,
-        inline: true,
-      },
-      {
-        name: "🎧 DJ Slots",
-        value: `${venueType.djLimit}`,
         inline: true,
       },
       {
@@ -508,11 +501,6 @@ function buildVenuePage(userId, page = 0) {
     {
       name: "👷 Show Staff Slots",
       value: `${activeShowStaffCount}/${venue.staff_limit}`,
-      inline: true,
-    },
-    {
-      name: "🎧 DJ Slots",
-      value: `${venue.dj_limit}`,
       inline: true,
     },
   ];

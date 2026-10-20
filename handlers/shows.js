@@ -2,8 +2,6 @@ const db = require("../db");
 
 const { getUser, addRole } = require("../services/roles");
 
-const { addDjReputation, calculateDjBookingFee } = require("../services/djs");
-
 const { addXp, announceLevelUp } = require("../services/xp");
 
 const { postSceneFeed } = require("../services/sceneFeed");
@@ -41,6 +39,7 @@ const {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
+  StringSelectMenuBuilder,
 } = require("discord.js");
 
 const {
@@ -49,6 +48,7 @@ const {
 } = require("../services/generators");
 
 const { SHOW_GENRES, SHOW_CREATION_XP, isOwner } = require("../constants");
+const { artistsForVenue, artistForVenue } = require("../services/npcArtists");
 
 const { isBotAdmin } = require("../constants");
 
@@ -193,9 +193,14 @@ async function createShow(interaction) {
           `Installed Gear: **+${Math.round(equipmentEffects.attendanceBonus * 100)}% attendance, +${equipmentEffects.productionBonus} production**`,
       },
       {
+        name: "🎧 Featured Artist",
+        value:
+          "Not booked yet. Choose a venue-tiered artist to increase the projected walk-ins for this show.",
+      },
+      {
         name: "🚀 Next Steps",
         value:
-          "Use the buttons below to promote the show, view the lineup, or hire show staff.",
+          "Book a featured artist, hire show staff, and promote the show before show day.",
       },
       {
         name: "📣 Promotion Campaign",
@@ -215,8 +220,8 @@ async function createShow(interaction) {
       .setStyle(ButtonStyle.Primary),
 
     new ButtonBuilder()
-      .setCustomId(`show_lineup_${showId}`)
-      .setLabel("🎧 Lineup")
+      .setCustomId(`book_artist_${showId}`)
+      .setLabel("🎧 Book Artist")
       .setStyle(ButtonStyle.Secondary),
 
     new ButtonBuilder()
@@ -265,110 +270,181 @@ async function createShow(interaction) {
   });
 }
 
-async function showLineup(interaction, buttonShowId = null) {
-  const userId = interaction.user.id;
-
-  const showId = buttonShowId || interaction.options.getString("show");
-
-  const bypassDate = interaction.commandName === "force_run_show";
-
-  const show = db
+function getOwnedUpcomingShowWithArtist(showId, userId) {
+  return db
     .prepare(
       `
       SELECT
         shows.*,
-        venues.name AS venue_name
+        venues.name AS venue_name,
+        venues.type AS venue_type,
+        show_artists.artist_name,
+        show_artists.artist_tier,
+        show_artists.booking_fee,
+        show_artists.demand_bonus
       FROM shows
-      JOIN venues
-        ON venues.id = shows.venue_id
-      WHERE
-        shows.id = ?
+      JOIN venues ON venues.id = shows.venue_id
+      LEFT JOIN show_artists ON show_artists.show_id = shows.id
+      WHERE shows.id = ?
         AND shows.owner_id = ?
-    `,
+        AND shows.status = 'upcoming'
+      `,
     )
     .get(showId, userId);
+}
+
+async function handleBookArtistButton(interaction) {
+  const showId = Number(interaction.customId.replace("book_artist_", ""));
+  const show = getOwnedUpcomingShowWithArtist(showId, interaction.user.id);
 
   if (!show) {
     return interaction.reply({
-      content: "Show not found.",
+      content: "You can only book an artist for one of your upcoming shows.",
       ephemeral: true,
     });
   }
 
-  const lineup = db
-    .prepare(
-      `
-      SELECT *
-      FROM show_lineup
-      WHERE show_id = ?
-      ORDER BY slot_order
-    `,
-    )
-    .all(show.id);
-
-  const staff = db
-    .prepare(
-      `
-      SELECT *
-      FROM show_staff
-      WHERE show_id = ?
-    `,
-    )
-    .all(show.id);
-
-  const embed = new EmbedBuilder()
-    .setColor(0xff00cc)
-    .setTitle(`🎧 ${show.name}`)
-    .setDescription(`${show.venue_name} • ${SHOW_GENRES[show.genre] || "Mixed"}`);
-
-  embed.addFields({
-    name: `🎚️ Lineup (${lineup.length})`,
-
-    value: lineup.length
-      ? lineup
-          .map(
-            (dj) => `${dj.slot_order}. ${dj.dj_username} — ${money(dj.pay)}`,
-          )
-          .join("\n")
-      : "No DJs yet.",
-  });
-
-  embed.addFields({
-    name: `👷 Staff (${staff.length})`,
-
-    value: staff.length
-      ? staff
-          .map((s) => {
-            const assignment = showStaffRole(s.role);
-            return `${assignment.emoji} ${assignment.label} — ${money(s.pay)}`;
-          })
-          .join("\n")
-      : "No staff assigned.",
-  });
-
-  embed.addFields({
-    name: "📊 Summary",
-
-    value:
-      `Genre: ${SHOW_GENRES[show.genre] || "Mixed"}\n` +
-      `Ticket Holders: ${getShowCounts(show.id).ticketCount}\n` +
-      `Ticket Price: ${money(show.ticket_price)}`,
-  });
-
-  embed.setFooter({
-    text: "DJ and staff payouts are paid when the owner settles the completed show.",
-  });
-
-  if (interaction.deferred || interaction.replied) {
-    return interaction.editReply({
-      embeds: [embed],
+  if (show.artist_name) {
+    return interaction.reply({
+      content: `**${show.artist_name}** is already booked for **${show.name}**.`,
+      ephemeral: true,
     });
   }
 
+  const artists = artistsForVenue(show.venue_type);
+  if (!artists.length) {
+    return interaction.reply({
+      content: "This venue does not have a featured-artist roster yet.",
+      ephemeral: true,
+    });
+  }
+
+  const picker = new StringSelectMenuBuilder()
+    .setCustomId(`artist_select:${show.id}`)
+    .setPlaceholder("Choose a featured artist")
+    .addOptions(
+      artists.map((artist) => ({
+        label: artist.name,
+        value: artist.key,
+        description: `${money(artist.fee)} upfront • +${artist.demand} projected walk-ins`,
+      })),
+    );
+
+  const embed = new EmbedBuilder()
+    .setColor(0x8b5cf6)
+    .setTitle("🎧 BOOK FEATURED ARTIST")
+    .setDescription(`**${show.name}** • ${show.venue_name}`)
+    .addFields({
+      name: "Your venue-tier roster",
+      value: "Choose one artist. The booking fee is paid now and the artist raises this show's projected walk-ins.",
+    })
+    .setFooter({
+      text: "Simulated in-game bookings only; no real-world artist affiliation or appearance.",
+    });
+
   return interaction.reply({
     embeds: [embed],
+    components: [new ActionRowBuilder().addComponents(picker)],
     ephemeral: true,
   });
+}
+
+async function handleArtistSelect(interaction) {
+  const [, showId] = interaction.customId.split(":");
+  const show = getOwnedUpcomingShowWithArtist(showId, interaction.user.id);
+  const artist = show
+    ? artistForVenue(show.venue_type, interaction.values[0])
+    : null;
+
+  if (!show || !artist) {
+    return interaction.update({
+      content: "That artist selection is no longer available for this show.",
+      embeds: [],
+      components: [],
+    });
+  }
+
+  if (show.artist_name) {
+    return interaction.update({
+      content: `**${show.artist_name}** is already booked for this show.`,
+      embeds: [],
+      components: [],
+    });
+  }
+
+  try {
+    const remainingCash = db.transaction(() => {
+      const charged = db
+        .prepare(
+          "UPDATE users SET cash = cash - ? WHERE discord_id = ? AND cash >= ?",
+        )
+        .run(artist.fee, interaction.user.id, artist.fee);
+      if (charged.changes !== 1) throw new Error("INSUFFICIENT_CASH");
+
+      const booked = db
+        .prepare(
+          `INSERT INTO show_artists (
+            show_id, artist_key, artist_name, artist_tier, booking_fee, demand_bonus
+          ) VALUES (?, ?, ?, ?, ?, ?)`,
+        )
+        .run(
+          show.id,
+          artist.key,
+          artist.name,
+          artist.tier,
+          artist.fee,
+          artist.demand,
+        );
+      if (booked.changes !== 1) throw new Error("ARTIST_ALREADY_BOOKED");
+
+      return db
+        .prepare("SELECT cash FROM users WHERE discord_id = ?")
+        .get(interaction.user.id).cash;
+    })();
+
+    const embed = new EmbedBuilder()
+      .setColor(0x22c55e)
+      .setTitle("🎧 FEATURED ARTIST BOOKED")
+      .setDescription(`**${artist.name}** is booked for **${show.name}**.`)
+      .addFields(
+        {
+          name: "Artist draw",
+          value: `+${artist.demand} projected walk-ins`,
+          inline: true,
+        },
+        {
+          name: "Booking fee paid",
+          value: money(artist.fee),
+          inline: true,
+        },
+        {
+          name: "Remaining cash",
+          value: money(remainingCash),
+          inline: true,
+        },
+      )
+      .setFooter({
+        text: "The fee was paid upfront and is included in this event's final profit.",
+      });
+
+    return interaction.update({ embeds: [embed], components: [] });
+  } catch (error) {
+    if (error.message === "INSUFFICIENT_CASH") {
+      return interaction.update({
+        content: `You need **${money(artist.fee)}** to book **${artist.name}**. No cash was spent.`,
+        embeds: [],
+        components: [],
+      });
+    }
+    if (error.message === "ARTIST_ALREADY_BOOKED") {
+      return interaction.update({
+        content: "An artist was already booked for this show. No cash was spent.",
+        embeds: [],
+        components: [],
+      });
+    }
+    throw error;
+  }
 }
 
 function getUserShows(userId) {
@@ -381,14 +457,17 @@ function getUserShows(userId) {
         venues.type,
         venues.base_capacity,
         venues.staff_limit,
-        venues.dj_limit,
         venues.bar_level,
         venues.security_level,
         venues.production_level,
+        show_artists.artist_name,
+        show_artists.artist_tier,
+        show_artists.booking_fee,
+        show_artists.demand_bonus,
         show_ratings.attendance_score AS rating_attendance,
         show_ratings.profitability_score AS rating_profitability,
         show_ratings.production_score AS rating_production,
-        show_ratings.lineup_score AS rating_lineup,
+        show_ratings.artist_score AS rating_artist,
         show_ratings.staffing_score AS rating_staffing,
         show_ratings.overall_score AS rating_overall,
         show_ratings.star_rating AS rating_stars,
@@ -396,6 +475,7 @@ function getUserShows(userId) {
       FROM shows
       LEFT JOIN venues ON venues.id = shows.venue_id
       LEFT JOIN show_ratings ON show_ratings.show_id = shows.id
+      LEFT JOIN show_artists ON show_artists.show_id = shows.id
       WHERE shows.owner_id = ?
       ORDER BY shows.show_date ASC
     `,
@@ -412,10 +492,6 @@ function getUserShows(userId) {
 }
 
 function getShowCounts(showId) {
-  const djs = db
-    .prepare("SELECT COUNT(*) AS count FROM show_lineup WHERE show_id = ?")
-    .get(showId);
-
   const staff = db
     .prepare("SELECT COUNT(*) AS count FROM show_staff WHERE show_id = ?")
     .get(showId);
@@ -431,7 +507,6 @@ function getShowCounts(showId) {
     .get(showId);
 
   return {
-    djCount: djs.count || 0,
     showStaffCount: staff.count || 0,
     ticketCount:
       (tickets.count || 0) + Number(advanceSales.quantity || 0),
@@ -501,7 +576,6 @@ function buildShowPage(userId, status, page = 0) {
   const show = shows[safePage];
 
   const {
-    djCount,
     showStaffCount,
     ticketCount,
     advanceTicketCount,
@@ -515,6 +589,7 @@ function buildShowPage(userId, status, page = 0) {
     baseWalkins: baseProjectedWalkins,
     venue: show,
     ticketCount,
+    artistDemand: Number(show.demand_bonus || 0),
   });
   const attendanceBoostPercent = attendanceBonusPercent(show);
   const projectedAttendance = ticketCount + projectedWalkins;
@@ -570,8 +645,10 @@ function buildShowPage(userId, status, page = 0) {
         inline: true,
       },
       {
-        name: "🎧 DJs",
-        value: `${djCount}/${show.dj_limit || 0}`,
+        name: "🎧 Featured Artist",
+        value: show.artist_name
+          ? `**${show.artist_name}**\n${show.artist_tier} • +${show.demand_bonus} projected walk-ins\nFee paid: ${money(show.booking_fee)}`
+          : "Not booked — choose an artist to raise projected walk-ins.",
         inline: true,
       },
       {
@@ -585,7 +662,7 @@ function buildShowPage(userId, status, page = 0) {
     .setFooter({
       text:
         status === "upcoming"
-          ? "Build your lineup, hire show staff, and promote before show day."
+          ? "Book an artist, hire show staff, and promote before show day."
           : "Use /collect_show to settle this completed show.",
     });
 
@@ -653,7 +730,7 @@ function buildShowPage(userId, status, page = 0) {
         `**Overall:** ${show.rating_stars}/5 ★ (${show.rating_overall}/100)\n` +
         `Attendance ${show.rating_attendance} • Profit ${show.rating_profitability} • ` +
         `Production ${show.rating_production}\n` +
-        `Lineup ${show.rating_lineup} • Staffing ${show.rating_staffing}\n` +
+        `Artist ${show.rating_artist} • Staffing ${show.rating_staffing}\n` +
         `*“${show.rating_reaction}”*`,
     });
   }
@@ -690,6 +767,11 @@ function buildShowPage(userId, status, page = 0) {
         )
         .setStyle(promotionUsed || projectedFull ? ButtonStyle.Secondary : ButtonStyle.Success)
         .setDisabled(promotionUsed || projectedFull),
+      new ButtonBuilder()
+        .setCustomId(`book_artist_${show.id}`)
+        .setLabel(show.artist_name ? `🎧 ${show.artist_name}` : "🎧 Book Artist")
+        .setStyle(show.artist_name ? ButtonStyle.Secondary : ButtonStyle.Primary)
+        .setDisabled(Boolean(show.artist_name)),
     );
   }
 
@@ -736,16 +818,17 @@ function buildRunShowEmbed(result) {
     show,
     confirmedTicketCount,
     staff,
-    lineup,
+    artist,
     adjustedWalkins,
     paidRevenue,
     simulatedRevenue,
     totalAttendance,
     staffCost,
-    lineupCost,
+    artistFee,
     operatingCost,
     bonusRevenue,
-    netProfit,
+    settlementPayout,
+    eventProfit,
     rating,
     baseReputationGain,
     reputationGain,
@@ -764,12 +847,8 @@ function buildRunShowEmbed(result) {
         .join("\n")
     : "None";
 
-  const lineupSummary = lineup.length
-    ? lineup.map((dj) => `🎧 ${dj.dj_username} — ${money(dj.pay)}`).join("\n")
-    : "No lineup";
-
   return new EmbedBuilder()
-    .setColor(netProfit >= 0 ? 0x00ff88 : 0xff3355)
+    .setColor(eventProfit >= 0 ? 0x00ff88 : 0xff3355)
     .setTitle("🎧 EDMELEVATED SHOW REPORT")
     .setDescription(`**${show.name}**`)
     .addFields(
@@ -793,9 +872,10 @@ function buildRunShowEmbed(result) {
           `**Walk-in Revenue:** ${money(simulatedRevenue)}\n` +
           `**Upgrade Bonus:** ${money(bonusRevenue)}\n` +
           `**Staff Cost:** -${money(staffCost)}\n` +
-          `**Lineup Cost:** -${money(lineupCost)}\n` +
           `**Operating Cost:** -${money(operatingCost)}\n` +
-          `**Net Profit:** ${money(netProfit)}`,
+          `**Settlement Payout:** ${money(settlementPayout)}\n` +
+          `**Artist Fee (paid upfront):** -${money(artistFee)}\n` +
+          `**Event Profit:** ${money(eventProfit)}`,
       },
       {
         name: "⭐ Show Rating",
@@ -804,7 +884,7 @@ function buildRunShowEmbed(result) {
           `**Attendance:** ${rating.attendance}/100\n` +
           `**Profitability:** ${rating.profitability}/100\n` +
           `**Production:** ${rating.production}/100\n` +
-          `**Lineup:** ${rating.lineup}/100\n` +
+          `**Artist:** ${rating.artist}/100\n` +
           `**Staffing:** ${rating.staffing}/100\n\n` +
           `*“${rating.reaction}”*`,
       },
@@ -815,10 +895,10 @@ function buildRunShowEmbed(result) {
           : staffSummary,
       },
       {
-        name: "🎧 DJ Payouts",
-        value: lineup.length
-          ? `${lineupSummary}\n*Pending settlement*`
-          : lineupSummary,
+        name: "🎧 Featured Artist",
+        value: artist
+          ? `${artist.artist_name} • ${artist.artist_tier}\nFee paid upfront: ${money(artist.booking_fee)}`
+          : "No featured artist was booked for this show.",
       },
       {
         name: "⭐ Rewards",
@@ -830,7 +910,7 @@ function buildRunShowEmbed(result) {
       },
     )
     .setFooter({
-      text: "Use /collect_show to settle this show and distribute payouts",
+      text: "Use /collect_show to claim the settlement and distribute staff payouts",
     });
 }
 
@@ -980,11 +1060,11 @@ async function collectShow(interaction, buttonShowId = null) {
       );
     }
 
-    const { djs, staff, ownerTake, totalPaid } = settlement;
+    const { staff, ownerTake, totalPaid } = settlement;
     if (ownerTake > 0) {
       addRole(userId, "Profitable Promoter");
     }
-    const participantPayouts = [...djs, ...staff].reduce(
+    const participantPayouts = staff.reduce(
       (sum, payout) => sum + payout.amount,
       0,
     );
@@ -997,10 +1077,6 @@ async function collectShow(interaction, buttonShowId = null) {
       const mention = `<@${settlement.user_id}>`;
       return `• ${mention}: ${money(settlement.amount)}`;
     };
-
-    const djLines = djs.length
-      ? djs.map(formatPayoutLine).join("\n")
-      : "• None";
 
     const staffLines = staff.length
       ? staff.map(formatPayoutLine).join("\n")
@@ -1015,11 +1091,6 @@ async function collectShow(interaction, buttonShowId = null) {
           name: "🏟️ Owner Result",
           value: `${interaction.user}\n${money(ownerTake)}`,
           inline: false,
-        },
-        {
-          name: "🎧 DJs",
-          value: djLines,
-          inline: true,
         },
         {
           name: "👥 Staff",
@@ -1084,6 +1155,9 @@ async function promoteShowById(interaction, showId) {
       ephemeral: true,
     });
   }
+  const artist = db
+    .prepare("SELECT demand_bonus FROM show_artists WHERE show_id = ?")
+    .get(show.id);
   const campaign = promotionCampaign(venue);
   const equipmentEffects = getInstalledEquipmentEffects(venue.id);
   venue.installed_equipment_attendance_bonus = equipmentEffects.attendanceBonus;
@@ -1098,6 +1172,7 @@ async function promoteShowById(interaction, showId) {
     baseWalkins,
     venue,
     ticketCount: confirmedTicketCount,
+    artistDemand: Number(artist?.demand_bonus || 0),
   });
 
   if (
@@ -1105,6 +1180,7 @@ async function promoteShowById(interaction, showId) {
       baseWalkins,
       venue,
       ticketCount: confirmedTicketCount,
+      artistDemand: Number(artist?.demand_bonus || 0),
     })
   ) {
     return interaction.reply({
@@ -1165,6 +1241,7 @@ async function promoteShowById(interaction, showId) {
     baseWalkins: baseWalkins + campaign.demand,
     venue,
     ticketCount: confirmedTicketCount,
+    artistDemand: Number(artist?.demand_bonus || 0),
   });
   const capacity = venueCapacity(venue);
   const attendanceBeforePromotion =
@@ -1265,8 +1342,9 @@ module.exports = {
   collect,
   promoteShow,
   promoteShowById,
-  showLineup,
   announceLevelUp,
   handleShowPage,
   collectShow,
+  handleBookArtistButton,
+  handleArtistSelect,
 };

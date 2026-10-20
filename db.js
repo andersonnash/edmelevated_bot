@@ -70,7 +70,6 @@ CREATE TABLE IF NOT EXISTS venues (
   lights_level INTEGER DEFAULT 0,
   sound_level INTEGER DEFAULT 0,
   dj_equipment_level INTEGER DEFAULT 0,
-  dj_limit INTEGER DEFAULT 1,
   stage_level INTEGER DEFAULT 0,
   last_collected_at TEXT DEFAULT CURRENT_TIMESTAMP,
   insurance_tier TEXT DEFAULT 'none',
@@ -151,7 +150,7 @@ CREATE TABLE IF NOT EXISTS show_ratings (
   attendance_score INTEGER NOT NULL,
   profitability_score INTEGER NOT NULL,
   production_score INTEGER NOT NULL,
-  lineup_score INTEGER NOT NULL,
+  artist_score INTEGER NOT NULL,
   staffing_score INTEGER NOT NULL,
   overall_score INTEGER NOT NULL,
   star_rating REAL NOT NULL,
@@ -220,54 +219,15 @@ CREATE TABLE IF NOT EXISTS show_promotions (
   created_at TEXT DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE IF NOT EXISTS show_lineup (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  show_id INTEGER,
-  dj_user_id TEXT,
-  dj_username TEXT,
-  slot_order INTEGER,
-  pay INTEGER DEFAULT 0
+CREATE TABLE IF NOT EXISTS show_artists (
+  show_id INTEGER PRIMARY KEY,
+  artist_key TEXT NOT NULL,
+  artist_name TEXT NOT NULL,
+  artist_tier TEXT NOT NULL,
+  booking_fee INTEGER NOT NULL,
+  demand_bonus INTEGER NOT NULL,
+  booked_at TEXT DEFAULT CURRENT_TIMESTAMP
 );
-
-CREATE TABLE IF NOT EXISTS dj_profiles (
-  user_id TEXT PRIMARY KEY,
-  username TEXT,
-  dj_reputation INTEGER DEFAULT 0,
-  bookings INTEGER DEFAULT 0,
-  base_fee INTEGER DEFAULT 100
-);
-
-  CREATE TABLE IF NOT EXISTS user_bookings (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id TEXT NOT NULL,
-    booking_key TEXT NOT NULL,
-    genre TEXT,
-    opener_key TEXT,
-    cash_reward INTEGER DEFAULT 0,
-    xp_reward INTEGER DEFAULT 0,
-    reputation_reward INTEGER DEFAULT 0,
-    dj_reputation_reward INTEGER DEFAULT 0,
-    completed_at TEXT DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(user_id, booking_key)
-  );
-
-  CREATE TABLE IF NOT EXISTS booking_runs (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id TEXT NOT NULL,
-    booking_key TEXT NOT NULL,
-    booking_kind TEXT NOT NULL,
-    genre TEXT,
-    approach TEXT,
-    cash_reward INTEGER DEFAULT 0,
-    xp_reward INTEGER DEFAULT 0,
-    reputation_reward INTEGER DEFAULT 0,
-    dj_reputation_reward INTEGER DEFAULT 0,
-    show_bonus INTEGER DEFAULT 0,
-    completed_at TEXT DEFAULT CURRENT_TIMESTAMP
-  );
-
-  CREATE INDEX IF NOT EXISTS idx_booking_runs_user_time
-  ON booking_runs(user_id, completed_at);
 
   CREATE TABLE IF NOT EXISTS user_equipment (
     id INTEGER PRIMARY KEY AUTOINCREMENT,

@@ -296,9 +296,7 @@ async function handleAutocomplete(interaction) {
   if (
     [
       "force_run_show",
-      "add_lineup",
       "hire_show_staff",
-      "show_lineup",
     ].includes(interaction.commandName)
   ) {
     const shows = db

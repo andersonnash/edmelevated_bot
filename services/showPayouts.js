@@ -12,8 +12,7 @@ function getUnpaidShowPayouts(showId) {
       ORDER BY
         CASE role
           WHEN 'owner' THEN 1
-          WHEN 'dj' THEN 2
-          WHEN 'staff' THEN 3
+          WHEN 'staff' THEN 2
           ELSE 4
         END,
         id ASC
@@ -24,12 +23,10 @@ function getUnpaidShowPayouts(showId) {
 
 function groupPayouts(payouts) {
   const owner = payouts.filter((p) => p.role === "owner");
-  const djs = payouts.filter((p) => p.role === "dj");
   const staff = payouts.filter((p) => p.role === "staff");
 
   return {
     owner,
-    djs,
     staff,
     ownerTake: owner.reduce((sum, p) => sum + p.amount, 0),
     totalPaid: payouts.reduce((sum, p) => sum + p.amount, 0),

@@ -34,10 +34,9 @@ const SHOWCASE_CHOICES = {
   },
 };
 
-function journeyRequirements({ equipmentCount = 0, openDecksComplete = false, activities = {} }) {
+function journeyRequirements({ equipmentCount = 0, activities = {} }) {
   return {
     equipment: equipmentCount > 0,
-    openDecks: openDecksComplete,
     streetTeam: Number(activities.street_team_runs || 0) > 0,
     sceneActivity:
       Number(activities.crate_digs || 0) > 0 ||
