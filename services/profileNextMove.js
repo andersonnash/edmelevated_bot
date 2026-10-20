@@ -20,7 +20,6 @@ function buildProfileNextMove({
   cash = 0,
   journeyComplete = false,
   hasEquipment = false,
-  openDecksComplete = false,
   venueCount = 0,
   showCount = 0,
   readyToCollect = 0,
@@ -41,10 +40,6 @@ function buildProfileNextMove({
       message =
         "**Continue your Journey**\n" +
         `You can afford your first controller (${money(STARTER_CONTROLLER_COST)}). Run \`/journey\` for your current step, then use \`/buy_equipment\`.`;
-    } else if (!openDecksComplete) {
-      message =
-        "**Continue your Journey**\n" +
-        "Your gear is ready. Run `/journey` for your current step; `/bookings` is where you can play Open Decks.";
     } else {
       message =
         "**Continue your Journey**\n" +
@@ -60,13 +55,6 @@ function buildProfileNextMove({
         ? `**Buy your first controller**\nYou can afford the ${money(STARTER_CONTROLLER_COST)} starter controller. Use \`/buy_equipment\`.`
         : `**Save for your first controller**\n${money(cash)} / ${money(STARTER_CONTROLLER_COST)}\n${earningCommands()}`;
     return withCollectionNote(message, readyToCollect);
-  }
-
-  if (!openDecksComplete) {
-    return withCollectionNote(
-      "**Take your first DJ booking**\nUse `/bookings` and choose **Open Decks** to establish your DJ career.",
-      readyToCollect,
-    );
   }
 
   if (!venueCount) {
@@ -92,9 +80,7 @@ function buildProfileNextMove({
   }
 
   const showsToPrepare = upcomingShows || (upcomingShow ? [upcomingShow] : []);
-  const showMissingLineup = showsToPrepare.find(
-    (show) => show.lineupCount < show.djLimit,
-  );
+  const showMissingArtist = showsToPrepare.find((show) => !show.artistName);
   const showMissingStaff = showsToPrepare.find(
     (show) => show.staffCount < show.staffLimit,
   );
@@ -105,9 +91,9 @@ function buildProfileNextMove({
   );
 
   if (showsToPrepare.length) {
-    if (showMissingLineup) {
+    if (showMissingArtist) {
       return withCollectionNote(
-        `**Build the lineup for ${showMissingLineup.name}**\nYour lineup has ${showMissingLineup.lineupCount}/${showMissingLineup.djLimit} DJs. Use \`/my_shows\` and open the show’s **Lineup** controls.`,
+        `**Book an artist for ${showMissingArtist.name}**\nChoose a featured artist in \`/my_shows\` to raise projected walk-ins for this show.`,
         readyToCollect,
       );
     }
@@ -130,7 +116,7 @@ function buildProfileNextMove({
 
     const nextShow = showsToPrepare[0];
     return withCollectionNote(
-      `**Keep an eye on ${nextShow.name}**\nIts lineup, staffing, and first promotion are in place. Review it with \`/my_shows\`.`,
+      `**Keep an eye on ${nextShow.name}**\nIts artist, staffing, and first promotion are in place. Review it with \`/my_shows\`.`,
       readyToCollect,
     );
   }

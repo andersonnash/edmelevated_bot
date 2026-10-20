@@ -15,6 +15,7 @@ function ownedUpcomingShows(userId) {
         venues.base_capacity,
         venues.security_level,
         venues.production_level,
+        COALESCE(show_artists.demand_bonus, 0) AS demand_bonus,
         (SELECT COUNT(*) FROM show_tickets WHERE show_id = shows.id) +
         COALESCE((
           SELECT SUM(quantity)
@@ -23,6 +24,7 @@ function ownedUpcomingShows(userId) {
         ), 0) AS ticket_count
       FROM shows
       JOIN venues ON venues.id = shows.venue_id
+      LEFT JOIN show_artists ON show_artists.show_id = shows.id
       WHERE shows.owner_id = ?
         AND shows.status = 'upcoming'
       ORDER BY shows.show_date ASC, shows.id ASC
@@ -36,6 +38,7 @@ function isBoostableShow(show) {
     baseWalkins: Number(show.simulated_attendees || 0),
     venue: show,
     ticketCount: Number(show.ticket_count || 0),
+    artistDemand: Number(show.demand_bonus || 0),
   });
 }
 
@@ -51,6 +54,7 @@ function projectedWalkins(show, baseWalkins = show.simulated_attendees) {
     baseWalkins: Number(baseWalkins || 0),
     venue: show,
     ticketCount: Number(show.ticket_count || 0),
+    artistDemand: Number(show.demand_bonus || 0),
   });
 }
 

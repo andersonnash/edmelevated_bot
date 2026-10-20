@@ -26,11 +26,6 @@ function getJourneyState(userId) {
   const equipmentCount = db
     .prepare("SELECT COUNT(*) AS count FROM user_equipment WHERE user_id = ?")
     .get(userId).count;
-  const openDecksComplete = !!db
-    .prepare(
-      "SELECT 1 FROM user_bookings WHERE user_id = ? AND booking_key = 'open_decks_guest_slot'",
-    )
-    .get(userId);
   const activities =
     db
       .prepare("SELECT * FROM user_activity_stats WHERE user_id = ?")
@@ -39,7 +34,7 @@ function getJourneyState(userId) {
     .prepare("SELECT * FROM user_journey_progress WHERE user_id = ?")
     .get(userId);
 
-  const input = { equipmentCount, openDecksComplete, activities };
+  const input = { equipmentCount, activities };
   return {
     user,
     input,
@@ -56,14 +51,7 @@ const JOURNEY_STEPS = [
     label: "Get your first controller",
     command: "/buy_equipment",
     objective:
-      "Buy your first controller. Owning gear unlocks DJ bookings and starts earning passive income.",
-  },
-  {
-    key: "openDecks",
-    label: "Play Open Decks",
-    command: "/bookings",
-    objective:
-      "Choose **Open Decks** in `/bookings` and complete the set to prove yourself behind the decks.",
+      "Buy your first controller. Owning gear starts rental income and gives your future venue an equipment boost.",
   },
   {
     key: "streetTeam",
@@ -151,7 +139,7 @@ async function journey(interaction) {
     .addFields(
       {
         name: state.unlocked
-          ? "Journey Progress • 4 of 4"
+          ? `Journey Progress • ${JOURNEY_STEPS.length} of ${JOURNEY_STEPS.length}`
           : `Journey Progress • Step ${display.currentStepNumber} of ${JOURNEY_STEPS.length}`,
         value: display.lines.join("\n"),
       },
@@ -166,7 +154,7 @@ async function journey(interaction) {
       {
         name: "🎁 Your First Showcase",
         value:
-          "Complete all four steps, lead the borrowed-venue showcase, and earn the backing for your first permanent venue.",
+          "Complete every step, lead the borrowed-venue showcase, and earn the backing for your first permanent venue.",
       },
     );
 

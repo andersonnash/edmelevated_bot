@@ -19,7 +19,7 @@ export const guideSections = [
         heading: "Welcome to the city",
         text: [
           "EDMELEVATED City is a Discord game about building your way into the underground EDM scene.",
-          "You are not supposed to start rich. You are supposed to start scrappy. Work a shift, dig for records, survive weird rave stories, buy gear, take bookings, throw shows, and slowly become someone the city recognizes.",
+          "You are not supposed to start rich. You are supposed to start scrappy. Work a shift, dig for records, survive weird rave stories, buy gear, throw shows, and slowly become someone the city recognizes.",
         ],
       },
       {
@@ -34,7 +34,7 @@ export const guideSections = [
         heading: "Your early-game goal",
         text: [
           "At the beginning, your main goal is to buy your first piece of equipment.",
-          "Gear matters because it starts equipment rental income and unlocks DJ bookings. That is when the game starts opening up.",
+          "Gear matters because it starts equipment rental income and can later improve one venue's show attendance and production.",
         ],
       },
       {
@@ -60,40 +60,32 @@ export const guideSections = [
       "/journey",
       "/underground_run",
       "/roles",
-      "/bookings",
       "/my_shows",
     ],
     sections: [
       {
         heading: "The core progression loop",
         text: [
-          "Start with work and side activities, invest the rewards in equipment, build a DJ career through bookings, buy a venue, and turn that venue into successful shows.",
+          "Start with work and side activities, invest the rewards in equipment, buy a venue, and turn that venue into successful shows.",
           "Each part feeds the next: active play earns resources, assets create income and unlock opportunities, and stronger events build the credibility needed for bigger goals.",
         ],
       },
       {
         heading: "1. Earn your start",
         text: [
-          "Use /journey to follow the guided opening path. It connects your first controller, Open Decks appearance, Street Team run, and first scene activity to one clear objective at a time.",
+          "Use /journey to follow the guided opening path. It connects your first controller, Street Team run, and first scene activity to one clear objective at a time.",
           "Use /work for a random scene shift with a reliable payout, and use /crate_dig and /rave_story for other early rewards. When those activities are on cooldown, /underground_run remains playable.",
         ],
       },
       {
         heading: "2. Buy equipment",
         text: [
-          "Equipment is your first asset. It generates equipment rental income and unlocks the DJ booking path.",
-          "Collect the income with /collect, but keep playing actively: bookings are the main bridge between early gear ownership and your first venue.",
+          "Equipment is your first asset. It generates rental income and can be installed at one venue to improve its shows.",
+          "Collect the income with /collect, but keep playing actively through scene activities as you work toward your first venue.",
         ],
       },
       {
-        heading: "3. Build your DJ career",
-        text: [
-          "Career milestones and repeatable gigs award cash, XP, DJ Reputation, Completed Gigs, and sometimes demand for your next owned show.",
-          "DJ Reputation and repeatable-gig progress unlock later career milestones. Completed Gigs and DJ Reputation also raise your booking value.",
-        ],
-      },
-      {
-        heading: "4. Buy and improve venues",
+        heading: "3. Buy and improve venues",
         text: [
           "Cash and Scene Reputation unlock larger venues. Venue departments improve physical capabilities such as income, capacity, and show attendance.",
           "Venues also bring management decisions: staff can improve income, incidents can temporarily close a venue, and insurance reduces that risk. Permanent staff and department upgrade prices scale with venue size.",
@@ -110,15 +102,15 @@ export const guideSections = [
       {
         heading: "5. Create better shows",
         text: [
-          "Create shows, build lineups, hire show staff, and promote persistent demand before show day. Capacity limits attendance, but it does not prevent you from continuing to build stored demand.",
-          "When a show completes, its rating measures attendance, profitability, production, lineup coverage, and staffing coverage. A strong Show Rating matters more than raw crowd size when Scene Reputation is awarded.",
+          "Create shows, book a featured artist, hire show staff, and promote persistent demand before show day. Capacity limits attendance, but it does not prevent you from continuing to build stored demand.",
+          "When a show completes, its rating measures attendance, profitability, production, artist choice, and staffing coverage. A strong Show Rating matters more than raw crowd size when Scene Reputation is awarded.",
         ],
       },
       {
         heading: "6. Expand your city status",
         text: [
           "XP provides unlimited player levels, while /roles tracks achievements for activity, level, and Scene Reputation milestones.",
-          "Scene Reputation unlocks broader city opportunities. DJ Reputation and Completed Gigs advance the separate artist path. Strong shows generate income and credibility to reinvest in larger venues and better events.",
+          "Scene Reputation unlocks broader city opportunities. Strong shows generate income and credibility to reinvest in larger venues and better events.",
           "Venue Reputation is planned as a separate future measurement earned by venues through completed shows. It will eventually support sponsorships and other venue rewards, but it is not tracked yet.",
         ],
       },
@@ -126,7 +118,7 @@ export const guideSections = [
         heading: "When you are unsure what to do",
         text: [
           "Use /profile for your current resources and next objective, /help for system explanations, and /roles for achievement progress.",
-          "The simple path is: earn, buy gear, take gigs, buy a venue, build a show, improve its rating, and reinvest.",
+          "The simple path is: earn, buy gear, buy a venue, build a show, improve its rating, and reinvest.",
         ],
       },
     ],
@@ -160,7 +152,7 @@ export const guideSections = [
         text: [
           "Underground Run has no cooldown, and a player with an empty wallet can still start. A run stakes up to $25 from the wallet when available.",
           "A successful run always returns its stake in full. The first three completed runs each day pay 100% of earned profit, the next three pay 60%, and later runs pay 40%.",
-          "It does not award Scene Reputation. Jobs, bookings, shows, and other city activities remain the strongest ways to make meaningful progression.",
+          "It does not award Scene Reputation. Jobs, shows, and other city activities remain the strongest ways to make meaningful progression.",
         ],
       },
     ],
@@ -172,13 +164,13 @@ export const guideSections = [
     title: "Equipment",
     summary:
       "Rent out stored gear or install it at a venue to improve its shows.",
-    commands: ["/buy_equipment", "/my_equipment", "/collect", "/bookings"],
+    commands: ["/buy_equipment", "/my_equipment", "/collect"],
     sections: [
       {
         heading: "Why equipment matters",
         text: [
           "Equipment is the first thing that makes you feel like you own something in the city.",
-          "It is not just a shopping list. Gear gives you equipment rental income and unlocks DJ bookings, which gives you something active to do before you can afford a venue.",
+          "It is not just a shopping list. Gear gives you equipment rental income and makes your first venue's shows stronger once it is installed.",
         ],
       },
       {
@@ -197,106 +189,10 @@ export const guideSections = [
         ],
       },
       {
-        heading: "The first big unlock",
+        heading: "The venue connection",
         text: [
-          "Once you own equipment, /profile should start pointing you toward /bookings.",
-          "That is intentional. The game should not feel like buy gear, stare at the wall, wait for venue money. Bookings are there to keep the early game moving.",
-        ],
-      },
-    ],
-  },
-
-  {
-    id: "bookings",
-    category: "DJ Career",
-    title: "DJ Bookings",
-    summary:
-      "Bookings bridge the gap between owning equipment and buying your first venue.",
-    commands: ["/bookings", "/dj_profile", "/top_djs"],
-    sections: [
-      {
-        heading: "What bookings are",
-        text: [
-          "Bookings are the beginning of the DJ career path.",
-          "They are designed to give players something active and meaningful to do after buying equipment but before owning a venue.",
-        ],
-      },
-      {
-        heading: "Why they were added",
-        text: [
-          "Before bookings, the early game could feel like this: buy gear, wait for passive income, grind until venue.",
-          "That works mechanically, but it is not very exciting. Bookings make that part of the game feel more like actually building a name in the scene.",
-        ],
-      },
-      {
-        heading: "How bookings work",
-        text: [
-          "Once you own equipment, run /bookings.",
-          "The first available opportunity is Open Decks Guest Slot.",
-          "You choose a genre, choose how you want to open your set, and complete the booking for rewards.",
-          "Open Decks leads into Private Party, Local Club Support, and Warehouse Closing Slot milestones.",
-          "Each booking presents a situation and three choices written specifically for that gig.",
-        ],
-      },
-      {
-        heading: "What your first booking does",
-        text: [
-          "Completing your first booking creates your DJ profile.",
-          "It gives cash, XP, Scene Reputation, DJ Reputation, and increases your Completed Gigs count.",
-          "It also raises your booking fee, which makes your DJ career feel like it is actually growing.",
-        ],
-      },
-      {
-        heading: "One-time versus repeatable",
-        text: [
-          "Career milestones are completed once, do not use a cooldown, and advance the path toward the next career booking.",
-          "The next milestone does not unlock immediately: it requires a certain number of completed repeatable gigs and enough DJ Reputation.",
-          "Repeatable DJ gigs are separate buttons that remain available after they unlock.",
-          "Repeatable gigs unlock as you clear milestones, scale their cash with DJ Reputation, and can add demand to your next owned show.",
-          "All repeatable gigs share one cooldown: you can complete one every six hours and no more than three per day.",
-        ],
-      },
-      {
-        heading: "Career requirements",
-        text: [
-          "Open Decks unlocks Community Night. Complete 2 repeatable gigs and reach 15 DJ Reputation to unlock Private Party.",
-          "Private Party unlocks Afterparty Set. Complete 4 repeatable gigs total and reach 35 DJ Reputation to unlock Local Club Support.",
-          "Local Club Support unlocks Club Support Slot. Complete 8 repeatable gigs total and reach 70 DJ Reputation to unlock Warehouse Closing Slot.",
-          "Warehouse Closing Slot unlocks Underground Genre Showcase as the final repeatable tier.",
-        ],
-      },
-    ],
-  },
-
-  {
-    id: "dj-profile",
-    category: "DJ Career",
-    title: "DJ Profile",
-    summary:
-      "Your DJ profile tracks who you are as an artist: DJ Reputation, Completed Gigs, level, and fee.",
-    commands: ["/dj_profile", "/top_djs", "/bookings"],
-    sections: [
-      {
-        heading: "Your artist identity",
-        text: [
-          "Your regular /profile includes a compact DJ Career summary alongside your promoter and venue progress.",
-          "Use /dj_profile when you want the detailed view of a player's career as an artist.",
-        ],
-      },
-      {
-        heading: "What it tracks",
-        text: [
-          "DJ Reputation shows how much credibility you have as a DJ.",
-          "Completed Gigs includes career bookings, repeatable bookings, and completed show-lineup appearances.",
-          "Your booking fee shows how valuable your name is becoming.",
-        ],
-      },
-      {
-        heading: "How to grow it",
-        text: [
-          "Use /bookings to build your DJ career directly.",
-          "Getting added to show lineups also helps connect your DJ identity to the wider scene.",
-          "The long-term goal is for your name to mean something when it shows up on a lineup.",
+          "Once you own a venue, /my_equipment lets you install gear there instead of collecting rental income from it.",
+          "Installed gear adds its listed attendance and production effects to every show at that venue.",
         ],
       },
     ],
@@ -320,7 +216,7 @@ export const guideSections = [
         heading: "Why venues matter",
         text: [
           "Buying a venue is one of the biggest early milestones in the game.",
-          "Before venues, you are earning, collecting, and taking bookings. After venues, you can start creating shows and shaping the scene yourself.",
+          "Before venues, you are earning, collecting, and building momentum. After venues, you can start creating shows and shaping the scene yourself.",
         ],
       },
       {
@@ -361,12 +257,11 @@ export const guideSections = [
     category: "Shows",
     title: "Shows",
     summary:
-      "Shows are scheduled events that run automatically. Venues, DJs, staff, promotion, and payouts all come together here.",
+      "Shows are scheduled events that run automatically. Venues, featured artists, staff, promotion, and payouts all come together here.",
     commands: [
       "/create_show",
       "/my_shows",
       "/promote_show",
-      "/add_lineup",
       "/hire_show_staff",
       "/collect_show",
     ],
@@ -375,7 +270,7 @@ export const guideSections = [
         heading: "What shows are",
         text: [
           "Shows are events created at venues you own.",
-          "They are one of the main ways the city starts feeling social, because shows can involve promoters, DJs, staff, and attendees.",
+          "They are one of the main ways the city starts feeling social, because shows can involve promoters, staff, attendees, and a venue-tiered artist roster.",
         ],
       },
       {
@@ -395,8 +290,8 @@ export const guideSections = [
           "When a show has room, sales add confirmed attendance and projected revenue. When a show is already projected at capacity, sales convert projected walk-ins into confirmed buyers without changing total attendance or projected revenue.",
           "Use /my_shows to see confirmed tickets, advance-sale revenue, projected walk-ins, and total projected attendance.",
           "Each upcoming show can receive one promotional campaign. Its price and base-demand gain scale with venue size.",
-          "Use /promote_show when a show still has room. If organic momentum from activities, bookings, equipment, and advance sales has already filled the forecast, no campaign is needed.",
-          "Use /add_lineup to add DJs.",
+          "Use /promote_show when a show still has room. If organic momentum from activities, equipment, and advance sales has already filled the forecast, no campaign is needed.",
+          "Use the Book Artist button in /my_shows to choose one featured artist from your venue's roster. The fee is paid upfront and the artist increases projected walk-ins.",
           "Use /hire_show_staff to bring in people who help the event run better.",
         ],
       },
@@ -405,7 +300,7 @@ export const guideSections = [
         text: [
           "Shows run automatically when their assigned show time arrives.",
           "You do not manually start the show. The bot handles the show result behind the scenes.",
-          "The show report scores attendance, profitability, production, lineup coverage, and staffing coverage, then combines them into an overall five-star rating.",
+          "The show report scores attendance, profitability, production, artist booking, and staffing coverage, then combines them into an overall five-star rating.",
           "Well-rounded shows earn a Scene Reputation bonus, so filling the room is important but is not the only measure of success.",
           "Ratings are saved with completed shows. Your profile tracks your average, best rating, and streak of shows scoring 75 or higher.",
           "That means /create_show schedules the event, but the payout does not happen immediately.",
@@ -415,15 +310,15 @@ export const guideSections = [
         heading: "Getting paid",
         text: [
           "Shows do not pay out instantly when you create them.",
-          "After the show automatically runs and is marked completed, the owner uses /collect_show to settle the show, receive the owner result, and distribute participant payouts.",
-          "This is also when DJ and staff payouts are settled for that completed show.",
+          "After the show automatically runs and is marked completed, the owner uses /collect_show to receive the settlement and distribute staff payouts.",
+          "The featured artist's fee was already paid at booking time, so the show report distinguishes the settlement from final event profit.",
         ],
       },
       {
         heading: "Why shows matter",
         text: [
           "Shows are the point where your assets turn into events.",
-          "Gear, venues, DJs, staff, promotion, and Scene Reputation all start feeding into one loop: throw better shows, earn more, reinvest, and grow the scene.",
+          "Gear, venues, featured artists, staff, promotion, and Scene Reputation all start feeding into one loop: throw better shows, earn more, reinvest, and grow the scene.",
         ],
       },
     ],
@@ -432,16 +327,16 @@ export const guideSections = [
   {
     id: "staff",
     category: "Shows",
-    title: "Staff & Lineups",
+    title: "Show Staff",
     summary:
       "Shows feel better when they are not just one person pressing buttons alone in the dark.",
-    commands: ["/add_lineup", "/show_lineup", "/hire_show_staff", "/my_jobs"],
+    commands: ["/hire_show_staff", "/my_jobs", "/my_shows"],
     sections: [
       {
-        heading: "Lineups",
+        heading: "Featured artists",
         text: [
-          "Use /add_lineup to add another Discord user as a DJ on your show.",
-          "This helps shows feel more like actual community events instead of solo money machines.",
+          "Use the Book Artist button in /my_shows to book one venue-tiered featured artist for an upcoming show.",
+          "The artist fee is paid upfront and their draw raises that show's projected walk-ins.",
         ],
       },
       {
@@ -463,7 +358,7 @@ export const guideSections = [
         heading: "Why this system exists",
         text: [
           "A Discord game gets boring if everyone is only playing alone.",
-          "Lineups and staff are meant to make the city feel social. Promoters need DJs. Shows need staff. The scene works better when people are connected.",
+          "Staff make shows feel less like a solo money machine. Shows need a real team behind the scenes.",
         ],
       },
     ],
@@ -472,19 +367,17 @@ export const guideSections = [
   {
     id: "reputation",
     category: "Mechanics",
-    title: "Scene Reputation vs DJ Reputation",
+    title: "Scene Reputation",
     summary:
-      "There are two player reputation tracks, and they matter in different ways.",
-    commands: ["/profile", "/dj_profile", "/bookings"],
+      "Scene Reputation is your citywide credibility and helps unlock larger opportunities.",
+    commands: ["/profile", "/roles"],
     sections: [
       {
         heading: "All progression measurements",
         text: [
           "XP raises your player level with no maximum level. Activities and shows award XP, and levels unlock achievements such as City Legend.",
-          "Scene Reputation is your citywide credibility. It comes from scene activity, bookings, and well-run shows, and helps unlock larger venues and progression achievements.",
-          "DJ Reputation measures your artist career. It helps determine DJ status, booking value, and career-milestone access.",
-          "Completed Gigs counts career bookings, repeatable bookings, and completed show-lineup appearances. Each completed gig also increases booking value.",
-          "Show Rating scores attendance, profitability, production, lineup coverage, and staffing coverage. Strong ratings now matter more than raw crowd size when shows award Scene Reputation.",
+          "Scene Reputation is your citywide credibility. It comes from scene activity and well-run shows, and helps unlock larger venues and progression achievements.",
+          "Show Rating scores attendance, profitability, production, artist booking, and staffing coverage. Strong ratings now matter more than raw crowd size when shows award Scene Reputation.",
           "Venue Reputation is planned as a separately stored future measurement for sponsorships and other venue rewards. Department upgrades remain physical improvements and do not currently create Venue Reputation.",
         ],
       },
@@ -496,24 +389,10 @@ export const guideSections = [
         ],
       },
       {
-        heading: "DJ Reputation",
-        text: [
-          "DJ Reputation is specific to your artist career.",
-          "It affects your DJ level, your booking fee, and how strong your DJ profile looks.",
-        ],
-      },
-      {
-        heading: "Why they are separate",
-        text: [
-          "Being a good promoter and being a respected DJ are related, but they are not the exact same thing.",
-          "The game separates these so the DJ career path can grow without making it identical to venue ownership or general progression.",
-        ],
-      },
-      {
         heading: "The simple version",
         text: [
           "Scene Reputation helps the city trust you with bigger things.",
-          "DJ Reputation helps people take you seriously behind the decks.",
+          "It grows when you participate in the city and produce strong events.",
         ],
       },
     ],
@@ -552,7 +431,7 @@ export const guideSections = [
         heading: "Why it exists",
         text: [
           "Passive income gives you a reason to invest in assets.",
-          "But it is not supposed to replace active gameplay. The good stuff still comes from making choices, taking bookings, throwing shows, and expanding.",
+          "But it is not supposed to replace active gameplay. The good stuff still comes from making choices, throwing shows, and expanding.",
         ],
       },
     ],
@@ -563,8 +442,8 @@ export const guideSections = [
     category: "Economy",
     title: "Show Payouts",
     summary:
-      "Shows have their own payout flow so owners, DJs, and staff can all be part of the event economy.",
-    commands: ["/collect_show", "/my_shows", "/my_jobs", "/show_lineup"],
+      "Shows have their own payout flow so owners and staff can be part of the event economy.",
+    commands: ["/collect_show", "/my_shows", "/my_jobs"],
     sections: [
       {
         heading: "Completed shows",
@@ -574,9 +453,9 @@ export const guideSections = [
         ],
       },
       {
-        heading: "Staff and DJ payouts",
+        heading: "Staff payouts",
         text: [
-          "When the owner collects the completed show, staff and DJ payouts are settled too.",
+          "When the owner collects the completed show, staff payouts are settled too.",
           "This keeps the event economy tied to the show lifecycle instead of paying everyone instantly before the event actually happens.",
         ],
       },
@@ -584,7 +463,7 @@ export const guideSections = [
         heading: "Why this matters",
         text: [
           "The goal is to make shows feel like actual events, not just buttons that print money.",
-          "Create the show, build the lineup, promote it, let it run, then collect and settle up.",
+          "Create the show, book an artist, promote it, let it run, then collect and settle up.",
         ],
       },
     ],
@@ -645,10 +524,10 @@ export const guideSections = [
     commands: ["/profile", "/help"],
     sections: [
       {
-        heading: "Why can’t I take a booking?",
+        heading: "How do I book an artist?",
         text: [
-          "You need to own equipment first.",
-          "Buy gear with /buy_equipment, then run /bookings.",
+          "You need an upcoming show at a venue you own.",
+          "Open /my_shows, choose the show, then use its Book Artist button.",
         ],
       },
       {

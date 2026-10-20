@@ -13,7 +13,6 @@ const {
   CAREER_ROLES,
   WORK_SCENARIOS,
   SHOP_ITEMS,
-  DJ_BOOKINGS,
 } = require("../constants");
 
 const ALL_ROLES = {
@@ -49,11 +48,6 @@ const { promotionCampaign } = require("../services/promotionRules");
 
 const { checkCooldown } = require("../services/cooldowns");
 const { getPromoterRatingStats } = require("../services/showRatingHistory");
-const {
-  calculateDjBookingFee,
-  getDjLevel,
-  getDjTitle,
-} = require("../services/djs");
 const {
   WORK_COOLDOWN_MINUTES,
   calculateWorkReward,
@@ -158,19 +152,6 @@ async function register(interaction) {
   });
 }
 
-function hasCompletedBooking(userId, bookingKey) {
-  return !!db
-    .prepare(
-      `
-      SELECT 1
-      FROM user_bookings
-      WHERE user_id = ?
-        AND booking_key = ?
-    `,
-    )
-    .get(userId, bookingKey);
-}
-
 async function profile(interaction) {
   const userId = interaction.user.id;
   const username = interaction.user.username;
@@ -210,10 +191,6 @@ async function profile(interaction) {
       "SELECT showcase_completed FROM user_journey_progress WHERE user_id = ?",
     )
     .get(userId);
-  const completedOpenDecks = hasCompletedBooking(
-    userId,
-    DJ_BOOKINGS.openDecks.key,
-  );
   const showCount = db
     .prepare("SELECT COUNT(*) AS count FROM shows WHERE owner_id = ?")
     .get(userId).count;
@@ -244,15 +221,16 @@ async function profile(interaction) {
         venues.base_capacity,
         venues.security_level,
         venues.production_level,
-        venues.dj_limit,
         venues.staff_limit,
-        (SELECT COUNT(*) FROM show_lineup WHERE show_id = shows.id) AS lineup_count,
+        show_artists.artist_name,
+        show_artists.demand_bonus,
         (SELECT COUNT(*) FROM show_staff WHERE show_id = shows.id) AS staff_count,
         (SELECT COUNT(*) FROM show_promotions WHERE show_id = shows.id) AS promotion_count,
         (SELECT COUNT(*) FROM show_tickets WHERE show_id = shows.id) AS player_ticket_count,
         COALESCE((SELECT SUM(quantity) FROM automated_ticket_sales WHERE show_id = shows.id), 0) AS automated_ticket_count
       FROM shows
       JOIN venues ON venues.id = shows.venue_id
+      LEFT JOIN show_artists ON show_artists.show_id = shows.id
       WHERE shows.owner_id = ?
         AND shows.status = 'upcoming'
       ORDER BY shows.show_date ASC, shows.id ASC
@@ -272,6 +250,7 @@ async function profile(interaction) {
       baseWalkins: Number(show.simulated_attendees || 0),
       venue,
       ticketCount,
+      artistDemand: Number(show.demand_bonus || 0),
     });
     const projectedFull =
       ticketCount + projectedWalkins >= venueCapacity(venue);
@@ -279,8 +258,7 @@ async function profile(interaction) {
 
     return {
       name: show.name,
-      lineupCount: show.lineup_count || 0,
-      djLimit: show.dj_limit || 0,
+      artistName: show.artist_name || null,
       staffCount: show.staff_count || 0,
       staffLimit: show.staff_limit || 0,
       promotionCount: show.promotion_count || 0,
@@ -294,7 +272,6 @@ async function profile(interaction) {
     cash: user.cash || 0,
     journeyComplete: !!journeyProgress?.showcase_completed,
     hasEquipment: equipment.length > 0,
-    openDecksComplete: completedOpenDecks,
     venueCount: venues.length,
     showCount,
     readyToCollect: passiveTotal,
@@ -303,9 +280,6 @@ async function profile(interaction) {
     firstVenue: venues[0] || null,
   });
   const promoterStats = getPromoterRatingStats(userId);
-  const djProfile = db
-    .prepare("SELECT * FROM dj_profiles WHERE user_id = ?")
-    .get(userId);
 
   const pending = db
     .prepare(
@@ -371,22 +345,6 @@ async function profile(interaction) {
         `Strong Streak:${String(promoterStats.currentStreak).padStart(3)} (Best: ${promoterStats.bestStreak})\n` +
         `Show Bonus: +${promoterStats.totalReputationBonus} Scene Reputation` +
         "```",
-    });
-  }
-
-  if (djProfile) {
-    const djLevel = getDjLevel(djProfile.dj_reputation);
-
-    profileFields.push({
-      name: "🎧 DJ CAREER",
-      value:
-        "```ansi\n" +
-        `${getDjTitle(djLevel)} • DJ Level ${djLevel}\n` +
-        `DJ Reputation: ${djProfile.dj_reputation}\n` +
-        `Completed Gigs: ${djProfile.bookings}\n` +
-        `Booking Fee: ${money(calculateDjBookingFee(djProfile))}` +
-        "```\n" +
-        "Use `/dj_profile` for full DJ career details.",
     });
   }
 
@@ -489,8 +447,8 @@ async function roles(interaction) {
     .setTitle("🏆 EDM ELEVATED ROLES")
     .setDescription(
       "Player achievements and milestone titles. XP raises your unlimited player level; " +
-        "Scene Reputation measures citywide credibility; DJ Reputation and Completed Gigs grow your DJ career; " +
-        "Show Rating measures event quality. Venue Reputation is planned but not yet tracked.",
+        "Scene Reputation measures citywide credibility; Show Rating measures event quality. " +
+        "Venue Reputation is planned but not yet tracked.",
     )
     .addFields(
       {
@@ -503,7 +461,7 @@ async function roles(interaction) {
       },
     )
     .setFooter({
-      text: "DJ rank lives in /dj_profile. Player achievements live here.",
+      text: "Build the scene.",
     });
 
   return interaction.reply({

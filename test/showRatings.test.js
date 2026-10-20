@@ -18,7 +18,7 @@ function test(name, fn) {
   }
 }
 
-test("scores lineup and staffing coverage", () => {
+test("scores staffing coverage", () => {
   assert.equal(coverageScore(0, 2), 0);
   assert.equal(coverageScore(1, 2), 50);
   assert.equal(coverageScore(3, 2), 100);
@@ -37,20 +37,19 @@ test("produces a strong rating for a successful fully staffed show", () => {
     show: {
       capacity: 100,
       production_level: 2,
-      dj_limit: 2,
       staff_limit: 4,
     },
     totalAttendance: 95,
     totalRevenue: 4000,
     netProfit: 1800,
-    djCount: 2,
+    artistBooked: true,
     staffCount: 4,
   });
 
   assert.equal(rating.attendance, 95);
   assert.equal(rating.profitability, 95);
   assert.equal(rating.production, 80);
-  assert.equal(rating.lineup, 100);
+  assert.equal(rating.artist, 100);
   assert.equal(rating.staffing, 100);
   assert.equal(rating.overallScore, 94);
   assert.equal(rating.stars, 4.7);
@@ -70,13 +69,12 @@ test("installed equipment improves production without exceeding the score cap", 
       capacity: 100,
       production_level: 1,
       installed_equipment_production_bonus: 14,
-      dj_limit: 1,
       staff_limit: 1,
     },
     totalAttendance: 50,
     totalRevenue: 1000,
     netProfit: 0,
-    djCount: 1,
+    artistBooked: true,
     staffCount: 1,
   });
   assert.equal(rating.production, 74);

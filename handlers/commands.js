@@ -2,14 +2,11 @@ const users = require("./users");
 const venues = require("./venues");
 const shows = require("./shows");
 const staff = require("./staff");
-const lineup = require("./lineup");
 const kandi = require("./kandi");
-const djs = require("./djs");
 const help = require("./help");
 const games = require("./games");
 const equipment = require("./equipment");
 const shop = require("./shop");
-const bookings = require("./bookings");
 const journey = require("./journey");
 const undergroundRun = require("./undergroundRun");
 const ticketSales = require("./ticketSales");
@@ -30,11 +27,6 @@ const commandMap = {
   roles: users.roles,
   work: users.work,
   leaderboard: users.leaderboard,
-  dj_profile: djs.djProfile,
-  top_djs: djs.topDjs,
-
-  bookings: bookings.bookings,
-
   buy_venue: venues.buyVenue,
   my_venues: venues.myVenues,
   upgrade_venue: venues.upgradeVenue,
@@ -49,14 +41,10 @@ const commandMap = {
   collect: shows.collect,
   collect_show: shows.collectShow,
   promote_show: shows.promoteShow,
-  show_lineup: shows.showLineup,
 
   hire_show_staff: staff.hireStaff,
   my_jobs: staff.myJobs,
   hire_venue_staff: staff.hireVenueStaff,
-
-  add_lineup: lineup.addLineup,
-
 
   create_kandi: kandi.createKandi,
   give_kandi: kandi.giveKandi,
@@ -110,10 +98,8 @@ async function handleCommand(interaction) {
       return help.handleHelpButton(interaction);
     }
 
-    if (interaction.customId.startsWith("show_lineup_")) {
-      const showId = interaction.customId.replace("show_lineup_", "");
-
-      return shows.showLineup(interaction, showId);
+    if (interaction.customId.startsWith("book_artist_")) {
+      return shows.handleBookArtistButton(interaction);
     }
 
     if (interaction.customId.startsWith("promote_show_")) {
@@ -129,9 +115,6 @@ async function handleCommand(interaction) {
       return shop.handleShopButton(interaction);
     }
 
-    if (interaction.customId.startsWith("bookings_")) {
-      return bookings.handleBookingButton(interaction);
-    }
 
     if (interaction.customId === "equipment_manage") {
       return equipment.handleManageButton(interaction);
@@ -159,6 +142,9 @@ async function handleCommand(interaction) {
   }
 
   if (interaction.isStringSelectMenu()) {
+    if (interaction.customId.startsWith("artist_select:")) {
+      return shows.handleArtistSelect(interaction);
+    }
     if (interaction.customId === "equipment_type") {
       return equipment.handleEquipmentTypeSelect(interaction);
     }

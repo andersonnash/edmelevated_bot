@@ -8,7 +8,6 @@ function move(overrides = {}) {
     cash: 0,
     journeyComplete: false,
     hasEquipment: false,
-    openDecksComplete: false,
     venueCount: 0,
     showCount: 0,
     ...overrides,
@@ -71,7 +70,7 @@ test("prioritizes unsettled shows", () => {
   assert.match(result, /`\/collect_show`/);
 });
 
-test("walks an upcoming show through lineup, staffing, and promotion", () => {
+test("walks an upcoming show through artist booking, staffing, and promotion", () => {
   const base = {
     cash: 500,
     journeyComplete: true,
@@ -81,26 +80,24 @@ test("walks an upcoming show through lineup, staffing, and promotion", () => {
     showCount: 1,
   };
 
-  const lineupMove = move({
+  const artistMove = move({
     ...base,
     upcomingShow: {
       name: "Bass Signal",
-      lineupCount: 0,
-      djLimit: 1,
+      artistName: null,
       staffCount: 0,
       staffLimit: 1,
       promotionCount: 0,
     },
   });
-  assert.match(lineupMove, /Build the lineup/);
-  assert.match(lineupMove, /`\/my_shows`/);
+  assert.match(artistMove, /Book an artist/);
+  assert.match(artistMove, /`\/my_shows`/);
   assert.match(
     move({
       ...base,
       upcomingShow: {
         name: "Bass Signal",
-        lineupCount: 1,
-        djLimit: 1,
+        artistName: "Mija",
         staffCount: 0,
         staffLimit: 1,
         promotionCount: 0,
@@ -113,8 +110,7 @@ test("walks an upcoming show through lineup, staffing, and promotion", () => {
       ...base,
       upcomingShow: {
         name: "Bass Signal",
-        lineupCount: 1,
-        djLimit: 1,
+        artistName: "Mija",
         staffCount: 1,
         staffLimit: 1,
         promotionCount: 0,
@@ -135,8 +131,7 @@ test("uses the selected show's scaled campaign price", () => {
     upcomingShows: [
       {
         name: "Warehouse Night",
-        lineupCount: 2,
-        djLimit: 2,
+        artistName: "Malaa",
         staffCount: 3,
         staffLimit: 3,
         promotionNeeded: true,
@@ -159,8 +154,7 @@ test("does not recommend promotion when organic demand fills the show", () => {
     upcomingShows: [
       {
         name: "Full Room",
-        lineupCount: 1,
-        djLimit: 1,
+        artistName: "Mija",
         staffCount: 1,
         staffLimit: 1,
         promotionNeeded: false,
@@ -184,16 +178,14 @@ test("finds an unprepared show after an earlier prepared show", () => {
     upcomingShows: [
       {
         name: "Bass Rush",
-        lineupCount: 1,
-        djLimit: 1,
+        artistName: "Mija",
         staffCount: 1,
         staffLimit: 1,
         promotionCount: 1,
       },
       {
         name: "Ear Tickler",
-        lineupCount: 0,
-        djLimit: 1,
+        artistName: null,
         staffCount: 0,
         staffLimit: 1,
         promotionCount: 0,
@@ -201,7 +193,7 @@ test("finds an unprepared show after an earlier prepared show", () => {
     ],
   });
 
-  assert.match(result, /Build the lineup for Ear Tickler/);
+  assert.match(result, /Book an artist for Ear Tickler/);
   assert.doesNotMatch(result, /Keep an eye on Bass Rush/);
 });
 

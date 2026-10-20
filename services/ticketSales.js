@@ -50,6 +50,7 @@ function projectedAttendance(show, ticketCount = totalTicketCount(show)) {
     baseWalkins: Number(show.simulated_attendees || 0),
     venue: show,
     ticketCount,
+    artistDemand: Number(show.demand_bonus || 0),
   });
 
   return { walkins, total: ticketCount + walkins };
@@ -130,6 +131,7 @@ function eligibleShowsForOwner(ownerId, { ignoreCooldown = false } = {}) {
         venues.base_capacity,
         venues.security_level,
         venues.production_level,
+        COALESCE(show_artists.demand_bonus, 0) AS demand_bonus,
         (SELECT COUNT(*) FROM show_tickets WHERE show_id = shows.id)
           AS player_ticket_count,
         COALESCE((
@@ -150,6 +152,7 @@ function eligibleShowsForOwner(ownerId, { ignoreCooldown = false } = {}) {
       FROM shows
       JOIN venues ON venues.id = shows.venue_id
       LEFT JOIN users ON users.discord_id = shows.owner_id
+      LEFT JOIN show_artists ON show_artists.show_id = shows.id
       WHERE shows.owner_id = ?
         AND shows.status = 'upcoming'
         AND shows.show_date > date('now')
